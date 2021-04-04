@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+html {
+  background-color: #f5f6fa;
+}
+
+.App {
+  text-align: center;
+  font-family: 'Lato', sans-serif;
+}
+
+.title {
+  font-size: 26px;
+  text-align: center;
+  color: #20bf6b;
+  font-weight: bold;
+}
+
+.content {
+}
