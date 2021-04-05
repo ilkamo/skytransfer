@@ -126,6 +126,9 @@
   font-weight: bold;
   padding: 8px 15px;
   margin-bottom: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .file-input {

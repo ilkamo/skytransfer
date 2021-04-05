@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import { SkynetClient, genKeyPairAndSeed } from "skynet-js";
-import FileUtils from "../../utils/file";
+import { useState, useEffect, useRef } from 'react';
+import { SkynetClient, genKeyPairAndSeed } from 'skynet-js';
+import FileUtils from '../../utils/file';
 
-import "./DropZone.css";
+import './DropZone.css';
 
-const SESSION_KEY_NAME = "sessionKey";
-const skynetClient = new SkynetClient("https://siasky.net");
+const SESSION_KEY_NAME = 'sessionKey';
+const skynetClient = new SkynetClient('https://siasky.net');
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -16,18 +16,23 @@ const useConstructor = (callBack = () => {}) => {
 
 const DropZone = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const [validFiles, setValidFiles] = useState([]);
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
-  const [sessionPublicKey, setSessionPublicKey] = useState("");
-  const [sessionPrivateKey, setSessionPrivateKey] = useState("");
+  const [sessionPublicKey, setSessionPublicKey] = useState('');
+  const [sessionPrivateKey, setSessionPrivateKey] = useState('');
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState([]);
+  const [fileUtils, setFileUtils] = useState(null);
+  const [sessionInterval, setSessionInterval] = useState(
+    setTimeout(() => {}, 0)
+  );
+  const [uploading, setUploading] = useState(false);
 
   const publicKeyFromPrivateKey = (privateKey: string): string => {
     return privateKey.substr(privateKey.length - 64);
   };
 
-  const initSession = () => {
+  const initSession = async () => {
     const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
     if (sessionKey) {
       setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
@@ -43,6 +48,10 @@ const DropZone = () => {
   useConstructor(() => {
     initSession();
   });
+
+  useEffect(() => {
+    setFileUtils(new FileUtils(sessionPrivateKey));
+  }, [sessionPrivateKey]);
 
   const dragOver = (e) => {
     e.preventDefault();
@@ -66,11 +75,11 @@ const DropZone = () => {
 
   const validateFile = (file) => {
     const validTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/x-icon",
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/x-icon',
     ];
     if (validTypes.indexOf(file.type) === -1) {
       return false;
@@ -84,25 +93,25 @@ const DropZone = () => {
         // add to an array so we can display the name of file
         setSelectedFiles((prevArray) => [...prevArray, files[i]]);
       } else {
-        files[i]["invalid"] = true;
+        files[i]['invalid'] = true;
         setSelectedFiles((prevArray) => [...prevArray, files[i]]);
-        setErrorMessage("File type not permitted");
+        setErrorMessage('File type not permitted');
         setUnsupportedFiles((prevArray) => [...prevArray, files[i]]);
       }
     }
   };
 
   const fileSize = (size) => {
-    if (size === 0) return "0 Bytes";
+    if (size === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(size) / Math.log(k));
-    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const fileType = (fileName) => {
     return (
-      fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length) ||
+      fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) ||
       fileName
     );
   };
@@ -149,39 +158,38 @@ const DropZone = () => {
   };
 
   const uploadFiles = async () => {
-    const fu = new FileUtils(sessionPrivateKey);
+    const uploaded: string[] = [];
+    setUploading(true);
 
     for (let i = 0; i < validFiles.length; i++) {
       try {
-        const result = await fu.encryptFile(validFiles[i]);
+        const result = await fileUtils.encryptFile(validFiles[i]);
         const { skylink } = await skynetClient.uploadFile(result);
         setUploadedEncryptedFiles((prevArray) => [...prevArray, skylink]);
+        uploaded.push(skylink);
       } catch (error) {
-        console.log("Could not upload file: " + error);
+        console.log('Could not upload file: ' + error);
       }
     }
+
+    clearTimeout(sessionInterval);
+    setSessionInterval(
+      setTimeout(async () => {
+        if (uploaded.length === 0) {
+          setUploading(false);
+          return;
+        }
+
+        try {
+          await fileUtils.storeSessionEncryptedFiles(uploaded);
+        } catch (error) {
+          console.log('Could not store session encrypted files: ' + error);
+        }
+
+        setUploading(false);
+      }, 2000)
+    );
   };
-
-  let storeSessionInterval = setTimeout(() => {}, 0);
-
-  useEffect(() => {
-    if (uploadedEncryptedFiles.length == 0) {
-      return;
-    }
-
-    const fu = new FileUtils(sessionPrivateKey);
-
-    clearTimeout(storeSessionInterval);
-    storeSessionInterval = setTimeout(async () => {
-      console.log("updating skydb");
-
-      try {
-        await fu.storeSessionEncryptedFiles(uploadedEncryptedFiles);
-      } catch (error) {
-        console.log("Could not store session encrypted files: " + error);
-      }
-    }, 4000);
-  }, [uploadedEncryptedFiles]);
 
   const filesSelected = () => {
     if (fileInputRef.current.files.length) {
@@ -192,16 +200,20 @@ const DropZone = () => {
   return (
     <div className="container">
       {unsupportedFiles.length === 0 && validFiles.length ? (
-        <button className="file-upload-btn" onClick={() => uploadFiles()}>
+        <button
+          disabled={uploading}
+          className="file-upload-btn"
+          onClick={() => uploadFiles()}
+        >
           Upload Files
         </button>
       ) : (
-        ""
+        ''
       )}
       {unsupportedFiles.length ? (
         <p>Please remove all unsupported files.</p>
       ) : (
-        ""
+        ''
       )}
       <div
         className="drop-container"
@@ -229,10 +241,10 @@ const DropZone = () => {
             <div>
               {/* <div className="file-type-logo"></div> */}
               {/* <div className="file-type">{fileType(data.name)}</div> */}
-              <span className={`file-name ${data.invalid ? "file-error" : ""}`}>
+              <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>
                 {data.name}
               </span>
-              <span className="file-size">({fileSize(data.size)})</span>{" "}
+              <span className="file-size">({fileSize(data.size)})</span>{' '}
               {data.invalid && (
                 <span className="file-error-message">({errorMessage})</span>
               )}
