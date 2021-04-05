@@ -23,7 +23,7 @@
 .upload-icon {
   width: 50px;
   height: 50px;
-  background: url(../assets/upload.svg) no-repeat center center;
+  background: url(../../assets/upload.svg) no-repeat center center;
   background-size: 100%;
   text-align: center;
   margin: 0 auto;
@@ -91,7 +91,7 @@
 .file-type-logo {
   width: 50px;
   height: 50px;
-  background: url(../assets/generic.png) no-repeat center center; 
+  background: url(../../assets/generic.png) no-repeat center center; 
   background-size: 100%;
   position: absolute;
 }

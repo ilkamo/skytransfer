@@ -1,12 +1,48 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { SkynetClient, genKeyPairAndSeed } from "skynet-js";
+import FileUtils from "../../utils/file";
 
 import "./DropZone.css";
+
+const SESSION_KEY_NAME = "sessionKey";
+const skynetClient = new SkynetClient("https://siasky.net");
+
+const useConstructor = (callBack = () => {}) => {
+  const hasBeenCalled = useRef(false);
+  if (hasBeenCalled.current) return;
+  callBack();
+  hasBeenCalled.current = true;
+};
 
 const DropZone = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [validFiles, setValidFiles] = useState([]);
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
+  const [sessionPublicKey, setSessionPublicKey] = useState("");
+  const [sessionPrivateKey, setSessionPrivateKey] = useState("");
+  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState([]);
+
+  const publicKeyFromPrivateKey = (privateKey: string): string => {
+    return privateKey.substr(privateKey.length - 64);
+  };
+
+  const initSession = () => {
+    const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
+    if (sessionKey) {
+      setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
+      setSessionPrivateKey(sessionKey);
+    } else {
+      const { publicKey, privateKey } = genKeyPairAndSeed();
+      setSessionPublicKey(publicKey);
+      setSessionPrivateKey(privateKey);
+      localStorage.setItem(SESSION_KEY_NAME, privateKey);
+    }
+  };
+
+  useConstructor(() => {
+    initSession();
+  });
 
   const dragOver = (e) => {
     e.preventDefault();
@@ -112,14 +148,40 @@ const DropZone = () => {
     fileInputRef.current.click();
   };
 
-  const uploadFiles = () => {
+  const uploadFiles = async () => {
+    const fu = new FileUtils(sessionPrivateKey);
+
     for (let i = 0; i < validFiles.length; i++) {
-      const formData = new FormData();
-      formData.append("image", validFiles[i]);
-      formData.append("key", "add your API key here");
-      // upload file
+      try {
+        const result = await fu.encryptFile(validFiles[i]);
+        const { skylink } = await skynetClient.uploadFile(result);
+        setUploadedEncryptedFiles((prevArray) => [...prevArray, skylink]);
+      } catch (error) {
+        console.log("Could not upload file: " + error);
+      }
     }
   };
+
+  let storeSessionInterval = setTimeout(() => {}, 0);
+
+  useEffect(() => {
+    if (uploadedEncryptedFiles.length == 0) {
+      return;
+    }
+
+    const fu = new FileUtils(sessionPrivateKey);
+
+    clearTimeout(storeSessionInterval);
+    storeSessionInterval = setTimeout(async () => {
+      console.log("updating skydb");
+
+      try {
+        await fu.storeSessionEncryptedFiles(uploadedEncryptedFiles);
+      } catch (error) {
+        console.log("Could not store session encrypted files: " + error);
+      }
+    }, 4000);
+  }, [uploadedEncryptedFiles]);
 
   const filesSelected = () => {
     if (fileInputRef.current.files.length) {
