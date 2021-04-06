@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { SkynetClient, genKeyPairAndSeed } from 'skynet-js';
+import { EncryptionType, FileEncrypted } from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
 import './DropZone.css';
@@ -7,7 +8,7 @@ import './DropZone.css';
 const SESSION_KEY_NAME = 'sessionKey';
 const skynetClient = new SkynetClient('https://siasky.net');
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -21,12 +22,18 @@ const DropZone = () => {
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
   const [sessionPublicKey, setSessionPublicKey] = useState('');
   const [sessionPrivateKey, setSessionPrivateKey] = useState('');
-  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState([]);
-  const [fileUtils, setFileUtils] = useState(null);
+  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<FileEncrypted[]>([]);
   const [sessionInterval, setSessionInterval] = useState(
-    setTimeout(() => {}, 0)
+    setTimeout(() => { }, 0)
   );
   const [uploading, setUploading] = useState(false);
+
+  const fileUtils: FileUtils = new FileUtils();
+  const [encryptionKey, setEncryptionKey] = useState('');
+
+  useEffect(() => {
+    setEncryptionKey(fileUtils.generateEncryptionKey(sessionPrivateKey));
+  }, [sessionPrivateKey]);
 
   const publicKeyFromPrivateKey = (privateKey: string): string => {
     return privateKey.substr(privateKey.length - 64);
@@ -48,10 +55,6 @@ const DropZone = () => {
   useConstructor(() => {
     initSession();
   });
-
-  useEffect(() => {
-    setFileUtils(new FileUtils(sessionPrivateKey));
-  }, [sessionPrivateKey]);
 
   const dragOver = (e) => {
     e.preventDefault();
@@ -158,15 +161,24 @@ const DropZone = () => {
   };
 
   const uploadFiles = async () => {
-    const uploaded: string[] = [];
+    const uploaded: FileEncrypted[] = [];
     setUploading(true);
 
     for (let i = 0; i < validFiles.length; i++) {
       try {
-        const result = await fileUtils.encryptFile(validFiles[i]);
+        const result = await fileUtils.encryptFile(encryptionKey, validFiles[i]);
         const { skylink } = await skynetClient.uploadFile(result);
-        setUploadedEncryptedFiles((prevArray) => [...prevArray, skylink]);
-        uploaded.push(skylink);
+
+        const tempFile = {
+          skylink: skylink,
+          encryptionType: EncryptionType.AES,
+          fileName: validFiles[i].name,
+          mimeType: validFiles[i].type,
+          size: validFiles[i].size
+        }
+
+        setUploadedEncryptedFiles((prevArray) => [...prevArray, tempFile]);
+        uploaded.push(tempFile);
       } catch (error) {
         console.log('Could not upload file: ' + error);
       }
@@ -181,7 +193,7 @@ const DropZone = () => {
         }
 
         try {
-          await fileUtils.storeSessionEncryptedFiles(uploaded);
+          await fileUtils.storeSessionEncryptedFiles(sessionPrivateKey, uploaded);
         } catch (error) {
           console.log('Could not store session encrypted files: ' + error);
         }
@@ -194,22 +206,6 @@ const DropZone = () => {
   const filesSelected = () => {
     if (fileInputRef.current.files.length) {
       handleFiles(fileInputRef.current.files);
-    }
-  };
-
-  const downloadFile = async () => {
-    const files = await fileUtils.getSessionEncryptedFiles();
-    const file: File = await fileUtils.decryptFileFromSkylink(files[0].skylink); // get mime type from metadata
-
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(file, file.name);
-    } else {
-      var elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(file);
-      elem.download = file.name;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
     }
   };
 
@@ -271,7 +267,7 @@ const DropZone = () => {
           </div>
         ))}
       </div>
-      <div onClick={() => downloadFile()}>download</div>
+      <a href={`/${sessionPublicKey}/${encryptionKey}`}>link</a>
     </div>
   );
 };

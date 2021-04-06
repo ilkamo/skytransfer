@@ -1,5 +1,5 @@
 {
-  "name": "skydrop",
+  "name": "skytransfer",
   "version": "0.0.1",
   "scripts": {
     "start": "react-scripts start",
@@ -15,6 +15,7 @@
     "react-colorful": "^5.0.0",
     "react-dom": "^17.0.1",
     "react-dropzone": "^11.3.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
     "skynet-js": "^3.0.2",
     "web-vitals": "^0.2.4"
