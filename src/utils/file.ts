@@ -27,7 +27,7 @@ class FileUtils {
         const wordArray = CryptoJS.lib.WordArray.create(data);
         const encrypted = CryptoJS.AES.encrypt(wordArray, $this.cryptoKey).toString();
 
-        const fileEnc = new Blob([encrypted]);
+        const fileEnc = new Blob([encrypted], { type: file.type });
 
         return resolve(new File([fileEnc], file.name));
       };
@@ -40,6 +40,7 @@ class FileUtils {
 
   public async decryptFileFromSkylink(skylink: string): Promise<File> {
     const { data, metadata } = await skynetClient.getFileContent(skylink);
+    console.log(metadata);
     return this.decryptFile(data, metadata.filename);
   }
 

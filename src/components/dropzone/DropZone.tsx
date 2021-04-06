@@ -197,6 +197,22 @@ const DropZone = () => {
     }
   };
 
+  const downloadFile = async () => {
+    const files = await fileUtils.getSessionEncryptedFiles();
+    const file: File = await fileUtils.decryptFileFromSkylink(files[0].skylink); // get mime type from metadata
+
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveBlob(file, file.name);
+    } else {
+      var elem = window.document.createElement('a');
+      elem.href = window.URL.createObjectURL(file);
+      elem.download = file.name;
+      document.body.appendChild(elem);
+      elem.click();
+      document.body.removeChild(elem);
+    }
+  };
+
   return (
     <div className="container">
       {unsupportedFiles.length === 0 && validFiles.length ? (
@@ -255,6 +271,7 @@ const DropZone = () => {
           </div>
         ))}
       </div>
+      <div onClick={() => downloadFile()}>download</div>
     </div>
   );
 };
