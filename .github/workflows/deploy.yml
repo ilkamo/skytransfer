@@ -1,0 +1,31 @@
+name: build and deploy
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build
+        run: yarn build
+        env:
+          REACT_APP_GIT_SHA: ${{ github.sha }}
+
+      - name: "Deploy to Skynet"
+        uses: kwypchlo/deploy-to-skynet-action@main
+        with:
+          upload-dir: build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          registry-seed: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.REGISTRY_SEED || '' }}
