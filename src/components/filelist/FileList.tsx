@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom";
 import FileUtils from '../../utils/file';
 import { FileEncrypted } from './../../models/encryption';
 
-import { Button, List, Divider, Menu } from 'antd';
+import { Button, List, Divider, Menu, message } from 'antd';
 import { PlusOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const useConstructor = (callBack = () => { }) => {
@@ -94,7 +94,10 @@ const FileList = () => {
             renderItem={item => (
               <List.Item
                 actions={[
-                  <Button type="link" key="list-download" onClick={() => { downloadFile(item) }}>download</Button>]}
+                  <Button type="link" key="list-download" onClick={() => {
+                    message.loading(`Download and decryption started`);
+                    downloadFile(item);
+                  }}>download</Button>]}
               >
                 <List.Item.Meta
                   description={fileUtils.fileSize(item.size)}

@@ -10,7 +10,7 @@ import { CloudUploadOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/i
 
 
 const SESSION_KEY_NAME = 'sessionKey';
-const skynetClient = new SkynetClient('https://siasky.net');
+const skynetClient = new SkynetClient('https://ilkamo.hns.siasky.net');
 
 const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
@@ -32,6 +32,7 @@ const DropZone = () => {
   const [uploading, setUploading] = useState(false);
   const [uploaCompleted, setUploaCompleted] = useState(false);
   const [uploadPercentage, setUploadPercentage] = useState(0);
+  const [loading, setlLoading] = useState(true);
 
   const fileUtils: FileUtils = new FileUtils();
   const [encryptionKey, setEncryptionKey] = useState('');
@@ -46,6 +47,15 @@ const DropZone = () => {
       setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
       setSessionPrivateKey(sessionKey);
       setEncryptionKey(fileUtils.generateEncryptionKey(sessionKey));
+
+      const files = await fileUtils.getSessionEncryptedFiles(publicKeyFromPrivateKey(sessionKey));
+      if (!files) {
+        setlLoading(false);
+        return;
+      }
+
+      setUploadedEncryptedFiles((prev) => [...prev, ...files]);
+      setlLoading(false);
     } else {
       const { publicKey, privateKey } = genKeyPairAndSeed();
       setSessionPublicKey(publicKey);
@@ -179,7 +189,7 @@ const DropZone = () => {
   }
 
   const startUpload = () => {
-    message.loading('File encrypting and uploading started', 5);
+    message.loading('File encryption and upload started', 5);
   };
 
   const destroySession = () => {
@@ -187,9 +197,24 @@ const DropZone = () => {
     window.location.reload();
   }
 
+  const downloadFile = async (encryptedFile: FileEncrypted) => {
+    const file: File = await fileUtils.decryptFile(encryptionKey, encryptedFile);
+
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveBlob(file, encryptedFile.fileName);
+    } else {
+      var elem = window.document.createElement('a');
+      elem.href = window.URL.createObjectURL(file);
+      elem.download = file.name;
+      document.body.appendChild(elem);
+      elem.click();
+      document.body.removeChild(elem);
+    }
+  };
+
   return (
     <div className="container">
-      <Menu className="default-margin" onClick={() => { }} selectedKeys={[]} mode="horizontal">
+      <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
         <Menu.Item key="copy" onClick={copyFileListLink} icon={<CopyOutlined />}>
           Copy SkyTransfer link
         </Menu.Item>
@@ -279,30 +304,29 @@ const DropZone = () => {
         ''
       )}
 
-      {uploadedEncryptedFiles.length > 0 ? (
-        <div>
-          <Divider orientation="left">Uploaded files</Divider>
-          <List
-            bordered={true}
-            loading={uploading}
-            itemLayout="horizontal"
-            dataSource={uploadedEncryptedFiles}
-            renderItem={item => (
-              <List.Item
-                actions={[
-                  <Button type="link" key="list-download">download</Button>]}
-              >
-                <List.Item.Meta
-                  description={fileUtils.fileSize(item.size)}
-                  title={item.fileName}
-                />
-              </List.Item>
-            )}
-          />
-        </div>
-      ) : (
-        ''
-      )}
+      <div>
+        <Divider orientation="left">Uploaded files</Divider>
+        <List
+          bordered={true}
+          loading={uploading || loading}
+          itemLayout="horizontal"
+          dataSource={uploadedEncryptedFiles}
+          renderItem={item => (
+            <List.Item
+              actions={[
+                <Button onClick={() => {
+                  message.loading(`Download and decryption started`);
+                  downloadFile(item);
+                }} type="link" key="list-download">download</Button>]}
+            >
+              <List.Item.Meta
+                description={fileUtils.fileSize(item.size)}
+                title={item.fileName}
+              />
+            </List.Item>
+          )}
+        />
+      </div>
 
       <Modal
         title="Upload completed"
