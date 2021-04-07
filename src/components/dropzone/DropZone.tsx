@@ -36,10 +36,6 @@ const DropZone = () => {
   const fileUtils: FileUtils = new FileUtils();
   const [encryptionKey, setEncryptionKey] = useState('');
 
-  useEffect(() => {
-    setEncryptionKey(fileUtils.generateEncryptionKey(sessionPrivateKey));
-  }, [sessionPrivateKey, fileUtils]);
-
   const publicKeyFromPrivateKey = (privateKey: string): string => {
     return privateKey.substr(privateKey.length - 64);
   };
@@ -49,10 +45,12 @@ const DropZone = () => {
     if (sessionKey) {
       setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
       setSessionPrivateKey(sessionKey);
+      setEncryptionKey(fileUtils.generateEncryptionKey(sessionKey));
     } else {
       const { publicKey, privateKey } = genKeyPairAndSeed();
       setSessionPublicKey(publicKey);
       setSessionPrivateKey(privateKey);
+      setEncryptionKey(fileUtils.generateEncryptionKey(privateKey));
       localStorage.setItem(SESSION_KEY_NAME, privateKey);
     }
   };
