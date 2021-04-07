@@ -1,15 +1,39 @@
 import "./App.css";
 
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from "react-router-dom";
+
 import DropZone from "./components/dropzone/DropZone";
+import FileList from "./components/filelist/FileList";
+
+import { Layout } from 'antd';
+
+const { Header, Footer, Content } = Layout;
 
 function App() {
   return (
-    <div className="App">
-      <p className="title">SkyDrop</p>
-      <div className="content">
-        <DropZone />
+    <Router>
+      <div>
+        <Layout className="layout">
+          <Header className="title">SkyTransfer</Header>
+          <Switch>
+            <Route path="/:sessionPublicKey/:encryptionKey">
+              <Content>
+                <FileList />
+              </Content>
+            </Route>
+            <Route path="/">
+              <Content>
+                <DropZone />
+              </Content>
+            </Route>
+          </Switch>
+        </Layout>
       </div>
-    </div>
+    </Router>
   );
 }
 

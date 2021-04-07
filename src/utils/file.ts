@@ -7,16 +7,12 @@ const skynetClient = new SkynetClient("https://siasky.net");
 const ENCRYPTED_FILES_SKYDB_KEY_NAME = "ENCRYPTED_FILES";
 
 class FileUtils {
-  private cryptoKey: string;
-  private sessionPrivateKey: string;
 
-  constructor(sessionPrivateKey: string) {
-    this.sessionPrivateKey = sessionPrivateKey;
-    const { privateKey } = genKeyPairFromSeed(`${sessionPrivateKey}-aes-encrypt`);
-    this.cryptoKey = privateKey;
+  public generateEncryptionKey(sessionPrivateKey: string): string {
+    return genKeyPairFromSeed(`${sessionPrivateKey}-aes-encrypt`).privateKey;
   }
 
-  public async encryptFile(file: File): Promise<File> {
+  public async encryptFile(encryptionKey: string, file: File): Promise<File> {
     return new Promise((resolve, reject) => {
       const $this = this;
       const reader = new FileReader();
@@ -25,9 +21,9 @@ class FileUtils {
         const data = e.target.result;
 
         const wordArray = CryptoJS.lib.WordArray.create(data);
-        const encrypted = CryptoJS.AES.encrypt(wordArray, $this.cryptoKey).toString();
+        const encrypted = CryptoJS.AES.encrypt(wordArray, encryptionKey).toString();
 
-        const fileEnc = new Blob([encrypted]);
+        const fileEnc = new Blob([encrypted], { type: file.type });
 
         return resolve(new File([fileEnc], file.name));
       };
@@ -38,16 +34,16 @@ class FileUtils {
     });
   }
 
-  public async decryptFileFromSkylink(skylink: string): Promise<File> {
-    const { data, metadata } = await skynetClient.getFileContent(skylink);
-    return this.decryptFile(data, metadata.filename);
+  public async decryptFile(encryptionKey: string, encryptedFile: FileEncrypted): Promise<File> {
+    const { data } = await skynetClient.getFileContent(encryptedFile.skylink);
+    return this.decrypt(encryptionKey, data, encryptedFile);
   }
 
-  private decryptFile(encryptedData: Blob, filename: string): File {
-    var decrypted = CryptoJS.AES.decrypt(encryptedData, this.cryptoKey);
+  public decrypt(encryptionKey: string, encryptedData: Blob, encryptedFile: FileEncrypted): File {
+    var decrypted = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
     var typedArray = this.convertWordArrayToUint8Array(decrypted);
 
-    return new File([typedArray], filename);
+    return new File([typedArray], encryptedFile.fileName, { type: encryptedFile.mimeType });
   }
 
   private convertWordArrayToUint8Array(wordArray) {
@@ -64,22 +60,15 @@ class FileUtils {
     return uInt8Array;
   }
 
-  public async storeSessionEncryptedFiles(fileSkylinks: string[]): Promise<boolean> {
+  public async storeSessionEncryptedFiles(sessionPrivateKey: string, encryptedFiles: FileEncrypted[]): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
-      const encryptedFiles: FileEncrypted[] = [];
-      fileSkylinks.forEach((s) => {
-        encryptedFiles.push({
-          skylink: s,
-          encryptionType: EncryptionType.AES
-        })
-      })
-
       if (encryptedFiles.length === 0) {
         return resolve(false);
       }
+
       try {
         await skynetClient.db.setJSON(
-          this.sessionPrivateKey,
+          sessionPrivateKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
           encryptedFiles,
           undefined,
@@ -94,11 +83,11 @@ class FileUtils {
     });
   }
 
-  public async getSessionEncryptedFiles(): Promise<FileEncrypted[]> {
+  public async getSessionEncryptedFiles(sessionPublicKey: string): Promise<FileEncrypted[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const { data } = await skynetClient.db.getJSON(
-          this.publicKeyFromPrivateKey(this.sessionPrivateKey),
+          sessionPublicKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
           {
             timeout: 5,
@@ -114,6 +103,14 @@ class FileUtils {
   publicKeyFromPrivateKey(privateKey: string): string {
     return privateKey.substr(privateKey.length - 64);
   }
+
+  public fileSize(size: number): string {
+    if (size === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(size) / Math.log(k));
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 }
 
 export default FileUtils;

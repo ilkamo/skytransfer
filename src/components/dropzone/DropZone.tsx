@@ -1,13 +1,18 @@
+import './DropZone.css';
+
 import { useState, useEffect, useRef } from 'react';
 import { SkynetClient, genKeyPairAndSeed } from 'skynet-js';
+import { EncryptionType, FileEncrypted } from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
-import './DropZone.css';
+import { Button, Row, Empty, List, Divider, Alert, message, Modal, Progress, Menu } from 'antd';
+import { CloudUploadOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
+
 
 const SESSION_KEY_NAME = 'sessionKey';
 const skynetClient = new SkynetClient('https://siasky.net');
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -18,15 +23,22 @@ const DropZone = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [validFiles, setValidFiles] = useState([]);
-  const [unsupportedFiles, setUnsupportedFiles] = useState([]);
   const [sessionPublicKey, setSessionPublicKey] = useState('');
   const [sessionPrivateKey, setSessionPrivateKey] = useState('');
-  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState([]);
-  const [fileUtils, setFileUtils] = useState(null);
+  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<FileEncrypted[]>([]);
   const [sessionInterval, setSessionInterval] = useState(
-    setTimeout(() => {}, 0)
+    setTimeout(() => { }, 0)
   );
   const [uploading, setUploading] = useState(false);
+  const [uploaCompleted, setUploaCompleted] = useState(false);
+  const [uploadPercentage, setUploadPercentage] = useState(0);
+
+  const fileUtils: FileUtils = new FileUtils();
+  const [encryptionKey, setEncryptionKey] = useState('');
+
+  useEffect(() => {
+    setEncryptionKey(fileUtils.generateEncryptionKey(sessionPrivateKey));
+  }, [sessionPrivateKey]);
 
   const publicKeyFromPrivateKey = (privateKey: string): string => {
     return privateKey.substr(privateKey.length - 64);
@@ -49,10 +61,6 @@ const DropZone = () => {
     initSession();
   });
 
-  useEffect(() => {
-    setFileUtils(new FileUtils(sessionPrivateKey));
-  }, [sessionPrivateKey]);
-
   const dragOver = (e) => {
     e.preventDefault();
   };
@@ -73,40 +81,10 @@ const DropZone = () => {
     }
   };
 
-  const validateFile = (file) => {
-    const validTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/x-icon',
-    ];
-    if (validTypes.indexOf(file.type) === -1) {
-      return false;
-    }
-    return true;
-  };
-
   const handleFiles = (files) => {
     for (let i = 0; i < files.length; i++) {
-      if (validateFile(files[i])) {
-        // add to an array so we can display the name of file
-        setSelectedFiles((prevArray) => [...prevArray, files[i]]);
-      } else {
-        files[i]['invalid'] = true;
-        setSelectedFiles((prevArray) => [...prevArray, files[i]]);
-        setErrorMessage('File type not permitted');
-        setUnsupportedFiles((prevArray) => [...prevArray, files[i]]);
-      }
+      setSelectedFiles((prevArray) => [...prevArray, files[i]]);
     }
-  };
-
-  const fileSize = (size) => {
-    if (size === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(size) / Math.log(k));
-    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const fileType = (fileName) => {
@@ -119,7 +97,7 @@ const DropZone = () => {
   useEffect(() => {
     let filteredArray = selectedFiles.reduce((file, current) => {
       const x = file.find((item) => item.name === current.name);
-      if (!x) {
+      if (x === undefined) {
         return file.concat([current]);
       } else {
         return file;
@@ -129,26 +107,7 @@ const DropZone = () => {
   }, [selectedFiles]);
 
   const removeFile = (name) => {
-    // find the index of the item
-    // remove the item from array
-
-    const validFileIndex = validFiles.findIndex((e) => e.name === name);
-    validFiles.splice(validFileIndex, 1);
-    // update validFiles array
-    setValidFiles([...validFiles]);
-    const selectedFileIndex = selectedFiles.findIndex((e) => e.name === name);
-    selectedFiles.splice(selectedFileIndex, 1);
-    // update selectedFiles array
-    setSelectedFiles([...selectedFiles]);
-
-    const unsupportedFileIndex = unsupportedFiles.findIndex(
-      (e) => e.name === name
-    );
-    if (unsupportedFileIndex !== -1) {
-      unsupportedFiles.splice(unsupportedFileIndex, 1);
-      // update unsupportedFiles array
-      setUnsupportedFiles([...unsupportedFiles]);
-    }
+    setSelectedFiles(selectedFiles.filter((e) => e.name !== name));
   };
 
   const fileInputRef = useRef(null);
@@ -158,34 +117,55 @@ const DropZone = () => {
   };
 
   const uploadFiles = async () => {
-    const uploaded: string[] = [];
+    setUploadPercentage(0);
+    setUploaCompleted(false);
+    const toUpload: FileEncrypted[] = uploadedEncryptedFiles.map((x) => x); // working on copy
     setUploading(true);
 
     for (let i = 0; i < validFiles.length; i++) {
       try {
-        const result = await fileUtils.encryptFile(validFiles[i]);
+        const result = await fileUtils.encryptFile(encryptionKey, validFiles[i]);
         const { skylink } = await skynetClient.uploadFile(result);
-        setUploadedEncryptedFiles((prevArray) => [...prevArray, skylink]);
-        uploaded.push(skylink);
+
+        const tempFile = {
+          skylink: skylink,
+          encryptionType: EncryptionType.AES,
+          fileName: validFiles[i].name,
+          mimeType: validFiles[i].type,
+          size: validFiles[i].size
+        }
+
+        setUploadedEncryptedFiles((prevArray) => [...prevArray, tempFile]);
+        setSelectedFiles((p) => p.filter(f => f.name !== validFiles[i].name));
+
+        setUploadPercentage(Math.ceil((i + 1 / validFiles.length) * 100));
+
+        toUpload.push(tempFile);
       } catch (error) {
-        console.log('Could not upload file: ' + error);
+        setErrorMessage('Could not upload file: ' + error);
       }
     }
 
     clearTimeout(sessionInterval);
     setSessionInterval(
       setTimeout(async () => {
-        if (uploaded.length === 0) {
+        if (toUpload.length === 0) {
           setUploading(false);
+          setUploaCompleted(true);
+          setUploadPercentage(100);
           return;
         }
 
         try {
-          await fileUtils.storeSessionEncryptedFiles(uploaded);
+          message.loading("Storing files in SkyDB...")
+          await fileUtils.storeSessionEncryptedFiles(sessionPrivateKey, toUpload);
+          setUploadPercentage(100);
+          message.success("Upload completed")
         } catch (error) {
-          console.log('Could not store session encrypted files: ' + error);
+          setErrorMessage('Could not store session encrypted files: ' + error);
         }
 
+        setUploaCompleted(true);
         setUploading(false);
       }, 2000)
     );
@@ -197,21 +177,40 @@ const DropZone = () => {
     }
   };
 
+  const getFileListLink = () => {
+    return `${window.location.hostname}/${sessionPublicKey}/${encryptionKey}`;
+  }
+
+  const copyFileListLink = () => {
+    navigator.clipboard.writeText(getFileListLink());
+    setUploaCompleted(false);
+    message.info("Link copied");
+  }
+
+  const startUpload = () => {
+    message.loading('File encrypting and uploading started', 5);
+  };
+
+  const destroySession = () => {
+    localStorage.removeItem(SESSION_KEY_NAME);
+    window.location.reload();
+  }
+
   return (
     <div className="container">
-      {unsupportedFiles.length === 0 && validFiles.length ? (
-        <button
-          disabled={uploading}
-          className="file-upload-btn"
-          onClick={() => uploadFiles()}
-        >
-          Upload Files
-        </button>
-      ) : (
-        ''
-      )}
-      {unsupportedFiles.length ? (
-        <p>Please remove all unsupported files.</p>
+      <Menu className="default-margin" onClick={() => { }} selectedKeys={[]} mode="horizontal">
+        <Menu.Item key="copy" onClick={copyFileListLink} icon={<CopyOutlined />}>
+          Copy SkyTransfer link
+        </Menu.Item>
+        <Menu.Item key="new-session" onClick={destroySession} icon={<DeleteOutlined />}>
+          New session
+        </Menu.Item>
+        <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
+          About SkyTransfer
+        </Menu.Item>
+      </Menu>
+      {errorMessage ? (
+        <Alert className="error-message" message={errorMessage} type="error" showIcon />
       ) : (
         ''
       )}
@@ -221,12 +220,17 @@ const DropZone = () => {
         onDragEnter={dragEnter}
         onDragLeave={dragLeave}
         onDrop={fileDrop}
-        onClick={fileInputClicked}
-      >
-        <div className="drop-message">
-          <div className="upload-icon"></div>
-          Drag & Drop files here or click to upload
-        </div>
+        onClick={fileInputClicked}>
+        <Empty
+          image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+          imageStyle={{
+            height: 60,
+          }}
+          description={<span>
+            Drag & Drop files here or click to upload
+          </span>}
+        >
+        </Empty>
         <input
           ref={fileInputRef}
           className="file-input"
@@ -235,26 +239,91 @@ const DropZone = () => {
           onChange={filesSelected}
         />
       </div>
-      <div className="file-display-container">
-        {validFiles.map((data, i) => (
-          <div className="file-status-bar" key={i}>
-            <div>
-              {/* <div className="file-type-logo"></div> */}
-              {/* <div className="file-type">{fileType(data.name)}</div> */}
-              <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>
-                {data.name}
-              </span>
-              <span className="file-size">({fileSize(data.size)})</span>{' '}
-              {data.invalid && (
-                <span className="file-error-message">({errorMessage})</span>
-              )}
-            </div>
-            <div className="file-remove" onClick={() => removeFile(data.name)}>
-              X
-            </div>
-          </div>
-        ))}
-      </div>
+      {uploading ? (
+        <Row justify="center" align="middle">
+          <Progress percent={uploadPercentage} />
+        </Row>
+      ) : (
+        ''
+      )}
+      <Row justify="center" align="middle">
+        {validFiles.length ? (
+          <Button
+            icon={<CloudUploadOutlined />}
+            type="primary"
+            loading={uploading}
+            onClick={() => { startUpload(); uploadFiles() }}
+          >
+            Upload Files
+          </Button>
+        ) : (
+          ''
+        )}
+      </Row>
+      {validFiles.length > 0 ? (
+        <div>
+          <Divider orientation="left">Selected files</Divider>
+          <List
+            bordered={true}
+            loading={uploading}
+            itemLayout="horizontal"
+            dataSource={validFiles}
+            renderItem={item => (
+              <List.Item
+                actions={[
+                  <Button onClick={() => removeFile(item.name)} type="link" danger key="list-remove">remove</Button>]}
+              >
+                <List.Item.Meta
+                  description={fileUtils.fileSize(item.size)}
+                  title={item.name}
+                />
+                {/* {item.invalid && (
+                  <span className="file-error-message">({errorMessage})</span>
+                )} */}
+              </List.Item>
+            )}
+          />
+        </div>
+      ) : (
+        ''
+      )}
+
+      {uploadedEncryptedFiles.length > 0 ? (
+        <div>
+          <Divider orientation="left">Uploaded files</Divider>
+          <List
+            bordered={true}
+            loading={uploading}
+            itemLayout="horizontal"
+            dataSource={uploadedEncryptedFiles}
+            renderItem={item => (
+              <List.Item
+                actions={[
+                  <Button type="link" key="list-download">download</Button>]}
+              >
+                <List.Item.Meta
+                  description={fileUtils.fileSize(item.size)}
+                  title={item.fileName}
+                />
+              </List.Item>
+            )}
+          />
+        </div>
+      ) : (
+        ''
+      )}
+
+      <Modal
+        title="Upload completed"
+        centered
+        visible={uploaCompleted}
+        okText="Copy link"
+        cancelText="Continue"
+        onCancel={() => { setUploaCompleted(false); }}
+        onOk={copyFileListLink}
+      >
+        <p>Your <strong>SkyTransfer</strong> is ready. Your files have been correctly encrytypted and uploaded on Skynet. Copy and share your SkyTransfer link or just continue uploading.</p>
+      </Modal>
     </div>
   );
 };
