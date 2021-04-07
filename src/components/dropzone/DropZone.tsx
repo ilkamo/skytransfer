@@ -169,7 +169,7 @@ const DropZone = () => {
   };
 
   const getFileListLink = () => {
-    return `${window.location.hostname}/${sessionPublicKey}/${encryptionKey}`;
+    return `${window.location.hostname}/#/${sessionPublicKey}/${encryptionKey}`;
   }
 
   const copyFileListLink = () => {
