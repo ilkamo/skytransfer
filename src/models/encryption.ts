@@ -7,5 +7,5 @@ export interface FileEncrypted {
   fileName: string;
   skylink: string; // skylink of the stored encrypted file
   encryptionType: EncryptionType;
-  size?: string;
+  size: number;
 }

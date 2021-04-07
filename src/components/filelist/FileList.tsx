@@ -6,6 +6,9 @@ import {
 import FileUtils from '../../utils/file';
 import { FileEncrypted } from './../../models/encryption';
 
+
+import { Button, List, Divider } from 'antd';
+
 const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
@@ -16,12 +19,14 @@ const useConstructor = (callBack = () => { }) => {
 const FileList = () => {
   const { sessionPublicKey, encryptionKey } = useParams();
   const fileUtils: FileUtils = new FileUtils();
+  const [loading, setlLoading] = useState(true);
 
   const [loadedFiles, setLoadedFiles] = useState<FileEncrypted[]>([]);
 
   useConstructor(async () => {
     const files = await fileUtils.getSessionEncryptedFiles(sessionPublicKey);
-    setLoadedFiles((prev) => [...prev, ...files])
+    setLoadedFiles((prev) => [...prev, ...files]);
+    setlLoading(false);
   });
 
   const downloadFile = async (encryptedFile: FileEncrypted) => {
@@ -41,11 +46,32 @@ const FileList = () => {
 
   return (
     <div>
-      <ul className="files">
-        {loadedFiles.map((data, i) => (
-          <li className="file-status-bar" onClick={() => { downloadFile(data) }} key={i}>{data.fileName}</li>
-        ))}
-      </ul>
+      <div className="container">
+        {loadedFiles.length > 0 ? (
+          <div>
+            <Divider orientation="left">Shared files</Divider>
+            <List
+              bordered={true}
+              loading={loading}
+              itemLayout="horizontal"
+              dataSource={loadedFiles}
+              renderItem={item => (
+                <List.Item
+                  actions={[
+                    <Button type="link" key="list-download" onClick={() => { downloadFile(item) }}>download</Button>]}
+                >
+                  <List.Item.Meta
+                    description={fileUtils.fileSize(item.size)}
+                    title={item.fileName}
+                  />
+                </List.Item>
+              )}
+            />
+          </div>
+        ) : (
+          ''
+        )}
+      </div>
     </div>
 
   );

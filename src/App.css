@@ -1,6 +1,11 @@
+@import '~antd/dist/antd.css';
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
 
 html {
+  background-color: #f5f6fa;
+}
+
+.layout {
   background-color: #f5f6fa;
 }
 
@@ -14,7 +19,4 @@ html {
   text-align: center;
   color: #20bf6b;
   font-weight: bold;
-}
-
-.content {
 }
