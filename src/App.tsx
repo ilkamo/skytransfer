@@ -31,7 +31,6 @@ function App() {
               </Content>
             </Route>
           </Switch>
-          <Footer>Footer</Footer>
         </Layout>
       </div>
     </Router>

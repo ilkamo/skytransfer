@@ -157,8 +157,10 @@ const DropZone = () => {
         }
 
         try {
+          message.loading("Storing files in SkyDB...")
           await fileUtils.storeSessionEncryptedFiles(sessionPrivateKey, toUpload);
           setUploadPercentage(100);
+          message.success("Upload completed")
         } catch (error) {
           setErrorMessage('Could not store session encrypted files: ' + error);
         }
@@ -191,7 +193,6 @@ const DropZone = () => {
 
   const destroySession = () => {
     localStorage.removeItem(SESSION_KEY_NAME);
-    initSession();
     window.location.reload();
   }
 
