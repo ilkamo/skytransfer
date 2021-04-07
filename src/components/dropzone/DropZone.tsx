@@ -120,10 +120,13 @@ const DropZone = () => {
   const uploadFiles = async () => {
     setUploadPercentage(0);
     setUploaCompleted(false);
-    const toUpload: FileEncrypted[] = uploadedEncryptedFiles.map((x) => x); // working on copy
     setUploading(true);
+    
+    const toUpload: FileEncrypted[] = uploadedEncryptedFiles.map((x) => x); // working on copy
+    const totalFiles = validFiles.length;
 
-    for (let i = 0; i < validFiles.length; i++) {
+
+    for (let i = 0; i < totalFiles; i++) {
       try {
         const result = await fileUtils.encryptFile(encryptionKey, validFiles[i]);
         const { skylink } = await skynetClient.uploadFile(result);
@@ -139,7 +142,7 @@ const DropZone = () => {
         setUploadedEncryptedFiles((prevArray) => [...prevArray, tempFile]);
         setSelectedFiles((p) => p.filter(f => f.name !== validFiles[i].name));
 
-        setUploadPercentage(Math.ceil((i + 1 / validFiles.length) * 100));
+        setUploadPercentage(Math.ceil((i + 1 / totalFiles) * 100));
 
         toUpload.push(tempFile);
       } catch (error) {
