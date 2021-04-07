@@ -11,7 +11,7 @@ import FileList from "./components/filelist/FileList";
 
 import { Layout } from 'antd';
 
-const { Header, Footer, Content } = Layout;
+const { Header, Content } = Layout;
 
 function App() {
   return (

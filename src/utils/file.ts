@@ -1,4 +1,4 @@
-import { EncryptionType, FileEncrypted } from './../models/encryption';
+import { FileEncrypted } from './../models/encryption';
 import { SkynetClient, genKeyPairFromSeed } from "skynet-js";
 import CryptoJS from "crypto-js";
 
@@ -14,7 +14,6 @@ class FileUtils {
 
   public async encryptFile(encryptionKey: string, file: File): Promise<File> {
     return new Promise((resolve, reject) => {
-      const $this = this;
       const reader = new FileReader();
 
       reader.onload = async function (e) {

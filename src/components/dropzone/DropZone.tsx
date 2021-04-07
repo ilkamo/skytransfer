@@ -38,7 +38,7 @@ const DropZone = () => {
 
   useEffect(() => {
     setEncryptionKey(fileUtils.generateEncryptionKey(sessionPrivateKey));
-  }, [sessionPrivateKey]);
+  }, [sessionPrivateKey, fileUtils]);
 
   const publicKeyFromPrivateKey = (privateKey: string): string => {
     return privateKey.substr(privateKey.length - 64);
@@ -85,13 +85,6 @@ const DropZone = () => {
     for (let i = 0; i < files.length; i++) {
       setSelectedFiles((prevArray) => [...prevArray, files[i]]);
     }
-  };
-
-  const fileType = (fileName) => {
-    return (
-      fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) ||
-      fileName
-    );
   };
 
   useEffect(() => {
