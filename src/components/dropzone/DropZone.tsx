@@ -121,7 +121,7 @@ const DropZone = () => {
     setUploadPercentage(0);
     setUploaCompleted(false);
     setUploading(true);
-    
+
     const toUpload: FileEncrypted[] = uploadedEncryptedFiles.map((x) => x); // working on copy
     const totalFiles = validFiles.length;
 
@@ -142,7 +142,8 @@ const DropZone = () => {
         setUploadedEncryptedFiles((prevArray) => [...prevArray, tempFile]);
         setSelectedFiles((p) => p.filter(f => f.name !== validFiles[i].name));
 
-        setUploadPercentage(Math.ceil((i + 1 / totalFiles) * 100));
+        console.log(Math.ceil(((i + 1) / totalFiles) * 100));
+        setUploadPercentage(Math.ceil(((i + 1) / totalFiles) * 100));
 
         toUpload.push(tempFile);
       } catch (error) {
@@ -345,4 +346,5 @@ const DropZone = () => {
     </div>
   );
 };
+
 export default DropZone;
