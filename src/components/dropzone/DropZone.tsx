@@ -62,6 +62,7 @@ const DropZone = () => {
       setSessionPrivateKey(privateKey);
       setEncryptionKey(fileUtils.generateEncryptionKey(privateKey));
       localStorage.setItem(SESSION_KEY_NAME, privateKey);
+      setlLoading(false);
     }
   };
 
