@@ -20,7 +20,7 @@ function App() {
         <Layout className="layout">
           <Header className="title">SkyTransfer</Header>
           <Switch>
-            <Route path="/:sessionPublicKey/:encryptionKey">
+            <Route path="/:transferKey/:encryptionKey">
               <Content>
                 <FileList />
               </Content>

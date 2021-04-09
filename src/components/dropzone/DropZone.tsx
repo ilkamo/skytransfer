@@ -183,14 +183,23 @@ const DropZone = () => {
     }
   };
 
-  const getFileListLink = () => {
+  const getReadOnlyLink = () => {
     return `${window.location.hostname}/#/${sessionPublicKey}/${encryptionKey}`;
   }
+  const getReadWriteLink = () => {
+    return `${window.location.hostname}/#/${sessionPrivateKey}/${encryptionKey}`;
+  }
 
-  const copyFileListLink = () => {
-    navigator.clipboard.writeText(getFileListLink());
+  const copyReadOnlyLink = () => {
+    navigator.clipboard.writeText(getReadOnlyLink());
     setUploaCompleted(false);
-    message.info("Link copied");
+    message.info("SkyTransfer read only link copied");
+  }
+
+  const copyReadWriteLink = () => {
+    navigator.clipboard.writeText(getReadWriteLink());
+    setUploaCompleted(false);
+    message.info("SkyTransfer read/write link copied");
   }
 
   const startUpload = () => {
@@ -220,8 +229,11 @@ const DropZone = () => {
   return (
     <div className="container">
       <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
-        <Menu.Item key="copy" onClick={copyFileListLink} icon={<CopyOutlined />}>
-          Copy SkyTransfer link
+        <Menu.Item key="copy-read-write" onClick={copyReadWriteLink} icon={<CopyOutlined />}>
+          Read/write link
+        </Menu.Item>
+        <Menu.Item key="copy-read-only" onClick={copyReadOnlyLink} icon={<CopyOutlined />}>
+          Read only link
         </Menu.Item>
         <Menu.Item key="new-session" onClick={destroySession} icon={<DeleteOutlined />}>
           New session
@@ -339,10 +351,24 @@ const DropZone = () => {
         visible={uploaCompleted}
         okText="Copy link"
         cancelText="Continue"
-        onCancel={() => { setUploaCompleted(false); }}
-        onOk={copyFileListLink}
+        footer={
+          [
+            <Button key="read-write" type="primary" onClick={copyReadWriteLink} icon={<CopyOutlined />}>
+              Read/Write
+            </Button>,
+            <Button key="read-only" type="primary" onClick={copyReadOnlyLink} icon={<CopyOutlined />}>
+              Read only
+            </Button>,
+            <Button
+              key="link"
+              onClick={() => { setUploaCompleted(false); }}
+            >
+              Continue
+            </Button>,
+          ]
+        }
       >
-        <p>Your <strong>SkyTransfer</strong> is ready. Your files have been correctly encrytypted and uploaded on Skynet. Copy and share your SkyTransfer link or just continue uploading.</p>
+        <p>Your <strong>SkyTransfer</strong> is ready. Your files have been correctly encrytypted and uploaded on Skynet. Copy and share your SkyTransfer link or just continue uploading. When you share a read/write link, others can add files to your SkyTransfer. Read only links allow file download without editing.</p>
       </Modal>
     </div>
   );

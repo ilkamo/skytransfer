@@ -21,23 +21,28 @@ const useConstructor = (callBack = () => { }) => {
 const SESSION_KEY_NAME = 'sessionKey';
 
 const FileList = () => {
-  const { sessionPublicKey, encryptionKey } = useParams();
+  const { transferKey, encryptionKey } = useParams();
   const fileUtils: FileUtils = new FileUtils();
   const [loading, setlLoading] = useState(true);
+  const history = useHistory();
 
   const [loadedFiles, setLoadedFiles] = useState<FileEncrypted[]>([]);
 
   useConstructor(async () => {
-    const files = await fileUtils.getSessionEncryptedFiles(sessionPublicKey);
+    if (transferKey && transferKey.length === 128) {
+      localStorage.setItem(SESSION_KEY_NAME, transferKey);
+      history.push("/");
+    }
+
+    const files = await fileUtils.getSessionEncryptedFiles(transferKey);
     if (!files) {
       setlLoading(false);
       return;
     }
+
     setLoadedFiles((prev) => [...prev, ...files]);
     setlLoading(false);
   });
-
-  const history = useHistory();
 
   const downloadFile = async (encryptedFile: FileEncrypted) => {
     const file: File = await fileUtils.decryptFile(encryptionKey, encryptedFile);
