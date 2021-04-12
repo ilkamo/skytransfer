@@ -26,6 +26,7 @@ const { Dragger } = Upload;
 
 const SESSION_KEY_NAME = 'sessionKey';
 const uploadEndpoint = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
+const maxParallelUpload = 5;
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -34,7 +35,13 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 let interval = setTimeout(() => {}, 5000);
+
+let uploadCount = 0;
 
 const fileUtils: FileUtils = new FileUtils();
 
@@ -134,14 +141,15 @@ const DropZone = () => {
   const [uploadingFileList, setUploadingFileList] = useState([]);
 
   useEffect(() => {
-    console.log(toStoreInSkyDBCount);
-    console.log(uploadingFileList.length);
-    
     if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
       setUploading(false);
     }
 
-    if (toStoreInSkyDBCount > 0 && uploadedEncryptedFiles.length > 0) {
+    if (
+      toStoreInSkyDBCount > 0 &&
+      uploadedEncryptedFiles.length > 0 &&
+      uploadingFileList.length === 0
+    ) {
       clearInterval(interval);
       interval = setTimeout(async () => {
         try {
@@ -176,6 +184,10 @@ const DropZone = () => {
     }
   }, [encryptionQueue]);
 
+  const getUploadCount = (): number => {
+    return uploadCount;
+  };
+
   const draggerConfig = {
     name: 'file',
     multiple: true,
@@ -188,6 +200,17 @@ const DropZone = () => {
       setUploadingFileList(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
 
       const { status } = info.file;
+
+      // error | success | done | uploading | removed
+      if (
+        status === 'error' ||
+        status === 'success' ||
+        status === 'done' ||
+        status === 'removed'
+      ) {
+        uploadCount--;
+      }
+
       if (status === 'uploading') {
         setEncryptionQueue((prev) =>
           prev.filter((f) => f.name !== info.file.name)
@@ -216,7 +239,13 @@ const DropZone = () => {
     },
     beforeUpload(file, filelist): boolean | Promise<File> {
       setEncryptionQueue((prev) => [...prev, file]);
-      return fileUtils.encryptFile(encryptionKey, file);
+      return new Promise(async (resolve) => {
+        while (getUploadCount() > maxParallelUpload) {
+          await sleep(1000);
+        }
+        uploadCount++;
+        return resolve(fileUtils.encryptFile(encryptionKey, file));
+      });
     },
     onRemove(file): boolean {
       setUploadingFileList((prev) => prev.filter((f) => f.name !== file.name));
@@ -273,9 +302,9 @@ const DropZone = () => {
           <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
         </p>
         <p className="ant-upload-text">
-          Drag & Drop files/folders here or click to upload
+          Drag & Drop files/folders or click to upload
         </p>
-        {isEncrypting ? <Spin tip="File encryption started. Wait ..." /> : ''}
+        {isEncrypting ? <Spin tip="File encryption/upload started. Please wait ..." /> : ''}
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
@@ -316,6 +345,9 @@ const DropZone = () => {
         visible={uploadCompleted}
         okText="Copy link"
         cancelText="Continue"
+        onCancel={() => {
+          setUploadCompleted(false);
+        }}
         footer={[
           <Button
             key="read-write"
@@ -332,14 +364,6 @@ const DropZone = () => {
             icon={<CopyOutlined />}
           >
             Read only
-          </Button>,
-          <Button
-            key="link"
-            onClick={() => {
-              setUploadCompleted(false);
-            }}
-          >
-            Continue
           </Button>,
         ]}
       >
