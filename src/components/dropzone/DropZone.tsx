@@ -5,6 +5,8 @@ import { genKeyPairAndSeed } from 'skynet-js';
 import { EncryptionType, FileEncrypted } from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
+import { isMobile } from 'react-device-detect';
+
 import {
   Button,
   List,
@@ -35,9 +37,9 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
-function sleep(ms) {
+const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
+};
 
 let interval = setTimeout(() => {}, 5000);
 
@@ -184,8 +186,15 @@ const DropZone = () => {
     }
   }, [encryptionQueue]);
 
-  const getUploadCount = (): number => {
-    return uploadCount;
+  const queueParallelUpload = (file: File): Promise<File> => {
+    return new Promise(async (resolve) => {
+      while (uploadCount > maxParallelUpload) {
+        await sleep(1000);
+      }
+
+      uploadCount++;
+      resolve(fileUtils.encryptFile(encryptionKey, file));
+    });
   };
 
   const draggerConfig = {
@@ -193,7 +202,10 @@ const DropZone = () => {
     multiple: true,
     action: uploadEndpoint,
     fileList: uploadingFileList,
-    directory: true,
+    directory: !isMobile,
+    showUploadList: {
+      showRemoveIcon: true,
+    },
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
@@ -239,13 +251,8 @@ const DropZone = () => {
     },
     beforeUpload(file, filelist): boolean | Promise<File> {
       setEncryptionQueue((prev) => [...prev, file]);
-      return new Promise(async (resolve) => {
-        while (getUploadCount() > maxParallelUpload) {
-          await sleep(1000);
-        }
-        uploadCount++;
-        return resolve(fileUtils.encryptFile(encryptionKey, file));
-      });
+
+      return queueParallelUpload(file);
     },
     onRemove(file): boolean {
       setUploadingFileList((prev) => prev.filter((f) => f.name !== file.name));
@@ -292,19 +299,18 @@ const DropZone = () => {
         ''
       )}
 
-      <Dragger
-        showUploadList={{
-          showRemoveIcon: true,
-        }}
-        {...draggerConfig}
-      >
+      <Dragger {...draggerConfig}>
         <p className="ant-upload-drag-icon">
           <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
         </p>
         <p className="ant-upload-text">
-          Drag & Drop files/folders or click to upload
+          Drag & Drop files/folders here or click to upload
         </p>
-        {isEncrypting ? <Spin tip="File encryption/upload started. Please wait ..." /> : ''}
+        {isEncrypting ? (
+          <Spin tip="File encryption/upload started. Please wait ..." />
+        ) : (
+          ''
+        )}
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
