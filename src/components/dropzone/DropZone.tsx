@@ -134,7 +134,7 @@ const DropZone = () => {
   const [uploadingFileList, setUploadingFileList] = useState([]);
 
   useEffect(() => {
-    if (uploadingFileList.length === 0 && toStoreInSkyDB.length == 0) {
+    if (uploadingFileList.length === 0 && toStoreInSkyDB.length === 0) {
       setUploading(false);
     }
 
