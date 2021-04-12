@@ -2,7 +2,7 @@ import { FileEncrypted } from './../models/encryption';
 import { SkynetClient, genKeyPairFromSeed } from "skynet-js";
 import CryptoJS from "crypto-js";
 
-const skynetClient = new SkynetClient("https://siasky.net");
+const skynetClient = new SkynetClient("https://ilkamo.hns.siasky.net");
 
 const ENCRYPTED_FILES_SKYDB_KEY_NAME = "ENCRYPTED_FILES";
 
@@ -24,7 +24,7 @@ class FileUtils {
 
         const fileEnc = new Blob([encrypted], { type: file.type });
 
-        return resolve(new File([fileEnc], file.name));
+        return resolve(new File([fileEnc], file.name, { type: file.type }));
       };
 
       reader.onerror = reject
