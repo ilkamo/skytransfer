@@ -45,7 +45,7 @@ const DropZone = () => {
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
     FileEncrypted[]
   >([]);
-  const [toStoreInSkyDB, setToStoreInSkyDB] = useState<FileEncrypted[]>([]);
+  const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -134,22 +134,25 @@ const DropZone = () => {
   const [uploadingFileList, setUploadingFileList] = useState([]);
 
   useEffect(() => {
-    if (uploadingFileList.length === 0 && toStoreInSkyDB.length === 0) {
+    console.log(toStoreInSkyDBCount);
+    console.log(uploadingFileList.length);
+    
+    if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
       setUploading(false);
     }
 
-    if (toStoreInSkyDB.length > 0) {
+    if (toStoreInSkyDBCount > 0 && uploadedEncryptedFiles.length > 0) {
       clearInterval(interval);
       interval = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
           await fileUtils.storeSessionEncryptedFiles(
             sessionPrivateKey,
-            toStoreInSkyDB
+            uploadedEncryptedFiles
           );
 
           message.success('Sync completed');
-          setToStoreInSkyDB([]);
+          setToStoreInSkyDBCount(0);
         } catch (error) {
           setErrorMessage('Could not sync session encrypted files: ' + error);
         }
@@ -158,7 +161,12 @@ const DropZone = () => {
         setUploading(false);
       }, 5000);
     }
-  }, [uploadingFileList, toStoreInSkyDB, sessionPrivateKey]);
+  }, [
+    uploadingFileList,
+    toStoreInSkyDBCount,
+    uploadedEncryptedFiles,
+    sessionPrivateKey,
+  ]);
 
   useEffect(() => {
     if (encryptionQueue.length === 0) {
@@ -198,7 +206,7 @@ const DropZone = () => {
         message.success(`${info.file.name} file uploaded successfully.`);
 
         setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
-        setToStoreInSkyDB((prev) => [...prev, tempFile]);
+        setToStoreInSkyDBCount((prev) => prev + 1);
         setUploadingFileList((prev) =>
           prev.filter((f) => f.name !== info.file.name)
         );
