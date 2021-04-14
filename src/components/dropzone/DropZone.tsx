@@ -322,10 +322,12 @@ const DropZone = () => {
           bordered={true}
           loading={isLoading}
           footer={
-            !isLoading && <Button onClick={async ()=> {
+            !isLoading &&
+            uploadedEncryptedFiles.length > 0 &&
+            <Button onClick={async () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile of uploadedEncryptedFiles) {
-                await downloadFile(encyptedFile); 
+                await downloadFile(encyptedFile);
               }
             }}>Download all!</Button>
           }
