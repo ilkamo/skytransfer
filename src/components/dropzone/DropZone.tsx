@@ -30,7 +30,7 @@ const SESSION_KEY_NAME = 'sessionKey';
 const uploadEndpoint = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
 const maxParallelUpload = 5;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -41,7 +41,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let interval = setTimeout(() => {}, 5000);
+let timeoutID = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
@@ -152,8 +152,8 @@ const DropZone = () => {
       uploadedEncryptedFiles.length > 0 &&
       uploadingFileList.length === 0
     ) {
-      clearInterval(interval);
-      interval = setTimeout(async () => {
+      clearInterval(timeoutID);
+      timeoutID = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
           await fileUtils.storeSessionEncryptedFiles(
@@ -260,6 +260,8 @@ const DropZone = () => {
     },
   };
 
+  const isLoading = uploading || loading;
+
   return (
     <div className="container">
       <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
@@ -318,7 +320,17 @@ const DropZone = () => {
         <Divider orientation="left">Uploaded files</Divider>
         <List
           bordered={true}
-          loading={uploading || loading}
+          loading={isLoading}
+          footer={
+            !isLoading &&
+            uploadedEncryptedFiles.length > 0 &&
+            <Button onClick={async () => {
+              message.loading(`Download and decryption started`);
+              for (const encyptedFile of uploadedEncryptedFiles) {
+                await downloadFile(encyptedFile);
+              }
+            }}>Download all!</Button>
+          }
           itemLayout="horizontal"
           dataSource={uploadedEncryptedFiles}
           renderItem={(item) => (
