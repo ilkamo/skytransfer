@@ -6,7 +6,7 @@ import {
 import { useHistory } from "react-router-dom";
 
 import FileUtils from '../../utils/file';
-import { FileEncrypted } from './../../models/encryption';
+import { EncryptedFileReference } from './../../models/encryption';
 
 import { Button, List, Divider, Menu, message } from 'antd';
 import { PlusOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -26,7 +26,7 @@ const FileList = () => {
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
-  const [loadedFiles, setLoadedFiles] = useState<FileEncrypted[]>([]);
+  const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
@@ -44,7 +44,7 @@ const FileList = () => {
     setlLoading(false);
   });
 
-  const downloadFile = async (encryptedFile: FileEncrypted) => {
+  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const file: File = await fileUtils.decryptFile(encryptionKey, encryptedFile);
 
     if (window.navigator.msSaveOrOpenBlob) {

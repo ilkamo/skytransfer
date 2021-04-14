@@ -2,10 +2,12 @@ import './DropZone.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
-import { EncryptionType, FileEncrypted } from '../../models/encryption';
+import { EncryptionType, EncryptedFileReference } from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
 import { isMobile } from 'react-device-detect';
+
+import { v4 as uuid } from 'uuid';
 
 import {
   Button,
@@ -17,12 +19,19 @@ import {
   Menu,
   Upload,
   Spin,
+  Tree,
 } from 'antd';
+
 import {
   CloudUploadOutlined,
   DeleteOutlined,
   CopyOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
+
+import { renderTree } from '../../utils/walker';
+import { UploadChangeParam, UploadFile } from 'antd/lib/upload/interface';
+import { FileRelativePathInfo } from '../../models/file-tree';
 
 const { Dragger } = Upload;
 
@@ -30,7 +39,7 @@ const SESSION_KEY_NAME = 'sessionKey';
 const uploadEndpoint = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
 const maxParallelUpload = 5;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -41,7 +50,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let interval = setTimeout(() => {}, 5000);
+let interval = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
@@ -52,14 +61,13 @@ const DropZone = () => {
   const [sessionPublicKey, setSessionPublicKey] = useState('');
   const [sessionPrivateKey, setSessionPrivateKey] = useState('');
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
-    FileEncrypted[]
+    EncryptedFileReference[]
   >([]);
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
-  const [encryptionQueue, setEncryptionQueue] = useState<File[]>([]);
 
   const [encryptionKey, setEncryptionKey] = useState('');
 
@@ -122,7 +130,7 @@ const DropZone = () => {
     window.location.reload();
   };
 
-  const downloadFile = async (encryptedFile: FileEncrypted) => {
+  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const file: File = await fileUtils.decryptFile(
       encryptionKey,
       encryptedFile
@@ -140,7 +148,9 @@ const DropZone = () => {
     }
   };
 
-  const [uploadingFileList, setUploadingFileList] = useState([]);
+  const [fileRelativePaths, setFileRelativePaths] = useState<FileRelativePathInfo>({});
+  const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
+  const [encryptionQueue, setEncryptionQueue] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
@@ -225,17 +235,24 @@ const DropZone = () => {
 
       if (status === 'uploading') {
         setEncryptionQueue((prev) =>
-          prev.filter((f) => f.name !== info.file.name)
+          prev.filter((f) => f.uid !== info.file.uid)
         );
       }
 
       if (status === 'done') {
-        const tempFile = {
+        const uploadedFile = info.fileList.find((f) => f.uid === info.file.uid);
+        if (!uploadedFile) {
+          message.error(`${info.file.name} "something really bad happened, contact the developer`);
+        }
+
+        const tempFile: EncryptedFileReference = {
+          uuid: uuid(),
           skylink: info.file.response.skylink,
           encryptionType: EncryptionType.AES,
           fileName: info.file.name,
           mimeType: info.file.type,
           size: info.file.size,
+          relativePath: fileRelativePaths[info.file.uid] // TODO: add a key check here,
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -243,7 +260,7 @@ const DropZone = () => {
         setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
         setToStoreInSkyDBCount((prev) => prev + 1);
         setUploadingFileList((prev) =>
-          prev.filter((f) => f.name !== info.file.name)
+          prev.filter((f) => f.uid !== info.file.uid)
         );
       } else if (status === 'error') {
         message.error(`${info.file.name} file upload failed.`);
@@ -252,10 +269,20 @@ const DropZone = () => {
     beforeUpload(file, filelist): boolean | Promise<File> {
       setEncryptionQueue((prev) => [...prev, file]);
 
+      /* 
+        This is a support structure for storing webkitRelativePath.
+        This field is missing after file is encrypted because it is a read only prop.
+      */
+      setFileRelativePaths((prev) => {
+        const temp = {}
+        temp[file.uid] = file.webkitRelativePath ? file.webkitRelativePath : file.name
+        return { ...prev, ...temp }
+      });
+
       return queueParallelUpload(file);
     },
     onRemove(file): boolean {
-      setUploadingFileList((prev) => prev.filter((f) => f.name !== file.name));
+      setUploadingFileList((prev) => prev.filter((f) => f.uid !== file.uid));
       return true;
     },
   };
@@ -344,6 +371,28 @@ const DropZone = () => {
           )}
         />
       </div>
+
+      {uploadedEncryptedFiles.length > 0 ? (
+        <Tree
+          showLine={true}
+          defaultExpandAll={true}
+          switcherIcon={<DownOutlined />}
+          onSelect={(selectedKeys, info) => {
+            if (info.node.children && info.node.children.length !== 0) {
+              return; // folder
+            }
+
+            const key: string = `${info.node.key}`;
+            const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
+            if (ff) {
+              downloadFile(ff);
+            }
+          }}
+          treeData={renderTree(uploadedEncryptedFiles)}
+        />
+      ) : (
+        ''
+      )}
 
       <Modal
         title="Upload completed"

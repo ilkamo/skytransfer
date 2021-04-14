@@ -2,10 +2,12 @@ export enum EncryptionType {
   AES
 }
 
-export interface FileEncrypted {
-  mimeType: string;
-  fileName: string;
-  skylink: string; // skylink of the stored encrypted file
-  encryptionType: EncryptionType;
-  size: number;
+export interface EncryptedFileReference {
+  uuid: string
+  mimeType: string
+  fileName: string
+  skylink: string // skylink of the stored encrypted file
+  encryptionType: EncryptionType
+  size: number
+  relativePath: string
 }

@@ -1,4 +1,4 @@
-import { FileEncrypted } from './../models/encryption';
+import { EncryptedFileReference } from './../models/encryption';
 import { SkynetClient, genKeyPairFromSeed } from "skynet-js";
 import CryptoJS from "crypto-js";
 
@@ -12,7 +12,7 @@ class FileUtils {
     return genKeyPairFromSeed(`${sessionPrivateKey}-aes-encrypt`).privateKey;
   }
 
-  public async encryptFile(encryptionKey: string, file: File): Promise<File> {
+  public async encryptFile(encryptionKey: string, file): Promise<File> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
@@ -33,12 +33,12 @@ class FileUtils {
     });
   }
 
-  public async decryptFile(encryptionKey: string, encryptedFile: FileEncrypted): Promise<File> {
+  public async decryptFile(encryptionKey: string, encryptedFile: EncryptedFileReference): Promise<File> {
     const { data } = await skynetClient.getFileContent(encryptedFile.skylink);
     return this.decrypt(encryptionKey, data, encryptedFile);
   }
 
-  public decrypt(encryptionKey: string, encryptedData: Blob, encryptedFile: FileEncrypted): File {
+  public decrypt(encryptionKey: string, encryptedData: Blob, encryptedFile: EncryptedFileReference): File {
     var decrypted = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
     var typedArray = this.convertWordArrayToUint8Array(decrypted);
 
@@ -59,7 +59,7 @@ class FileUtils {
     return uInt8Array;
   }
 
-  public async storeSessionEncryptedFiles(sessionPrivateKey: string, encryptedFiles: FileEncrypted[]): Promise<boolean> {
+  public async storeSessionEncryptedFiles(sessionPrivateKey: string, encryptedFiles: EncryptedFileReference[]): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       if (encryptedFiles.length === 0) {
         return resolve(false);
@@ -82,7 +82,7 @@ class FileUtils {
     });
   }
 
-  public async getSessionEncryptedFiles(sessionPublicKey: string): Promise<FileEncrypted[]> {
+  public async getSessionEncryptedFiles(sessionPublicKey: string): Promise<EncryptedFileReference[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const { data } = await skynetClient.db.getJSON(
