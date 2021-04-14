@@ -357,27 +357,30 @@ const DropZone = () => {
       }
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <Tree className="file-tree default-margin"
-          disabled={isLoading}
-          showLine={true}
-          defaultExpandAll={true}
-          switcherIcon={<DownOutlined className="directory-switcher" />}
-          onSelect={(selectedKeys, info) => {
-            if (info.node.children && info.node.children.length !== 0) {
-              return; // folder
-            }
+        <div>
+          <Alert className="default-margin" message="Click on a file to start downloading" type="info" />
+          <Tree className="file-tree default-margin"
+            disabled={isLoading}
+            showLine={true}
+            defaultExpandAll={true}
+            switcherIcon={<DownOutlined className="directory-switcher" />}
+            onSelect={(selectedKeys, info) => {
+              if (info.node.children && info.node.children.length !== 0) {
+                return; // folder
+              }
 
-            //{fileUtils.fileSize(item.size)
+              //{fileUtils.fileSize(item.size)
 
-            const key: string = `${info.node.key}`;
-            const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
-            if (ff) {
-              message.loading(`Download and decryption started`);
-              downloadFile(ff);
-            }
-          }}
-          treeData={renderTree(uploadedEncryptedFiles)}
-        />
+              const key: string = `${info.node.key}`;
+              const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
+              if (ff) {
+                message.loading(`Download and decryption started`);
+                downloadFile(ff);
+              }
+            }}
+            treeData={renderTree(uploadedEncryptedFiles)}
+          />
+        </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
           {
