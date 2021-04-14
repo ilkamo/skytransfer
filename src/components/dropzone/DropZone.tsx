@@ -11,8 +11,6 @@ import { v4 as uuid } from 'uuid';
 
 import {
   Button,
-  List,
-  Divider,
   Alert,
   message,
   Modal,
@@ -20,6 +18,7 @@ import {
   Upload,
   Spin,
   Tree,
+  Empty,
 } from 'antd';
 
 import {
@@ -29,8 +28,9 @@ import {
   DownOutlined,
 } from '@ant-design/icons';
 
+import { UploadFile } from 'antd/lib/upload/interface';
+
 import { renderTree } from '../../utils/walker';
-import { UploadChangeParam, UploadFile } from 'antd/lib/upload/interface';
 import { FileRelativePathInfo } from '../../models/file-tree';
 
 const { Dragger } = Upload;
@@ -50,7 +50,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let interval = setTimeout(() => { }, 5000);
+let timeoutID = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
@@ -162,8 +162,8 @@ const DropZone = () => {
       uploadedEncryptedFiles.length > 0 &&
       uploadingFileList.length === 0
     ) {
-      clearInterval(interval);
-      interval = setTimeout(async () => {
+      clearInterval(timeoutID);
+      timeoutID = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
           await fileUtils.storeSessionEncryptedFiles(
@@ -287,6 +287,8 @@ const DropZone = () => {
     },
   };
 
+  const isLoading = uploading || loading;
+
   return (
     <div className="container">
       <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
@@ -341,58 +343,63 @@ const DropZone = () => {
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
-      <div>
-        <Divider orientation="left">Uploaded files</Divider>
-        <List
-          bordered={true}
-          loading={uploading || loading}
-          itemLayout="horizontal"
-          dataSource={uploadedEncryptedFiles}
-          renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Button
-                  onClick={() => {
-                    message.loading(`Download and decryption started`);
-                    downloadFile(item);
-                  }}
-                  type="link"
-                  key="list-download"
-                >
-                  download
-                </Button>,
-              ]}
-            >
-              <List.Item.Meta
-                description={fileUtils.fileSize(item.size)}
-                title={item.fileName}
-              />
-            </List.Item>
-          )}
-        />
-      </div>
+      {
+        isLoading && uploadedEncryptedFiles.length > 0 &&
+        <div className="default-margin">
+          <Spin tip="Loading...">
+            <Alert
+              message="Sync in progress"
+              description="Processing, encrypting and uploading files. Wait..."
+              type="info"
+            />
+          </Spin>
+        </div>
+      }
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <Tree
+        <Tree className="file-tree default-margin"
+          disabled={isLoading}
           showLine={true}
           defaultExpandAll={true}
-          switcherIcon={<DownOutlined />}
+          switcherIcon={<DownOutlined className="directory-switcher" />}
           onSelect={(selectedKeys, info) => {
             if (info.node.children && info.node.children.length !== 0) {
               return; // folder
             }
 
+            //{fileUtils.fileSize(item.size)
+
             const key: string = `${info.node.key}`;
             const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
             if (ff) {
+              message.loading(`Download and decryption started`);
               downloadFile(ff);
             }
           }}
           treeData={renderTree(uploadedEncryptedFiles)}
         />
       ) : (
-        ''
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
+          {
+            loading ? (
+              <Spin />
+            ) : (
+              <span>No uploaded data</span>
+            )
+          }
+        </Empty>
       )}
+
+      {
+        !isLoading &&
+        uploadedEncryptedFiles.length > 0 &&
+        <Button onClick={async () => {
+          message.loading(`Download and decryption started`);
+          for (const encyptedFile of uploadedEncryptedFiles) {
+            await downloadFile(encyptedFile);
+          }
+        }}>Download all!</Button>
+      }
 
       <Modal
         title="Upload completed"
