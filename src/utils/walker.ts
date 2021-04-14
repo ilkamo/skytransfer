@@ -1,5 +1,3 @@
-// let paths = ["About.vue","Categories/Index.vue","Categories/Demo.vue","Categories/Flavors.vue","Categories/Types/Index.vue","Categories/Types/Other.vue"];
-
 import { EncryptedFileReference } from '../models/encryption';
 import { FileNode } from '../models/file-tree'
 

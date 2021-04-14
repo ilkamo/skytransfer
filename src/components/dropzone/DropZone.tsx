@@ -245,6 +245,9 @@ const DropZone = () => {
           message.error(`${info.file.name} "something really bad happened, contact the developer`);
         }
 
+        const relativePath = fileRelativePaths.hasOwnProperty(info.file.uid) ?
+          fileRelativePaths[info.file.uid] : info.file.name;
+
         const tempFile: EncryptedFileReference = {
           uuid: uuid(),
           skylink: info.file.response.skylink,
@@ -252,7 +255,7 @@ const DropZone = () => {
           fileName: info.file.name,
           mimeType: info.file.type,
           size: info.file.size,
-          relativePath: fileRelativePaths[info.file.uid] // TODO: add a key check here,
+          relativePath: relativePath,
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -366,10 +369,12 @@ const DropZone = () => {
             switcherIcon={<DownOutlined className="directory-switcher" />}
             onSelect={(selectedKeys, info) => {
               if (info.node.children && info.node.children.length !== 0) {
-                return; // folder
+                return; // it is a folder
               }
 
-              //{fileUtils.fileSize(item.size)
+              /* 
+                TODO: use fileUtils.fileSize(item.size) to add more file info
+              */
 
               const key: string = `${info.node.key}`;
               const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
