@@ -6,10 +6,11 @@ import {
 import { useHistory } from "react-router-dom";
 
 import FileUtils from '../../utils/file';
-import { FileEncrypted } from './../../models/encryption';
+import { EncryptedFileReference } from './../../models/encryption';
 
-import { Button, List, Divider, Menu, message } from 'antd';
-import { PlusOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Button, Empty, Divider, Menu, message, Tree, Spin, Alert } from 'antd';
+import { PlusOutlined, CopyOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
+import { renderTree } from "../../utils/walker";
 
 const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
@@ -26,7 +27,7 @@ const FileList = () => {
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
-  const [loadedFiles, setLoadedFiles] = useState<FileEncrypted[]>([]);
+  const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
@@ -44,7 +45,7 @@ const FileList = () => {
     setlLoading(false);
   });
 
-  const downloadFile = async (encryptedFile: FileEncrypted) => {
+  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const file: File = await fileUtils.decryptFile(encryptionKey, encryptedFile);
 
     if (window.navigator.msSaveOrOpenBlob) {
@@ -91,26 +92,48 @@ const FileList = () => {
         </Menu>
         <div>
           <Divider orientation="left">Shared files</Divider>
-          <List
-            bordered={true}
-            loading={loading}
-            itemLayout="horizontal"
-            dataSource={loadedFiles}
-            renderItem={item => (
-              <List.Item
-                actions={[
-                  <Button type="link" key="list-download" onClick={() => {
+          {loadedFiles.length > 0 ? (
+            <div>
+              <Alert message="Click on a file to start downloading" type="info" />
+              <Tree className="file-tree default-margin"
+                showLine={true}
+                defaultExpandAll={true}
+                switcherIcon={<DownOutlined />}
+                onSelect={(selectedKeys, info) => {
+                  if (info.node.children && info.node.children.length !== 0) {
+                    return; // folder
+                  }
+
+                  //{fileUtils.fileSize(item.size)
+
+                  const key: string = `${info.node.key}`;
+                  const ff = loadedFiles.find(f => f.uuid === key.split("_")[0])
+                  if (ff) {
                     message.loading(`Download and decryption started`);
-                    downloadFile(item);
-                  }}>download</Button>]}
-              >
-                <List.Item.Meta
-                  description={fileUtils.fileSize(item.size)}
-                  title={item.fileName}
-                />
-              </List.Item>
-            )}
-          />
+                    downloadFile(ff);
+                  }
+                }}
+                treeData={renderTree(loadedFiles)}
+              />
+              <Button onClick={async () => {
+                message.loading(`Download and decryption started`);
+                for (const encyptedFile of loadedFiles) {
+                  await downloadFile(encyptedFile);
+                }
+              }}>Download all!</Button>
+            </div>
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
+              {
+                loading ? (
+                  <Spin />
+                ) : (
+                  <span>No shared data found</span>
+                )
+              }
+            </Empty>
+          )}
+
         </div>
       </div>
     </div>

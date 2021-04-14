@@ -2,27 +2,36 @@ import './DropZone.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
-import { EncryptionType, FileEncrypted } from '../../models/encryption';
+import { EncryptionType, EncryptedFileReference } from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
 import { isMobile } from 'react-device-detect';
 
+import { v4 as uuid } from 'uuid';
+
 import {
   Button,
-  List,
-  Divider,
   Alert,
   message,
   Modal,
   Menu,
   Upload,
   Spin,
+  Tree,
+  Empty,
 } from 'antd';
+
 import {
   CloudUploadOutlined,
   DeleteOutlined,
   CopyOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
+
+import { UploadFile } from 'antd/lib/upload/interface';
+
+import { renderTree } from '../../utils/walker';
+import { FileRelativePathInfo } from '../../models/file-tree';
 
 const { Dragger } = Upload;
 
@@ -52,14 +61,13 @@ const DropZone = () => {
   const [sessionPublicKey, setSessionPublicKey] = useState('');
   const [sessionPrivateKey, setSessionPrivateKey] = useState('');
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
-    FileEncrypted[]
+    EncryptedFileReference[]
   >([]);
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
-  const [encryptionQueue, setEncryptionQueue] = useState<File[]>([]);
 
   const [encryptionKey, setEncryptionKey] = useState('');
 
@@ -122,7 +130,7 @@ const DropZone = () => {
     window.location.reload();
   };
 
-  const downloadFile = async (encryptedFile: FileEncrypted) => {
+  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const file: File = await fileUtils.decryptFile(
       encryptionKey,
       encryptedFile
@@ -140,7 +148,9 @@ const DropZone = () => {
     }
   };
 
-  const [uploadingFileList, setUploadingFileList] = useState([]);
+  const [fileRelativePaths, setFileRelativePaths] = useState<FileRelativePathInfo>({});
+  const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
+  const [encryptionQueue, setEncryptionQueue] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
@@ -225,17 +235,27 @@ const DropZone = () => {
 
       if (status === 'uploading') {
         setEncryptionQueue((prev) =>
-          prev.filter((f) => f.name !== info.file.name)
+          prev.filter((f) => f.uid !== info.file.uid)
         );
       }
 
       if (status === 'done') {
-        const tempFile = {
+        const uploadedFile = info.fileList.find((f) => f.uid === info.file.uid);
+        if (!uploadedFile) {
+          message.error(`${info.file.name} "something really bad happened, contact the developer`);
+        }
+
+        const relativePath = fileRelativePaths.hasOwnProperty(info.file.uid) ?
+          fileRelativePaths[info.file.uid] : info.file.name;
+
+        const tempFile: EncryptedFileReference = {
+          uuid: uuid(),
           skylink: info.file.response.skylink,
           encryptionType: EncryptionType.AES,
           fileName: info.file.name,
           mimeType: info.file.type,
           size: info.file.size,
+          relativePath: relativePath,
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -243,7 +263,7 @@ const DropZone = () => {
         setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
         setToStoreInSkyDBCount((prev) => prev + 1);
         setUploadingFileList((prev) =>
-          prev.filter((f) => f.name !== info.file.name)
+          prev.filter((f) => f.uid !== info.file.uid)
         );
       } else if (status === 'error') {
         message.error(`${info.file.name} file upload failed.`);
@@ -252,10 +272,20 @@ const DropZone = () => {
     beforeUpload(file, filelist): boolean | Promise<File> {
       setEncryptionQueue((prev) => [...prev, file]);
 
+      /* 
+        This is a support structure for storing webkitRelativePath.
+        This field is missing after file is encrypted because it is a read only prop.
+      */
+      setFileRelativePaths((prev) => {
+        const temp = {}
+        temp[file.uid] = file.webkitRelativePath ? file.webkitRelativePath : file.name
+        return { ...prev, ...temp }
+      });
+
       return queueParallelUpload(file);
     },
     onRemove(file): boolean {
-      setUploadingFileList((prev) => prev.filter((f) => f.name !== file.name));
+      setUploadingFileList((prev) => prev.filter((f) => f.uid !== file.uid));
       return true;
     },
   };
@@ -316,46 +346,67 @@ const DropZone = () => {
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
-      <div>
-        <Divider orientation="left">Uploaded files</Divider>
-        <List
-          bordered={true}
-          loading={isLoading}
-          footer={
-            !isLoading &&
-            uploadedEncryptedFiles.length > 0 &&
-            <Button onClick={async () => {
-              message.loading(`Download and decryption started`);
-              for (const encyptedFile of uploadedEncryptedFiles) {
-                await downloadFile(encyptedFile);
+      {
+        isLoading && uploadedEncryptedFiles.length > 0 &&
+        <div className="default-margin">
+          <Spin tip="Loading...">
+            <Alert
+              message="Sync in progress"
+              description="Processing, encrypting and uploading files. Wait..."
+              type="info"
+            />
+          </Spin>
+        </div>
+      }
+
+      {uploadedEncryptedFiles.length > 0 ? (
+        <div>
+          <Tree className="file-tree default-margin"
+            disabled={isLoading}
+            showLine={true}
+            defaultExpandAll={true}
+            switcherIcon={<DownOutlined className="directory-switcher" />}
+            onSelect={(selectedKeys, info) => {
+              if (info.node.children && info.node.children.length !== 0) {
+                return; // it is a folder
               }
-            }}>Download all!</Button>
+
+              /* 
+                TODO: use fileUtils.fileSize(item.size) to add more file info
+              */
+
+              const key: string = `${info.node.key}`;
+              const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
+              if (ff) {
+                message.loading(`Download and decryption started`);
+                downloadFile(ff);
+              }
+            }}
+            treeData={renderTree(uploadedEncryptedFiles)}
+          />
+        </div>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
+          {
+            loading ? (
+              <Spin />
+            ) : (
+              <span>No uploaded data</span>
+            )
           }
-          itemLayout="horizontal"
-          dataSource={uploadedEncryptedFiles}
-          renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Button
-                  onClick={() => {
-                    message.loading(`Download and decryption started`);
-                    downloadFile(item);
-                  }}
-                  type="link"
-                  key="list-download"
-                >
-                  download
-                </Button>,
-              ]}
-            >
-              <List.Item.Meta
-                description={fileUtils.fileSize(item.size)}
-                title={item.fileName}
-              />
-            </List.Item>
-          )}
-        />
-      </div>
+        </Empty>
+      )}
+
+      {
+        !isLoading &&
+        uploadedEncryptedFiles.length > 0 &&
+        <Button onClick={async () => {
+          message.loading(`Download and decryption started`);
+          for (const encyptedFile of uploadedEncryptedFiles) {
+            await downloadFile(encyptedFile);
+          }
+        }}>Download all!</Button>
+      }
 
       <Modal
         title="Upload completed"
