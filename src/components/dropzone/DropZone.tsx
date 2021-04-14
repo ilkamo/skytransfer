@@ -361,7 +361,6 @@ const DropZone = () => {
 
       {uploadedEncryptedFiles.length > 0 ? (
         <div>
-          <Alert className="default-margin" message="Click on a file to start downloading" type="info" />
           <Tree className="file-tree default-margin"
             disabled={isLoading}
             showLine={true}
