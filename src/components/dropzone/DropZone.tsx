@@ -2,7 +2,10 @@ import './DropZone.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
-import { EncryptionType, EncryptedFileReference } from '../../models/encryption';
+import {
+  EncryptionType,
+  EncryptedFileReference,
+} from '../../models/encryption';
 import FileUtils from '../../utils/file';
 
 import { isMobile } from 'react-device-detect';
@@ -33,13 +36,14 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
 
+const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 
 const SESSION_KEY_NAME = 'sessionKey';
 const uploadEndpoint = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
 const maxParallelUpload = 5;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -50,7 +54,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => { }, 5000);
+let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
@@ -148,7 +152,10 @@ const DropZone = () => {
     }
   };
 
-  const [fileRelativePaths, setFileRelativePaths] = useState<FileRelativePathInfo>({});
+  const [
+    fileRelativePaths,
+    setFileRelativePaths,
+  ] = useState<FileRelativePathInfo>({});
   const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
   const [encryptionQueue, setEncryptionQueue] = useState<UploadFile[]>([]);
 
@@ -242,11 +249,14 @@ const DropZone = () => {
       if (status === 'done') {
         const uploadedFile = info.fileList.find((f) => f.uid === info.file.uid);
         if (!uploadedFile) {
-          message.error(`${info.file.name} "something really bad happened, contact the developer`);
+          message.error(
+            `${info.file.name} "something really bad happened, contact the developer`
+          );
         }
 
-        const relativePath = fileRelativePaths.hasOwnProperty(info.file.uid) ?
-          fileRelativePaths[info.file.uid] : info.file.name;
+        const relativePath = fileRelativePaths.hasOwnProperty(info.file.uid)
+          ? fileRelativePaths[info.file.uid]
+          : info.file.name;
 
         const tempFile: EncryptedFileReference = {
           uuid: uuid(),
@@ -277,9 +287,11 @@ const DropZone = () => {
         This field is missing after file is encrypted because it is a read only prop.
       */
       setFileRelativePaths((prev) => {
-        const temp = {}
-        temp[file.uid] = file.webkitRelativePath ? file.webkitRelativePath : file.name
-        return { ...prev, ...temp }
+        const temp = {};
+        temp[file.uid] = file.webkitRelativePath
+          ? file.webkitRelativePath
+          : file.name;
+        return { ...prev, ...temp };
       });
 
       return queueParallelUpload(file);
@@ -346,8 +358,7 @@ const DropZone = () => {
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
-      {
-        isLoading && uploadedEncryptedFiles.length > 0 &&
+      {isLoading && uploadedEncryptedFiles.length > 0 && (
         <div className="default-margin">
           <Spin tip="Loading...">
             <Alert
@@ -357,56 +368,53 @@ const DropZone = () => {
             />
           </Spin>
         </div>
-      }
+      )}
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <div>
-          <Tree className="file-tree default-margin"
-            disabled={isLoading}
-            showLine={true}
-            defaultExpandAll={true}
-            switcherIcon={<DownOutlined className="directory-switcher" />}
-            onSelect={(selectedKeys, info) => {
-              if (info.node.children && info.node.children.length !== 0) {
-                return; // it is a folder
-              }
+        <DirectoryTree
+          multiple
+          className="file-tree default-margin"
+          disabled={isLoading}
+          defaultExpandAll={true}
+          switcherIcon={<DownOutlined className="directory-switcher" />}
+          onSelect={(selectedKeys, info) => {
+            if (info.node.children && info.node.children.length !== 0) {
+              return; // it is a folder
+            }
 
-              /* 
+            /* 
                 TODO: use fileUtils.fileSize(item.size) to add more file info
               */
 
-              const key: string = `${info.node.key}`;
-              const ff = uploadedEncryptedFiles.find(f => f.uuid === key.split("_")[0])
-              if (ff) {
-                message.loading(`Download and decryption started`);
-                downloadFile(ff);
-              }
-            }}
-            treeData={renderTree(uploadedEncryptedFiles)}
-          />
-        </div>
+            const key: string = `${info.node.key}`;
+            const ff = uploadedEncryptedFiles.find(
+              (f) => f.uuid === key.split('_')[0]
+            );
+            if (ff) {
+              message.loading(`Download and decryption started`);
+              downloadFile(ff);
+            }
+          }}
+          treeData={renderTree(uploadedEncryptedFiles)}
+        />
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-          {
-            loading ? (
-              <Spin />
-            ) : (
-              <span>No uploaded data</span>
-            )
-          }
+          {loading ? <Spin /> : <span>No uploaded data</span>}
         </Empty>
       )}
 
-      {
-        !isLoading &&
-        uploadedEncryptedFiles.length > 0 &&
-        <Button onClick={async () => {
-          message.loading(`Download and decryption started`);
-          for (const encyptedFile of uploadedEncryptedFiles) {
-            await downloadFile(encyptedFile);
-          }
-        }}>Download all!</Button>
-      }
+      {!isLoading && uploadedEncryptedFiles.length > 0 && (
+        <Button
+          onClick={async () => {
+            message.loading(`Download and decryption started`);
+            for (const encyptedFile of uploadedEncryptedFiles) {
+              await downloadFile(encyptedFile);
+            }
+          }}
+        >
+          Download all!
+        </Button>
+      )}
 
       <Modal
         title="Upload completed"
