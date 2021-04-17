@@ -2,7 +2,8 @@ import FileUtils from "../../utils/file";
 
 export default class FileUploader {
     static chunkSize = 1048576 // 1MB
-    static uploadUrl = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
+
+    uploadUrl = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
 
     readonly request: XMLHttpRequest;
     readonly file: File;
@@ -25,10 +26,15 @@ export default class FileUploader {
 
         this.currentChunkStartByte = 0;
         this.currentChunkFinalByte = FileUploader.chunkSize > this.file.size ? this.file.size : FileUploader.chunkSize;
+
+        const url = localStorage.getItem("url");
+        if (url) {
+            this.uploadUrl = url;
+        }
     }
 
     async upload() {
-        this.request.open('POST', FileUploader.uploadUrl, true);
+        this.request.open('POST', this.uploadUrl, true);
 
         let chunk: Blob = this.file.slice(this.currentChunkStartByte, this.currentChunkFinalByte);
 
