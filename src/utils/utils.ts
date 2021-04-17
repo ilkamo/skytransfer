@@ -1,7 +1,6 @@
 import { EncryptedFileReference } from '../models/encryption';
-import { SkynetClient, genKeyPairFromSeed } from "skynet-js";
-
-const skynetClient = new SkynetClient("https://ilkamo.hns.siasky.net");
+import { genKeyPairFromSeed } from "skynet-js";
+import { SKYNET_CLIENT } from '../components/crypto/crypto';
 
 const ENCRYPTED_FILES_SKYDB_KEY_NAME = "ENCRYPTED_FILES";
 
@@ -17,7 +16,7 @@ class Utils {
       }
 
       try {
-        await skynetClient.db.setJSON(
+        await SKYNET_CLIENT.db.setJSON(
           sessionPrivateKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
           encryptedFiles,
@@ -36,7 +35,7 @@ class Utils {
   public async getSessionEncryptedFiles(sessionPublicKey: string): Promise<EncryptedFileReference[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const { data } = await skynetClient.db.getJSON(
+        const { data } = await SKYNET_CLIENT.db.getJSON(
           sessionPublicKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
           {
