@@ -35,6 +35,7 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
+import Uploader from '../uploader/uploader';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -214,6 +215,15 @@ const DropZone = () => {
     });
   };
 
+  const customRequest = async (options) => {
+    const { onSuccess, onError, file, onProgress, action, data } = options;
+
+    const u = new Uploader(file, encryptionKey);
+    await u.uploadEncryptedFile();
+    onSuccess("ok");
+    
+  };
+
   const draggerConfig = {
     name: 'file',
     multiple: true,
@@ -223,6 +233,7 @@ const DropZone = () => {
     showUploadList: {
       showRemoveIcon: true,
     },
+    customRequest,
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
