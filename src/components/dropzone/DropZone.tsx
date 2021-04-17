@@ -373,6 +373,8 @@ const DropZone = () => {
       {uploadedEncryptedFiles.length > 0 ? (
         <DirectoryTree
           multiple
+          showIcon={false}
+          showLine
           className="file-tree default-margin"
           disabled={isLoading}
           defaultExpandAll={true}
