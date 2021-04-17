@@ -216,7 +216,7 @@ const DropZone = () => {
   };
 
   const customRequest = async (options) => {
-    const { onSuccess, onError, file, onProgress, action, data } = options;
+    const { onSuccess, file, /* onError, onProgress, action, data */ } = options;
 
     const u = new Uploader(file, encryptionKey);
     await u.uploadEncryptedFile();
