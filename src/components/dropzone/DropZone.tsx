@@ -6,7 +6,7 @@ import {
   EncryptionType,
   EncryptedFileReference,
 } from '../../models/encryption';
-import FileUtils from '../../utils/file';
+import Utils from '../../utils/utils';
 
 import { isMobile } from 'react-device-detect';
 
@@ -35,6 +35,8 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
+import FileEncrypt from '../crypto/encrypt';
+import FileDecrypt from '../crypto/decrypt';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -58,7 +60,7 @@ let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
-const fileUtils: FileUtils = new FileUtils();
+const utils: Utils = new Utils();
 
 const DropZone = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -84,9 +86,9 @@ const DropZone = () => {
     if (sessionKey) {
       setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
       setSessionPrivateKey(sessionKey);
-      setEncryptionKey(fileUtils.generateEncryptionKey(sessionKey));
+      setEncryptionKey(utils.generateEncryptionKey(sessionKey));
 
-      const files = await fileUtils.getSessionEncryptedFiles(
+      const files = await utils.getSessionEncryptedFiles(
         publicKeyFromPrivateKey(sessionKey)
       );
       if (!files) {
@@ -100,7 +102,7 @@ const DropZone = () => {
       const { publicKey, privateKey } = genKeyPairAndSeed();
       setSessionPublicKey(publicKey);
       setSessionPrivateKey(privateKey);
-      setEncryptionKey(fileUtils.generateEncryptionKey(privateKey));
+      setEncryptionKey(utils.generateEncryptionKey(privateKey));
       localStorage.setItem(SESSION_KEY_NAME, privateKey);
       setLoading(false);
     }
@@ -135,10 +137,9 @@ const DropZone = () => {
   };
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const file: File = await fileUtils.decryptFile(
-      encryptionKey,
-      encryptedFile
-    );
+    const decrypt = new FileDecrypt(encryptedFile, encryptionKey);
+
+    const file: File = await decrypt.decrypt();
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -173,7 +174,7 @@ const DropZone = () => {
       timeoutID = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
-          await fileUtils.storeSessionEncryptedFiles(
+          await utils.storeSessionEncryptedFiles(
             sessionPrivateKey,
             uploadedEncryptedFiles
           );
@@ -210,7 +211,9 @@ const DropZone = () => {
       }
 
       uploadCount++;
-      resolve(fileUtils.encryptFile(encryptionKey, file));
+
+      const fe = new FileEncrypt(file, encryptionKey);
+      resolve(fe.encrypt());
     });
   };
 
@@ -264,8 +267,9 @@ const DropZone = () => {
           encryptionType: EncryptionType.AES,
           fileName: info.file.name,
           mimeType: info.file.type,
-          size: info.file.size,
           relativePath: relativePath,
+
+          size: info.file.size, // TODO: use original file size
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -383,7 +387,7 @@ const DropZone = () => {
             }
 
             /* 
-                TODO: use fileUtils.fileSize(item.size) to add more file info
+                TODO: use utils.fileSize(item.size) to add more file info
               */
 
             const key: string = `${info.node.key}`;

@@ -1,18 +1,22 @@
-import { useRef, useState } from "react";
-import {
-  useParams
-} from "react-router-dom";
+import { useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom';
 
-import FileUtils from '../../utils/file';
+import Utils from '../../utils/utils';
 import { EncryptedFileReference } from './../../models/encryption';
 
 import { Button, Empty, Divider, Menu, message, Tree, Spin, Alert } from 'antd';
-import { PlusOutlined, CopyOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
-import { renderTree } from "../../utils/walker";
+import {
+  PlusOutlined,
+  CopyOutlined,
+  ReloadOutlined,
+  DownOutlined,
+} from '@ant-design/icons';
+import { renderTree } from '../../utils/walker';
+import FileDecrypt from '../crypto/decrypt';
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -23,7 +27,7 @@ const SESSION_KEY_NAME = 'sessionKey';
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
-  const fileUtils: FileUtils = new FileUtils();
+  const utils: Utils = new Utils();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
@@ -32,10 +36,10 @@ const FileList = () => {
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
       localStorage.setItem(SESSION_KEY_NAME, transferKey);
-      history.push("/");
+      history.push('/');
     }
 
-    const files = await fileUtils.getSessionEncryptedFiles(transferKey);
+    const files = await utils.getSessionEncryptedFiles(transferKey);
     if (!files) {
       setlLoading(false);
       return;
@@ -46,7 +50,8 @@ const FileList = () => {
   });
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const file: File = await fileUtils.decryptFile(encryptionKey, encryptedFile);
+    const decrypt = new FileDecrypt(encryptedFile, encryptionKey);
+    const file: File = await decrypt.decrypt();
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -62,24 +67,32 @@ const FileList = () => {
 
   const canResumeSession = (): boolean => {
     const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
-    return sessionKey !== undefined
-  }
+    return sessionKey !== undefined;
+  };
 
   const destroySession = () => {
     localStorage.removeItem(SESSION_KEY_NAME);
-    history.push("/");
-  }
+    history.push('/');
+  };
 
   return (
     <div>
       <div className="container">
         <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
-          <Menu.Item onClick={destroySession} key="new-session" icon={<PlusOutlined />}>
+          <Menu.Item
+            onClick={destroySession}
+            key="new-session"
+            icon={<PlusOutlined />}
+          >
             <a href="/" rel="noopener noreferrer">
               Start a SkyTransfer
             </a>
           </Menu.Item>
-          <Menu.Item key="resume-session" disabled={!canResumeSession()} icon={<ReloadOutlined />}>
+          <Menu.Item
+            key="resume-session"
+            disabled={!canResumeSession()}
+            icon={<ReloadOutlined />}
+          >
             <a href="/" rel="noopener noreferrer">
               Resume SkyTransfer
             </a>
@@ -87,15 +100,19 @@ const FileList = () => {
           <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
             <a href="/" rel="noopener noreferrer">
               About SkyTransfer
-          </a>
+            </a>
           </Menu.Item>
         </Menu>
         <div>
           <Divider orientation="left">Shared files</Divider>
           {loadedFiles.length > 0 ? (
             <div>
-              <Alert message="Click on a file to start downloading" type="info" />
-              <Tree className="file-tree default-margin"
+              <Alert
+                message="Click on a file to start downloading"
+                type="info"
+              />
+              <Tree
+                className="file-tree default-margin"
                 showLine={true}
                 defaultExpandAll={true}
                 switcherIcon={<DownOutlined />}
@@ -104,10 +121,12 @@ const FileList = () => {
                     return; // folder
                   }
 
-                  //{fileUtils.fileSize(item.size)
+                  //{utils.fileSize(item.size)
 
                   const key: string = `${info.node.key}`;
-                  const ff = loadedFiles.find(f => f.uuid === key.split("_")[0])
+                  const ff = loadedFiles.find(
+                    (f) => f.uuid === key.split('_')[0]
+                  );
                   if (ff) {
                     message.loading(`Download and decryption started`);
                     downloadFile(ff);
@@ -115,30 +134,26 @@ const FileList = () => {
                 }}
                 treeData={renderTree(loadedFiles)}
               />
-              <Button onClick={async () => {
-                message.loading(`Download and decryption started`);
-                for (const encyptedFile of loadedFiles) {
-                  await downloadFile(encyptedFile);
-                }
-              }}>Download all!</Button>
+              <Button
+                onClick={async () => {
+                  message.loading(`Download and decryption started`);
+                  for (const encyptedFile of loadedFiles) {
+                    await downloadFile(encyptedFile);
+                  }
+                }}
+              >
+                Download all!
+              </Button>
             </div>
           ) : (
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-              {
-                loading ? (
-                  <Spin />
-                ) : (
-                  <span>No shared data found</span>
-                )
-              }
+              {loading ? <Spin /> : <span>No shared data found</span>}
             </Empty>
           )}
-
         </div>
       </div>
     </div>
-
   );
-}
+};
 
 export default FileList;
