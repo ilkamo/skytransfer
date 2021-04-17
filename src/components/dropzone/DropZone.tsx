@@ -6,7 +6,7 @@ import {
   EncryptionType,
   EncryptedFileReference,
 } from '../../models/encryption';
-import FileUtils from '../../utils/file';
+import Utils from '../../utils/utils';
 
 import { isMobile } from 'react-device-detect';
 
@@ -35,7 +35,8 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
-import FileUploader from '../uploader/uploader';
+import FileEncrypt from '../crypto/encrypt';
+import FileDecrypt from '../crypto/decrypt';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -59,7 +60,7 @@ let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
-const fileUtils: FileUtils = new FileUtils();
+const fileUtils: Utils = new Utils();
 
 const DropZone = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -136,10 +137,9 @@ const DropZone = () => {
   };
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const file: File = await fileUtils.decryptFile(
-      encryptionKey,
-      encryptedFile
-    );
+    const decrypt = new FileDecrypt(encryptedFile, encryptionKey);
+
+    const file: File = await decrypt.decrypt();
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -211,15 +211,11 @@ const DropZone = () => {
       }
 
       uploadCount++;
-      resolve(fileUtils.encryptFile(encryptionKey, file));
+
+      const encrypt = new FileEncrypt(file, encryptionKey);
+      const encryptedFile = await encrypt.encrypt();
+      resolve(encryptedFile);
     });
-  };
-
-  const customRequest = async (options) => {
-    const { file /* onError, onSuccess, onProgress, action, data */ } = options;
-
-    const u = new FileUploader(file, encryptionKey, options);
-    await u.upload();
   };
 
   const draggerConfig = {
@@ -231,7 +227,6 @@ const DropZone = () => {
     showUploadList: {
       showRemoveIcon: true,
     },
-    customRequest,
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
@@ -273,8 +268,9 @@ const DropZone = () => {
           encryptionType: EncryptionType.AES,
           fileName: info.file.name,
           mimeType: info.file.type,
-          size: info.file.size,
           relativePath: relativePath,
+
+          size: info.file.size, // TODO: use original file size
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);

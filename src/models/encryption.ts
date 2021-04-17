@@ -8,6 +8,6 @@ export interface EncryptedFileReference {
   fileName: string
   skylink: string // skylink of the stored encrypted file
   encryptionType: EncryptionType
-  size: number
   relativePath: string
+  size: number
 }
