@@ -1,6 +1,6 @@
 import FileUtils from "../../utils/file";
 
-export default class Uploader {
+export default class FileUploader {
     static chunkSize = 1048576 // 1MB
     static uploadUrl = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
 
@@ -11,20 +11,24 @@ export default class Uploader {
     currentChunkStartByte: number;
     currentChunkFinalByte: number;
 
+    readonly options;
+
     fileUtils = new FileUtils();
 
-    constructor(file: File, encryptionKey: string) {
+    constructor(file: File, encryptionKey: string, options) {
         this.request = new XMLHttpRequest();
         this.request.overrideMimeType('application/octet-stream');
 
         this.file = file;
         this.encryptionKey = encryptionKey;
+        this.options = options;
+
         this.currentChunkStartByte = 0;
-        this.currentChunkFinalByte = Uploader.chunkSize > this.file.size ? this.file.size : Uploader.chunkSize;
+        this.currentChunkFinalByte = FileUploader.chunkSize > this.file.size ? this.file.size : FileUploader.chunkSize;
     }
 
-    async uploadEncryptedFile() {
-        this.request.open('POST', Uploader.uploadUrl, true);
+    async upload() {
+        this.request.open('POST', FileUploader.uploadUrl, true);
 
         let chunk: Blob = this.file.slice(this.currentChunkStartByte, this.currentChunkFinalByte);
 
@@ -36,18 +40,23 @@ export default class Uploader {
             const remainingBytes = this.file.size - this.currentChunkFinalByte;
 
             if (this.currentChunkFinalByte === this.file.size) {
+                this.options.onSuccess("ok")
                 console.log('completed');
                 return;
-            } else if (remainingBytes < Uploader.chunkSize) {
+            } else if (remainingBytes < FileUploader.chunkSize) {
                 this.currentChunkStartByte = this.currentChunkFinalByte;
                 this.currentChunkFinalByte = this.currentChunkStartByte + remainingBytes;
             }
             else {
                 this.currentChunkStartByte = this.currentChunkFinalByte;
-                this.currentChunkFinalByte = this.currentChunkStartByte + Uploader.chunkSize;
+                this.currentChunkFinalByte = this.currentChunkStartByte + FileUploader.chunkSize;
             }
 
-            this.uploadEncryptedFile();
+            this.upload();
+        }
+
+        this.request.onerror = (e) => {
+            this.options.onError(e);
         }
 
         const formData = new FormData();
