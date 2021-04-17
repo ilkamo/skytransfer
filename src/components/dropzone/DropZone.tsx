@@ -60,7 +60,7 @@ let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
-const fileUtils: Utils = new Utils();
+const utils: Utils = new Utils();
 
 const DropZone = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -86,9 +86,9 @@ const DropZone = () => {
     if (sessionKey) {
       setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
       setSessionPrivateKey(sessionKey);
-      setEncryptionKey(fileUtils.generateEncryptionKey(sessionKey));
+      setEncryptionKey(utils.generateEncryptionKey(sessionKey));
 
-      const files = await fileUtils.getSessionEncryptedFiles(
+      const files = await utils.getSessionEncryptedFiles(
         publicKeyFromPrivateKey(sessionKey)
       );
       if (!files) {
@@ -102,7 +102,7 @@ const DropZone = () => {
       const { publicKey, privateKey } = genKeyPairAndSeed();
       setSessionPublicKey(publicKey);
       setSessionPrivateKey(privateKey);
-      setEncryptionKey(fileUtils.generateEncryptionKey(privateKey));
+      setEncryptionKey(utils.generateEncryptionKey(privateKey));
       localStorage.setItem(SESSION_KEY_NAME, privateKey);
       setLoading(false);
     }
@@ -174,7 +174,7 @@ const DropZone = () => {
       timeoutID = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
-          await fileUtils.storeSessionEncryptedFiles(
+          await utils.storeSessionEncryptedFiles(
             sessionPrivateKey,
             uploadedEncryptedFiles
           );
@@ -212,9 +212,8 @@ const DropZone = () => {
 
       uploadCount++;
 
-      const encrypt = new FileEncrypt(file, encryptionKey);
-      const encryptedFile = await encrypt.encrypt();
-      resolve(encryptedFile);
+      const fe = new FileEncrypt(file, encryptionKey);
+      resolve(fe.encrypt());
     });
   };
 
@@ -388,7 +387,7 @@ const DropZone = () => {
             }
 
             /* 
-                TODO: use fileUtils.fileSize(item.size) to add more file info
+                TODO: use utils.fileSize(item.size) to add more file info
               */
 
             const key: string = `${info.node.key}`;

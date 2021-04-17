@@ -27,7 +27,7 @@ const SESSION_KEY_NAME = 'sessionKey';
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
-  const fileUtils: Utils = new Utils();
+  const utils: Utils = new Utils();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
@@ -39,7 +39,7 @@ const FileList = () => {
       history.push('/');
     }
 
-    const files = await fileUtils.getSessionEncryptedFiles(transferKey);
+    const files = await utils.getSessionEncryptedFiles(transferKey);
     if (!files) {
       setlLoading(false);
       return;
@@ -121,7 +121,7 @@ const FileList = () => {
                     return; // folder
                   }
 
-                  //{fileUtils.fileSize(item.size)
+                  //{utils.fileSize(item.size)
 
                   const key: string = `${info.node.key}`;
                   const ff = loadedFiles.find(
