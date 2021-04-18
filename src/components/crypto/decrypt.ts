@@ -1,6 +1,6 @@
 import CryptoJS from "crypto-js";
 import { EncryptedFileReference } from "../../models/encryption";
-import { SKYNET_CLIENT } from "../../app.config";
+import { SKYNET_CLIENT } from "../../config";
 import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from "./crypto";
 
 export default class AESFileDecrypt implements FileDecrypt {

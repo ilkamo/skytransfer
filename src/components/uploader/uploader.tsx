@@ -41,7 +41,7 @@ import {
   MAX_PARALLEL_UPLOAD,
   SESSION_KEY_NAME,
   UPLOAD_ENDPOINT,
-} from '../../app.config';
+} from '../../config';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -354,12 +354,11 @@ const Uploader = () => {
           <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
         </p>
         <p className="ant-upload-text">
-        {isMobile ? (
-          <span>Click here to upload</span>
-        ) : (
-          <span>Drag & Drop files/folders here to upload</span>
-        )}
-          
+          {isMobile ? (
+            <span>Click here to upload</span>
+          ) : (
+            <span>Drag & Drop files/folders here to upload</span>
+          )}
         </p>
         {isEncrypting ? (
           <Spin tip="File encryption/upload started. Please wait ..." />

@@ -1,6 +1,6 @@
 import { EncryptedFileReference } from '../models/encryption';
 import { genKeyPairFromSeed } from "skynet-js";
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME, SKYNET_CLIENT } from '../app.config';
+import { ENCRYPTED_FILES_SKYDB_KEY_NAME, SKYNET_CLIENT } from '../config';
 
 class Utils {
   public generateEncryptionKey(sessionPrivateKey: string): string {

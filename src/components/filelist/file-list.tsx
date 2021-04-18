@@ -15,7 +15,7 @@ import {
 } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../crypto/decrypt';
-import { SESSION_KEY_NAME } from '../../app.config';
+import { SESSION_KEY_NAME } from '../../config';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
