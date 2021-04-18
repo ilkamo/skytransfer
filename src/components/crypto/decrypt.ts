@@ -25,7 +25,16 @@ export default class AESFileDecrypt implements FileDecrypt {
         this.currentChunkFinalByte = CHUNK_SIZE > this.encryptedFile.size ? this.encryptedFile.size : CHUNK_SIZE;
     }
 
-    async decrypt(): Promise<File> {
+    async decrypt(
+        onDecryptProgress: (
+            completed: boolean,
+            percentage: number,
+        ) => void = () => { },
+        onFileDownloadProgress: (
+            completed: boolean,
+            percentage: number,
+        ) => void = () => { },
+    ): Promise<File> {
         const url = await this.skynetClient.getSkylinkUrl(this.encryptedFile.skylink);
 
         let data: Blob;
@@ -34,12 +43,17 @@ export default class AESFileDecrypt implements FileDecrypt {
             const response = await axios({
                 method: 'get',
                 url: url,
-                responseType: "text"
+                responseType: "text",
+                onDownloadProgress: progressEvent => {
+                    const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    onFileDownloadProgress(false, progress);
+                }
             });
 
+            onFileDownloadProgress(true, 100);
             data = response.data;
         } catch (error) {
-            console.error(error);
+            onFileDownloadProgress(true, 0);
         }
 
         const totalChunks = Math.ceil(this.encryptedFile.size / CHUNK_SIZE);
@@ -57,8 +71,13 @@ export default class AESFileDecrypt implements FileDecrypt {
                 );
             }
 
+            const progress = Math.floor(i + 1 / totalChunks * 100);
+            onDecryptProgress(false, progress);
+
             this.parts.push(chunkPart);
         }
+
+        onDecryptProgress(true, 100);
 
         const fileEnc = new Blob(this.parts, { type: this.encryptedFile.mimeType });
 

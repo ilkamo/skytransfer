@@ -44,12 +44,13 @@ import {
   UPLOAD_ENDPOINT,
 } from '../../config';
 import TabCards from '../common/tabs-cards';
-import QR  from './qr';
+import QR from './qr';
+import StatusBar from './status-bar';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -60,7 +61,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => { }, 5000);
+let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
@@ -140,10 +141,21 @@ const Uploader = () => {
     window.location.reload();
   };
 
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [decryptProgress, setDecryptProgress] = useState(0);
+  const [encryptProgress, setEncryptProgress] = useState(0);
+
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
 
-    const file: File = await decrypt.decrypt();
+    const file: File = await decrypt.decrypt(
+      (completed, eProgress) => {
+        setDecryptProgress(eProgress);
+      },
+      (completed, dProgress) => {
+        setDownloadProgress(dProgress);
+      }
+    );
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -217,7 +229,11 @@ const Uploader = () => {
       uploadCount++;
 
       const fe = new AESFileEncrypt(file, encryptionKey);
-      resolve(fe.encrypt());
+      resolve(
+        fe.encrypt((completed, eProgress) => {
+          setEncryptProgress(eProgress);
+        })
+      );
     });
   };
 
@@ -384,34 +400,41 @@ const Uploader = () => {
       )}
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <DirectoryTree
-          multiple
-          showIcon={false}
-          showLine
-          className="file-tree default-margin"
-          disabled={isLoading}
-          defaultExpandAll={true}
-          switcherIcon={<DownOutlined className="directory-switcher" />}
-          onSelect={(selectedKeys, info) => {
-            if (info.node.children && info.node.children.length !== 0) {
-              return; // it is a folder
-            }
+        <div className="default-margin">
+          <StatusBar
+            downloadProgress={downloadProgress}
+            decryptProgress={decryptProgress}
+            encryptProgress={encryptProgress}
+          />
+          <DirectoryTree
+            multiple
+            showIcon={false}
+            showLine
+            className="file-tree default-margin"
+            disabled={isLoading}
+            defaultExpandAll={true}
+            switcherIcon={<DownOutlined className="directory-switcher" />}
+            onSelect={(selectedKeys, info) => {
+              if (info.node.children && info.node.children.length !== 0) {
+                return; // it is a folder
+              }
 
-            /* 
+              /* 
                 TODO: use utils.fileSize(item.size) to add more file info
               */
 
-            const key: string = `${info.node.key}`;
-            const ff = uploadedEncryptedFiles.find(
-              (f) => f.uuid === key.split('_')[0]
-            );
-            if (ff) {
-              message.loading(`Download and decryption started`);
-              downloadFile(ff);
-            }
-          }}
-          treeData={renderTree(uploadedEncryptedFiles)}
-        />
+              const key: string = `${info.node.key}`;
+              const ff = uploadedEncryptedFiles.find(
+                (f) => f.uuid === key.split('_')[0]
+              );
+              if (ff) {
+                message.loading(`Download and decryption started`);
+                downloadFile(ff);
+              }
+            }}
+            treeData={renderTree(uploadedEncryptedFiles)}
+          />
+        </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
           {loading ? <Spin /> : <span>No uploaded data</span>}
@@ -449,18 +472,28 @@ const Uploader = () => {
           links allow file download without editing.
         </p>
 
-        <TabCards values={
-          [
+        <TabCards
+          values={[
             {
-              name: "Read/write link",
-              content: <QR qrValue={getReadWriteLink()} linkOnClick={copyReadWriteLink} />
+              name: 'Read/write link',
+              content: (
+                <QR
+                  qrValue={getReadWriteLink()}
+                  linkOnClick={copyReadWriteLink}
+                />
+              ),
             },
             {
-              name: "Read only link",
-              content: <QR qrValue={getReadOnlyLink()} linkOnClick={copyReadOnlyLink} />
-            }
-          ]
-        } />
+              name: 'Read only link',
+              content: (
+                <QR
+                  qrValue={getReadOnlyLink()}
+                  linkOnClick={copyReadOnlyLink}
+                />
+              ),
+            },
+          ]}
+        />
       </Modal>
     </div>
   );

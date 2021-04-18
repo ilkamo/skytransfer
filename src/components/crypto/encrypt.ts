@@ -19,7 +19,12 @@ export default class AESFileEncrypt implements FileEncrypt {
         this.currentChunkFinalByte = CHUNK_SIZE > this.file.size ? this.file.size : CHUNK_SIZE;
     }
 
-    async encrypt(): Promise<File> {
+    async encrypt(
+        onEncryptProgress: (
+            completed: boolean,
+            percentage: number,
+        ) => void = () => { },
+    ): Promise<File> {
         const totalChunks = Math.ceil(this.file.size / CHUNK_SIZE);
 
         for (let i = 0; i < totalChunks; i++) {
@@ -35,8 +40,13 @@ export default class AESFileEncrypt implements FileEncrypt {
                 );
             }
 
+            const progress = Math.floor(i + 1 / totalChunks * 100);
+            onEncryptProgress(false, progress);
+
             this.parts.push(chunkPart);
         }
+
+        onEncryptProgress(true, 100);
 
         const fileEnc = new Blob(this.parts, { type: this.file.type });
 

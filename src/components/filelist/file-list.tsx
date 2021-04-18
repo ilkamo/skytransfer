@@ -16,6 +16,7 @@ import {
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../crypto/decrypt';
 import { SESSION_KEY_NAME } from '../../config';
+import StatusBar from '../uploader/status-bar';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -48,9 +49,19 @@ const FileList = () => {
     setlLoading(false);
   });
 
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [decryptProgress, setDecryptProgress] = useState(0);
+
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
-    const file: File = await decrypt.decrypt();
+    const file: File = await decrypt.decrypt(
+      (completed, eProgress) => {
+        setDecryptProgress(eProgress);
+      },
+      (completed, dProgress) => {
+        setDownloadProgress(dProgress);
+      }
+    );
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -109,6 +120,11 @@ const FileList = () => {
               <Alert
                 message="Click on a file to start downloading"
                 type="info"
+              />
+              <StatusBar
+                downloadProgress={downloadProgress}
+                decryptProgress={decryptProgress}
+                encryptProgress={0}
               />
               <Tree
                 className="file-tree default-margin"
