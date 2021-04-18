@@ -1,7 +1,10 @@
+import { SkynetClient } from 'skynet-js';
 import CryptoJS from "crypto-js";
 import { EncryptedFileReference } from "../../models/encryption";
-import { SKYNET_CLIENT } from "../../config";
 import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from "./crypto";
+import { DEFAULT_DOMAIN } from "../../config";
+import axios from "axios";
+
 
 export default class AESFileDecrypt implements FileDecrypt {
     readonly encryptedFile: EncryptedFileReference;
@@ -9,6 +12,8 @@ export default class AESFileDecrypt implements FileDecrypt {
 
     currentChunkStartByte: number;
     currentChunkFinalByte: number;
+
+    skynetClient = new SkynetClient(DEFAULT_DOMAIN);
 
     parts: BlobPart[] = [];
 
@@ -21,7 +26,21 @@ export default class AESFileDecrypt implements FileDecrypt {
     }
 
     async decrypt(): Promise<File> {
-        const { data } = await SKYNET_CLIENT.getFileContent(this.encryptedFile.skylink);
+        const url = await this.skynetClient.getSkylinkUrl(this.encryptedFile.skylink);
+
+        let data: Blob;
+
+        try {
+            const response = await axios({
+                method: 'get',
+                url: url,
+                responseType: "text"
+            });
+
+            data = response.data;
+        } catch (error) {
+            console.error(error);
+        }
 
         const totalChunks = Math.ceil(this.encryptedFile.size / CHUNK_SIZE);
 

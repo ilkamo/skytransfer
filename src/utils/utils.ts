@@ -1,8 +1,10 @@
 import { EncryptedFileReference } from '../models/encryption';
-import { genKeyPairFromSeed } from "skynet-js";
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME, SKYNET_CLIENT } from '../config';
+import { genKeyPairFromSeed, SkynetClient } from "skynet-js";
+import { DEFAULT_DOMAIN, ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 
 class Utils {
+  skynetClient = new SkynetClient(DEFAULT_DOMAIN);
+
   public generateEncryptionKey(sessionPrivateKey: string): string {
     return genKeyPairFromSeed(`${sessionPrivateKey}-aes-encrypt`).privateKey;
   }
@@ -14,13 +16,11 @@ class Utils {
       }
 
       try {
-        await SKYNET_CLIENT.db.setJSON(
+        await this.skynetClient.db.setJSON(
           sessionPrivateKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
-          encryptedFiles,
-          undefined,
           {
-            timeout: 5,
+            data: encryptedFiles,
           },
         );
         return resolve(true);
@@ -31,16 +31,20 @@ class Utils {
   }
 
   public async getSessionEncryptedFiles(sessionPublicKey: string): Promise<EncryptedFileReference[]> {
+    let files: EncryptedFileReference[] = [];
+
     return new Promise(async (resolve, reject) => {
       try {
-        const { data } = await SKYNET_CLIENT.db.getJSON(
+        const { data } = await this.skynetClient.db.getJSON(
           sessionPublicKey,
           ENCRYPTED_FILES_SKYDB_KEY_NAME,
-          {
-            timeout: 5,
-          },
         );
-        return resolve(data);
+
+        if (data) {
+          files = data.data as EncryptedFileReference[];
+        }
+
+        return resolve(files);
       } catch (error) {
         return reject(error);
       }

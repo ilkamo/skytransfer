@@ -11,6 +11,7 @@
     "@ant-design/icons": "^4.6.2",
     "@types/uuid": "^8.3.0",
     "antd": "^4.15.0",
+    "axios": "^0.21.1",
     "crypto-js": "^4.0.0",
     "prettier": "^2.2.1",
     "react": "^17.0.1",
@@ -22,7 +23,7 @@
     "react-qr-svg": "^2.3.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
-    "skynet-js": "^3.0.2",
+    "skynet-js": "^4.0.1-beta",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {

@@ -2689,7 +2689,7 @@ axe-core@^4.0.2:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.1.4.tgz#f19cd99a84ee32a318b9c5b5bb8ed373ad94f143"
   integrity sha512-Pdgfv6iP0gNx9ejRGa3zE7Xgkj/iclXqLfe7BnatdZz0QnLZ3jrRHUVH8wNSdN68w05Sk3ShGTb3ydktMTooig==
 
-axios@^0.21.0:
+axios@^0.21.0, axios@^0.21.1:
   version "0.21.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
   integrity sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==
@@ -8396,6 +8396,11 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
 
+post-me@^0.4.5:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/post-me/-/post-me-0.4.5.tgz#6171b721c7b86230c51cfbe48ddea047ef8831ce"
+  integrity sha512-XgPdktF/2M5jglgVDULr9NUb/QNv3bY3g6RG22iTb5MIMtB07/5FJB5fbVmu5Eaopowc6uZx7K3e7x1shPwnXw==
+
 postcss-attribute-case-insensitive@^4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/postcss-attribute-case-insensitive/-/postcss-attribute-case-insensitive-4.0.2.tgz#d93e46b504589e94ac7277b0463226c68041a880"
@@ -10701,10 +10706,10 @@ sjcl@^1.0.8:
   resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.8.tgz#f2ec8d7dc1f0f21b069b8914a41a8f236b0e252a"
   integrity sha512-LzIjEQ0S0DpIgnxMEayM1rq9aGwGRG4OnZhCdjx7glTaJtf4zRfpg87ImfjSJjoW9vKpagd82McDOwbRT5kQKQ==
 
-skynet-js@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-3.0.2.tgz#d08a33066ee85b86e4ffc7c31591239a88da6fbe"
-  integrity sha512-rbmpOGbDwg2FcsZ7HkmGhVaUwWO6kaysRFKTBC3yGiV+b6fbnpPPNCskvh8kWwbTsj+koWkSRUFYqG7cc+eTuA==
+skynet-js@^4.0.1-beta:
+  version "4.0.1-beta"
+  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.0.1-beta.tgz#cafe16c4534c6da260cc7205cdda103d367c5cb0"
+  integrity sha512-OtuMVeM8b1RySHi4TByhtVv1Oxd7sIcC4fRZaQnVL3qqQba99DgR8nvg8uXbblD1nxiB0dUR/p0Yrck8QOGW/A==
   dependencies:
     "@babel/runtime" "^7.11.2"
     axios "^0.21.0"
@@ -10714,11 +10719,20 @@ skynet-js@^3.0.2:
     buffer "^6.0.1"
     mime "^2.5.2"
     path-browserify "^1.0.1"
+    post-me "^0.4.5"
     randombytes "^2.1.0"
     sjcl "^1.0.8"
+    skynet-mysky-utils "^0.1.2"
     tweetnacl "^1.0.3"
     url-join "^4.0.1"
-    url-parse "^1.4.7"
+    url-parse "1.4.7"
+
+skynet-mysky-utils@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/skynet-mysky-utils/-/skynet-mysky-utils-0.1.2.tgz#1ca5e9cf69a71ac67dd805c90371fd71f622adc1"
+  integrity sha512-ehPGwIIMldrG6S4ynkvElcqMeSrT85ignto1z/Nx3yFcHiiNDRLq5y6ZGXdSSNw2XfVSi8e66wjbL0qlNNCZog==
+  dependencies:
+    post-me "^0.4.5"
 
 slash@^3.0.0:
   version "3.0.0"
@@ -11763,7 +11777,15 @@ url-loader@4.1.1:
     mime-types "^2.1.27"
     schema-utils "^3.0.0"
 
-url-parse@^1.4.3, url-parse@^1.4.7:
+url-parse@1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.4.7.tgz#a8a83535e8c00a316e403a5db4ac1b9b853ae278"
+  integrity sha512-d3uaVyzDB9tQoSXFvuSUNFibTd9zxd2bkVrDRvF5TmvWWQwqE4lgYJ5m+x1DbecWkw+LK4RNl2CU1hHuOKPVlg==
+  dependencies:
+    querystringify "^2.1.1"
+    requires-port "^1.0.0"
+
+url-parse@^1.4.3:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.1.tgz#d5fa9890af8a5e1f274a2c98376510f6425f6e3b"
   integrity sha512-HOfCOUJt7iSYzEx/UqgtwKRMC6EU91NFhsCHMv9oM03VJcVo2Qrp8T8kI9D7amFf1cu+/3CEhgb3rF9zL7k85Q==
