@@ -1,8 +1,8 @@
 import CryptoJS from "crypto-js";
 
-import { ENCRYPT_CHUNK_SIZE as CHUNK_SIZE } from "./crypto";
+import { ENCRYPT_CHUNK_SIZE as CHUNK_SIZE, FileEncrypt } from "./crypto";
 
-export default class FileEncrypt {
+export default class AESFileEncrypt implements FileEncrypt {
     readonly file: File;
     readonly encryptionKey: string;
 

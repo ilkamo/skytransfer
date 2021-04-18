@@ -1,9 +1,9 @@
 import CryptoJS from "crypto-js";
-
 import { EncryptedFileReference } from "../../models/encryption";
-import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, SKYNET_CLIENT } from "./crypto";
+import { SKYNET_CLIENT } from "../../config";
+import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from "./crypto";
 
-export default class FileDecrypt {
+export default class AESFileDecrypt implements FileDecrypt {
     readonly encryptedFile: EncryptedFileReference;
     readonly encryptionKey: string;
 

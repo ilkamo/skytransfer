@@ -1,4 +1,4 @@
-import './DropZone.css';
+import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
@@ -35,15 +35,16 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
-import FileEncrypt from '../crypto/encrypt';
-import FileDecrypt from '../crypto/decrypt';
+import AESFileEncrypt from '../crypto/encrypt';
+import AESFileDecrypt from '../crypto/decrypt';
+import {
+  MAX_PARALLEL_UPLOAD,
+  SESSION_KEY_NAME,
+  UPLOAD_ENDPOINT,
+} from '../../config';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
-
-const SESSION_KEY_NAME = 'sessionKey';
-const uploadEndpoint = 'https://ilkamo.hns.siasky.net/skynet/skyfile';
-const maxParallelUpload = 5;
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -62,7 +63,7 @@ let uploadCount = 0;
 
 const utils: Utils = new Utils();
 
-const DropZone = () => {
+const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [sessionPublicKey, setSessionPublicKey] = useState('');
   const [sessionPrivateKey, setSessionPrivateKey] = useState('');
@@ -137,7 +138,7 @@ const DropZone = () => {
   };
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const decrypt = new FileDecrypt(encryptedFile, encryptionKey);
+    const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
 
     const file: File = await decrypt.decrypt();
 
@@ -206,13 +207,13 @@ const DropZone = () => {
 
   const queueParallelUpload = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
-      while (uploadCount > maxParallelUpload) {
+      while (uploadCount > MAX_PARALLEL_UPLOAD) {
         await sleep(1000);
       }
 
       uploadCount++;
 
-      const fe = new FileEncrypt(file, encryptionKey);
+      const fe = new AESFileEncrypt(file, encryptionKey);
       resolve(fe.encrypt());
     });
   };
@@ -220,12 +221,13 @@ const DropZone = () => {
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: uploadEndpoint,
+    action: UPLOAD_ENDPOINT,
     fileList: uploadingFileList,
     directory: !isMobile,
     showUploadList: {
       showRemoveIcon: true,
     },
+    openFileDialogOnClick: isMobile ? true : false,
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
@@ -352,7 +354,11 @@ const DropZone = () => {
           <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
         </p>
         <p className="ant-upload-text">
-          Drag & Drop files/folders here or click to upload
+          {isMobile ? (
+            <span>Click here to upload</span>
+          ) : (
+            <span>Drag & Drop files/folders here to upload</span>
+          )}
         </p>
         {isEncrypting ? (
           <Spin tip="File encryption/upload started. Please wait ..." />
@@ -462,4 +468,4 @@ const DropZone = () => {
   );
 };
 
-export default DropZone;
+export default Uploader;
