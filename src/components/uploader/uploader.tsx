@@ -23,7 +23,6 @@ import {
   Spin,
   Tree,
   Empty,
-  Progress,
 } from 'antd';
 
 import {
