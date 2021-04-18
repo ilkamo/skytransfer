@@ -37,7 +37,11 @@ import { renderTree } from '../../utils/walker';
 import { FileRelativePathInfo } from '../../models/file-tree';
 import AESFileEncrypt from '../crypto/encrypt';
 import AESFileDecrypt from '../crypto/decrypt';
-import { MAX_PARALLEL_UPLOAD, SESSION_KEY_NAME, UPLOAD_ENDPOINT } from '../../app.config';
+import {
+  MAX_PARALLEL_UPLOAD,
+  SESSION_KEY_NAME,
+  UPLOAD_ENDPOINT,
+} from '../../app.config';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -223,6 +227,7 @@ const Uploader = () => {
     showUploadList: {
       showRemoveIcon: true,
     },
+    openFileDialogOnClick: isMobile ? true : false,
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
@@ -349,7 +354,12 @@ const Uploader = () => {
           <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
         </p>
         <p className="ant-upload-text">
-          Drag & Drop files/folders here or click to upload
+        {isMobile ? (
+          <span>Click here to upload</span>
+        ) : (
+          <span>Drag & Drop files/folders here to upload</span>
+        )}
+          
         </p>
         {isEncrypting ? (
           <Spin tip="File encryption/upload started. Please wait ..." />
