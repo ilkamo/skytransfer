@@ -1,4 +1,4 @@
-import "./App.css";
+import "./app.css";
 
 import {
   HashRouter as Router,
@@ -6,8 +6,8 @@ import {
   Route,
 } from "react-router-dom";
 
-import DropZone from "./components/dropzone/DropZone";
-import FileList from "./components/filelist/FileList";
+import Uploader from "./components/uploader/uploader";
+import FileList from "./components/filelist/file-list";
 
 import { Layout } from 'antd';
 
@@ -27,7 +27,7 @@ function App() {
             </Route>
             <Route path="/">
               <Content>
-                <DropZone />
+                <Uploader />
               </Content>
             </Route>
           </Switch>

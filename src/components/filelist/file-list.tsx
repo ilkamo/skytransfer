@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 
 import Utils from '../../utils/utils';
-import { EncryptedFileReference } from './../../models/encryption';
+import { EncryptedFileReference } from '../../models/encryption';
 
 import { Button, Empty, Divider, Menu, message, Tree, Spin, Alert } from 'antd';
 import {
@@ -14,7 +14,8 @@ import {
   DownOutlined,
 } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import FileDecrypt from '../crypto/decrypt';
+import AESFileDecrypt from '../crypto/decrypt';
+import { SESSION_KEY_NAME } from '../../app.config';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -22,8 +23,6 @@ const useConstructor = (callBack = () => {}) => {
   callBack();
   hasBeenCalled.current = true;
 };
-
-const SESSION_KEY_NAME = 'sessionKey';
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
@@ -50,7 +49,7 @@ const FileList = () => {
   });
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const decrypt = new FileDecrypt(encryptedFile, encryptionKey);
+    const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
     const file: File = await decrypt.decrypt();
 
     if (window.navigator.msSaveOrOpenBlob) {
