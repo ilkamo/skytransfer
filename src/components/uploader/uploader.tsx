@@ -2,7 +2,6 @@ import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
-import { QRCode } from "react-qr-svg";
 
 import {
   EncryptionType,
@@ -45,6 +44,7 @@ import {
   UPLOAD_ENDPOINT,
 } from '../../config';
 import TabCards from '../common/tabs-cards';
+import QR  from './qr';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -453,27 +453,11 @@ const Uploader = () => {
           [
             {
               name: "Read/write link",
-              content: <>
-                <QRCode
-                  bgColor="#FFFFFF"
-                  fgColor="#000000"
-                  level="L"
-                  value={getReadWriteLink()}
-                />
-                <Button type="dashed" block size="middle" onClick={copyReadWriteLink}>Copy link!</Button>
-              </>
+              content: <QR qrValue={getReadWriteLink()} linkOnClick={copyReadWriteLink} />
             },
             {
               name: "Read only link",
-              content: <>
-                <QRCode
-                  bgColor="#FFFFFF"
-                  fgColor="#000000"
-                  level="L"
-                  value={getReadOnlyLink()}
-                />
-                <Button type="dashed" block size="middle" onClick={copyReadOnlyLink}>Copy link!</Button>
-              </>
+              content: <QR qrValue={getReadOnlyLink()} linkOnClick={copyReadOnlyLink} />
             }
           ]
         } />
