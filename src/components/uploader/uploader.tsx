@@ -399,13 +399,14 @@ const Uploader = () => {
         </div>
       )}
 
+      <StatusBar
+        downloadProgress={downloadProgress}
+        decryptProgress={decryptProgress}
+        encryptProgress={encryptProgress}
+      />
+
       {uploadedEncryptedFiles.length > 0 ? (
         <div className="default-margin">
-          <StatusBar
-            downloadProgress={downloadProgress}
-            decryptProgress={decryptProgress}
-            encryptProgress={encryptProgress}
-          />
           <DirectoryTree
             multiple
             showIcon={false}
