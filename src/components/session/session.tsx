@@ -1,10 +1,4 @@
-import { useRef, useState } from 'react';
-
-import { SkynetClient } from 'skynet-js';
-
-// choose a data domain for saving files in MySky
-const dataDomain = 'ilkamo.hns';
-const skynetClient = new SkynetClient('https://siasky.net');
+import { useRef } from 'react';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -14,28 +8,15 @@ const useConstructor = (callBack = () => {}) => {
 };
 
 const Session = () => {
-  const [errorMessage, setErrorMessage] = useState('');
-
   const initSession = async () => {
-    try {
-      const mySky = await skynetClient.loadMySky(dataDomain, {
-        dev: true,
-        debug: true,
-      });
-
-      if (!(await mySky.checkLogin())) {
-        mySky.requestLoginAccess();
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    // TODO: add session logic
   };
 
   useConstructor(() => {
     initSession();
   });
 
-  return <div className="container">test</div>;
+  return '';
 };
 
 export default Session;
