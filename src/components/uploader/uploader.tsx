@@ -2,6 +2,7 @@ import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 import { genKeyPairAndSeed } from 'skynet-js';
+
 import {
   EncryptionType,
   EncryptedFileReference,
@@ -42,11 +43,13 @@ import {
   SESSION_KEY_NAME,
   UPLOAD_ENDPOINT,
 } from '../../config';
+import TabCards from '../common/tabs-cards';
+import QR  from './qr';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -57,7 +60,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => {}, 5000);
+let timeoutID = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
@@ -227,7 +230,7 @@ const Uploader = () => {
     showUploadList: {
       showRemoveIcon: true,
     },
-    openFileDialogOnClick: isMobile ? true : false,
+    openFileDialogOnClick: isMobile,
     onChange(info) {
       setUploadCompleted(false);
       setUploading(true);
@@ -432,29 +435,11 @@ const Uploader = () => {
         title="Upload completed"
         centered
         visible={uploadCompleted}
-        okText="Copy link"
         cancelText="Continue"
         onCancel={() => {
           setUploadCompleted(false);
         }}
-        footer={[
-          <Button
-            key="read-write"
-            type="primary"
-            onClick={copyReadWriteLink}
-            icon={<CopyOutlined />}
-          >
-            Read/Write
-          </Button>,
-          <Button
-            key="read-only"
-            type="primary"
-            onClick={copyReadOnlyLink}
-            icon={<CopyOutlined />}
-          >
-            Read only
-          </Button>,
-        ]}
+        footer={null}
       >
         <p>
           Your <strong>SkyTransfer</strong> is ready. Your files have been
@@ -463,6 +448,19 @@ const Uploader = () => {
           read/write link, others can add files to your SkyTransfer. Read only
           links allow file download without editing.
         </p>
+
+        <TabCards values={
+          [
+            {
+              name: "Read/write link",
+              content: <QR qrValue={getReadWriteLink()} linkOnClick={copyReadWriteLink} />
+            },
+            {
+              name: "Read only link",
+              content: <QR qrValue={getReadOnlyLink()} linkOnClick={copyReadOnlyLink} />
+            }
+          ]
+        } />
       </Modal>
     </div>
   );
