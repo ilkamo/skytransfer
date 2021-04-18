@@ -10,6 +10,7 @@ import Uploader from "./components/uploader/uploader";
 import FileList from "./components/filelist/file-list";
 
 import { Layout } from 'antd';
+import Session from "./components/session/session";
 
 const { Header, Content } = Layout;
 
@@ -18,6 +19,7 @@ function App() {
     <Router>
       <div>
         <Layout className="layout">
+          <Session />
           <Header className="title">SkyTransfer</Header>
           <Switch>
             <Route path="/:transferKey/:encryptionKey">
