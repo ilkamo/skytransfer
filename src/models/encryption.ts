@@ -10,6 +10,7 @@ export interface EncryptedFileReference {
   encryptionType: EncryptionType
   relativePath: string
   size: number
+  encryptedSize: number
 }
 
 export interface SkyDBEncryptedData {

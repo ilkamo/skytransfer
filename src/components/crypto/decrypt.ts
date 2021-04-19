@@ -22,7 +22,7 @@ export default class AESFileDecrypt implements FileDecrypt {
         this.encryptionKey = encryptionKey;
 
         this.currentChunkStartByte = 0;
-        this.currentChunkFinalByte = CHUNK_SIZE > this.encryptedFile.size ? this.encryptedFile.size : CHUNK_SIZE;
+        this.currentChunkFinalByte = CHUNK_SIZE > this.encryptedFile.encryptedSize ? this.encryptedFile.encryptedSize : CHUNK_SIZE;
     }
 
     async decrypt(
@@ -56,14 +56,14 @@ export default class AESFileDecrypt implements FileDecrypt {
             onFileDownloadProgress(true, 0);
         }
 
-        const totalChunks = Math.ceil(this.encryptedFile.size / CHUNK_SIZE);
+        const totalChunks = Math.ceil(this.encryptedFile.encryptedSize / CHUNK_SIZE);
 
         for (let i = 0; i < totalChunks; i++) {
             let chunkPart: BlobPart;
 
             if (i === totalChunks - 1) {
                 chunkPart = await this.decryptBlob(
-                    data.slice(i * CHUNK_SIZE, this.encryptedFile.size),
+                    data.slice(i * CHUNK_SIZE, this.encryptedFile.encryptedSize),
                 );
             } else {
                 chunkPart = await this.decryptBlob(
