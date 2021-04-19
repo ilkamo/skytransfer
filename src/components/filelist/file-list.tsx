@@ -16,7 +16,7 @@ import {
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../crypto/decrypt';
 import { SESSION_KEY_NAME } from '../../config';
-import StatusBar from '../uploader/status-bar';
+import ActivityBar from '../uploader/activity-bar';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -121,7 +121,7 @@ const FileList = () => {
                 message="Click on a file to start downloading"
                 type="info"
               />
-              <StatusBar
+              <ActivityBar
                 downloadProgress={downloadProgress}
                 decryptProgress={decryptProgress}
                 encryptProgress={0}
