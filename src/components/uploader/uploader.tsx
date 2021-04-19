@@ -44,7 +44,7 @@ import {
 } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
-import StatusBar from './status-bar';
+import ActivityBar from './activity-bar';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -112,6 +112,7 @@ const Uploader = () => {
   const getReadOnlyLink = () => {
     return `${window.location.hostname}/#/${sessionPublicKey}/${encryptionKey}`;
   };
+
   const getReadWriteLink = () => {
     return `${window.location.hostname}/#/${sessionPrivateKey}/${encryptionKey}`;
   };
@@ -136,6 +137,30 @@ const Uploader = () => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [decryptProgress, setDecryptProgress] = useState(0);
   const [encryptProgress, setEncryptProgress] = useState(0);
+
+  useEffect(() => {
+    if (downloadProgress === 100) {
+      setTimeout(() => {
+        setDownloadProgress(0);
+      }, 500);
+    }
+  }, [downloadProgress]);
+
+  useEffect(() => {
+    if (decryptProgress === 100) {
+      setTimeout(() => {
+        setDecryptProgress(0);
+      }, 500);
+    }
+  }, [decryptProgress]);
+
+  useEffect(() => {
+    if (encryptProgress === 100) {
+      setTimeout(() => {
+        setEncryptProgress(0);
+      }, 500);
+    }
+  }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
@@ -359,19 +384,7 @@ const Uploader = () => {
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
-      {isLoading && uploadedEncryptedFiles.length > 0 && (
-        <div className="default-margin">
-          <Spin tip="Loading...">
-            <Alert
-              message="Sync in progress"
-              description="Processing, encrypting and uploading files. Wait..."
-              type="info"
-            />
-          </Spin>
-        </div>
-      )}
-
-      <StatusBar
+      <ActivityBar
         downloadProgress={downloadProgress}
         decryptProgress={decryptProgress}
         encryptProgress={encryptProgress}
@@ -448,7 +461,7 @@ const Uploader = () => {
         <TabCards
           values={[
             {
-              name: 'Read/write link',
+              name: 'Read-write link',
               content: (
                 <QR
                   qrValue={getReadWriteLink()}
@@ -457,7 +470,7 @@ const Uploader = () => {
               ),
             },
             {
-              name: 'Read only link',
+              name: 'Read-only link',
               content: (
                 <QR
                   qrValue={getReadOnlyLink()}
