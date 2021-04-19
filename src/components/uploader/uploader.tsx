@@ -35,7 +35,6 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import { FileRelativePathInfo } from '../../models/file-tree';
 import AESFileEncrypt from '../crypto/encrypt';
 import AESFileDecrypt from '../crypto/decrypt';
 import {
@@ -46,6 +45,7 @@ import {
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
 import ActivityBar from './activity-bar';
+import axios from 'axios';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -194,10 +194,6 @@ const Uploader = () => {
     }
   };
 
-  const [
-    fileRelativePaths,
-    setFileRelativePaths,
-  ] = useState<FileRelativePathInfo>({});
   const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
   const [encryptionQueue, setEncryptionQueue] = useState<UploadFile[]>([]);
 
@@ -238,14 +234,10 @@ const Uploader = () => {
   ]);
 
   useEffect(() => {
-    if (encryptionQueue.length === 0) {
-      setIsEncrypting(false);
-    } else {
-      setIsEncrypting(true);
-    }
+    setIsEncrypting(encryptionQueue.length !== 0);
   }, [encryptionQueue]);
 
-  const queueParallelUpload = (file: File): Promise<File> => {
+  const queueParallelEncryption = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
       while (uploadCount > MAX_PARALLEL_UPLOAD) {
         await sleep(1000);
@@ -262,6 +254,35 @@ const Uploader = () => {
     });
   };
 
+  const uploadFile = async (options) => {
+    const { onSuccess, onError, file, onProgress } = options;
+
+    setEncryptionQueue((prev) => [...prev, file]);
+    const encryptedFile = await queueParallelEncryption(file);
+
+    const formData = new FormData();
+    formData.append('file', encryptedFile);
+
+    const config = {
+      headers: { 'content-type': 'multipart/form-data' },
+      onUploadProgress: (e) => {
+        onProgress({ percent: (e.loaded / e.total) * 100 }, encryptedFile);
+      },
+    };
+
+    axios
+      .post(UPLOAD_ENDPOINT, formData, config)
+      .then((res) => {
+        onSuccess({
+          data: res.data,
+          encryptedFileSize: encryptedFile.size,
+        });
+      })
+      .catch((err) => {
+        onError(err);
+      });
+  };
+
   const draggerConfig = {
     name: 'file',
     multiple: true,
@@ -271,6 +292,7 @@ const Uploader = () => {
     showUploadList: {
       showRemoveIcon: true,
     },
+    customRequest: uploadFile,
     openFileDialogOnClick: isMobile,
     onChange(info) {
       setUploadCompleted(false);
@@ -303,19 +325,19 @@ const Uploader = () => {
           );
         }
 
-        const relativePath = fileRelativePaths.hasOwnProperty(info.file.uid)
-          ? fileRelativePaths[info.file.uid]
+        const relativePath = info.file.originFileObj.webkitRelativePath
+          ? info.file.originFileObj.webkitRelativePath
           : info.file.name;
 
         const tempFile: EncryptedFileReference = {
           uuid: uuid(),
-          skylink: info.file.response.skylink,
+          skylink: info.file.response.data.skylink,
           encryptionType: EncryptionType.AES,
           fileName: info.file.name,
           mimeType: info.file.type,
           relativePath: relativePath,
-
-          size: info.file.size, // TODO: use original file size
+          size: info.file.size,
+          encryptedSize: info.file.response.encryptedFileSize,
         };
 
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -328,23 +350,6 @@ const Uploader = () => {
       } else if (status === 'error') {
         message.error(`${info.file.name} file upload failed.`);
       }
-    },
-    beforeUpload(file, filelist): boolean | Promise<File> {
-      setEncryptionQueue((prev) => [...prev, file]);
-
-      /* 
-        This is a support structure for storing webkitRelativePath.
-        This field is missing after file is encrypted because it is a read only prop.
-      */
-      setFileRelativePaths((prev) => {
-        const temp = {};
-        temp[file.uid] = file.webkitRelativePath
-          ? file.webkitRelativePath
-          : file.name;
-        return { ...prev, ...temp };
-      });
-
-      return queueParallelUpload(file);
     },
     onRemove(file): boolean {
       setUploadingFileList((prev) => prev.filter((f) => f.uid !== file.uid));

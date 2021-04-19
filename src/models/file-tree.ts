@@ -4,7 +4,3 @@ export interface FileNode {
     children?: FileNode[]
     isLeaf: boolean
 }
-
-export interface FileRelativePathInfo {
-    [uid: string]: string
-}
