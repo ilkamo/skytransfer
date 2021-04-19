@@ -39,7 +39,6 @@ import { FileRelativePathInfo } from '../../models/file-tree';
 import AESFileEncrypt from '../crypto/encrypt';
 import AESFileDecrypt from '../crypto/decrypt';
 import {
-  MAX_PARALLEL_UPLOAD,
   SESSION_KEY_NAME,
   UPLOAD_ENDPOINT,
 } from '../../config';
@@ -57,14 +56,7 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
-const sleep = (ms): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-let timeoutID = setTimeout(() => {}, 5000);
-
-let uploadCount = 0;
-
+let timeoutID = setTimeout(() => {}, 0);
 const utils: Utils = new Utils();
 
 const Uploader = () => {
@@ -213,21 +205,11 @@ const Uploader = () => {
   ]);
 
   useEffect(() => {
-    if (encryptionQueue.length === 0) {
-      setIsEncrypting(false);
-    } else {
-      setIsEncrypting(true);
-    }
+      setIsEncrypting(encryptionQueue.length !== 0);
   }, [encryptionQueue]);
 
   const queueParallelUpload = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
-      while (uploadCount > MAX_PARALLEL_UPLOAD) {
-        await sleep(1000);
-      }
-
-      uploadCount++;
-
       const fe = new AESFileEncrypt(file, encryptionKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
@@ -253,16 +235,6 @@ const Uploader = () => {
       setUploadingFileList(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
 
       const { status } = info.file;
-
-      // error | success | done | uploading | removed
-      if (
-        status === 'error' ||
-        status === 'success' ||
-        status === 'done' ||
-        status === 'removed'
-      ) {
-        uploadCount--;
-      }
 
       if (status === 'uploading') {
         setEncryptionQueue((prev) =>
