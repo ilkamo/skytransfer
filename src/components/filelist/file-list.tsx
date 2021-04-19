@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useHistory } from 'react-router-dom';
@@ -51,6 +51,22 @@ const FileList = () => {
 
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [decryptProgress, setDecryptProgress] = useState(0);
+
+  useEffect(() => {
+    if (downloadProgress === 100) {
+      setTimeout(() => {
+        setDownloadProgress(0);
+      }, 500);
+    }
+  }, [downloadProgress]);
+
+  useEffect(() => {
+    if (decryptProgress === 100) {
+      setTimeout(() => {
+        setDecryptProgress(0);
+      }, 500);
+    }
+  }, [decryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
