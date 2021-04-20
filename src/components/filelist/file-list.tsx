@@ -7,9 +7,9 @@ import Utils from '../../utils/utils';
 import { EncryptedFileReference } from '../../models/encryption';
 
 import { Button, Empty, Divider, message, Tree, Spin, Alert } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import AESFileDecrypt from '../crypto/decrypt';
+import AESFileDecrypt from '../../crypto/decrypt';
 import { SESSION_KEY_NAME } from '../../config';
 import ActivityBar from '../uploader/activity-bar';
 import { useStateContext } from '../../state/state';
@@ -97,7 +97,7 @@ const FileList = () => {
     <>
       <Divider orientation="left">Shared files</Divider>
       {loadedFiles.length > 0 ? (
-        <div>
+        <>
           <Alert message="Click on a file to start downloading" type="info" />
           <ActivityBar
             downloadProgress={downloadProgress}
@@ -125,17 +125,22 @@ const FileList = () => {
             }}
             treeData={renderTree(loadedFiles)}
           />
-          <Button
-            onClick={async () => {
-              message.loading(`Download and decryption started`);
-              for (const encyptedFile of loadedFiles) {
-                await downloadFile(encyptedFile);
-              }
-            }}
-          >
-            Download all!
-          </Button>
-        </div>
+          <div style={{ textAlign: 'center' }}>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              size="large"
+              onClick={async () => {
+                message.loading(`Download and decryption started`);
+                for (const encyptedFile of loadedFiles) {
+                  await downloadFile(encyptedFile);
+                }
+              }}
+            >
+              Download all files
+            </Button>
+          </div>
+        </>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
           {loading ? <Spin /> : <span>No shared data found</span>}

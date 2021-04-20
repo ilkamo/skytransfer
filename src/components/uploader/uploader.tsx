@@ -14,13 +14,17 @@ import { v4 as uuid } from 'uuid';
 
 import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty } from 'antd';
 
-import { CloudUploadOutlined, DownOutlined } from '@ant-design/icons';
+import {
+  CloudUploadOutlined,
+  DownloadOutlined,
+  DownOutlined,
+} from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../crypto/encrypt';
-import AESFileDecrypt from '../crypto/decrypt';
+import AESFileEncrypt from '../../crypto/encrypt';
+import AESFileDecrypt from '../../crypto/decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
@@ -68,7 +72,7 @@ const Uploader = () => {
     dispatch({
       type: ActionType.READ_WRITE,
     });
-    
+
     const files = await utils.getSessionEncryptedFiles(
       SessionManager.sessionPublicKey
     );
@@ -393,16 +397,21 @@ const Uploader = () => {
       )}
 
       {!isLoading && uploadedEncryptedFiles.length > 0 && (
-        <Button
-          onClick={async () => {
-            message.loading(`Download and decryption started`);
-            for (const encyptedFile of uploadedEncryptedFiles) {
-              await downloadFile(encyptedFile);
-            }
-          }}
-        >
-          Download all!
-        </Button>
+        <div style={{ textAlign: 'center' }}>
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            size="large"
+            onClick={async () => {
+              message.loading(`Download and decryption started`);
+              for (const encyptedFile of uploadedEncryptedFiles) {
+                await downloadFile(encyptedFile);
+              }
+            }}
+          >
+            Download all files
+          </Button>
+        </div>
       )}
 
       <Modal

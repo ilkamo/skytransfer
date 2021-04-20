@@ -1,8 +1,8 @@
 import { SkynetClient } from 'skynet-js';
 import CryptoJS from "crypto-js";
-import { EncryptedFileReference } from "../../models/encryption";
+import { EncryptedFileReference } from "../models/encryption";
 import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from "./crypto";
-import { DEFAULT_DOMAIN } from "../../config";
+import { DEFAULT_DOMAIN } from "../config";
 import axios from "axios";
 
 
