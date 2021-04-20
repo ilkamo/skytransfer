@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 
 const { Header } = Layout;
 
-const Sidebar = () => {
+const AppHeader = () => {
   const { state } = useStateContext();
   const { isReadOnlySession } = state;
   const history = useHistory();
@@ -42,6 +42,7 @@ const Sidebar = () => {
           onClick={() => {
             SessionManager.destroySession();
             history.push('/');
+            window.location.reload();
           }}
           icon={<DeleteOutlined />}
         >
@@ -55,4 +56,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default AppHeader;

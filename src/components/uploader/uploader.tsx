@@ -69,10 +69,6 @@ const Uploader = () => {
   const { dispatch } = useStateContext();
 
   const initSession = async () => {
-    dispatch({
-      type: ActionType.READ_WRITE,
-    });
-
     const files = await utils.getSessionEncryptedFiles(
       SessionManager.sessionPublicKey
     );
@@ -80,6 +76,10 @@ const Uploader = () => {
       setLoading(false);
       return;
     }
+
+    dispatch({
+      type: ActionType.READ_WRITE,
+    });
 
     setUploadedEncryptedFiles((prev) => [...prev, ...files]);
     setLoading(false);
@@ -188,12 +188,7 @@ const Uploader = () => {
         setUploading(false);
       }, 5000);
     }
-  }, [
-    uploadingFileList,
-    toStoreInSkyDBCount,
-    uploadedEncryptedFiles,
-    SessionManager.sessionPrivateKey,
-  ]);
+  }, [uploadingFileList, toStoreInSkyDBCount, uploadedEncryptedFiles]);
 
   useEffect(() => {
     setIsEncrypting(encryptionQueue.length !== 0);

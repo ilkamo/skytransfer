@@ -32,10 +32,6 @@ const FileList = () => {
   const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
 
   useConstructor(async () => {
-    dispatch({
-      type: ActionType.READ_ONLY,
-    });
-
     if (transferKey && transferKey.length === 128) {
       localStorage.setItem(SESSION_KEY_NAME, transferKey);
       history.push('/');
@@ -46,6 +42,10 @@ const FileList = () => {
       setlLoading(false);
       return;
     }
+
+    dispatch({
+      type: ActionType.READ_ONLY,
+    });
 
     setLoadedFiles((prev) => [...prev, ...files]);
     setlLoading(false);

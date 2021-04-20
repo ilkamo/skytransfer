@@ -5,19 +5,18 @@ import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
 
-import { Layout, Row } from 'antd';
+import { Layout } from 'antd';
 import ApplicationStateProvider from './state/state';
-import Sidebar from './components/header/header';
+import AppHeader from './components/header/header';
 
-const { Content, Sider } = Layout;
+const { Content } = Layout;
 
 function App() {
   return (
     <Router>
       <ApplicationStateProvider>
-        {/* <Row> */}
         <Layout className="site-layout">
-          <Sidebar />
+          <AppHeader />
           <Content
             className="site-layout-background"
             style={{
@@ -40,8 +39,6 @@ function App() {
             </Switch>
           </Content>
         </Layout>
-        {/* </Col> */}
-        {/* </Row> */}
       </ApplicationStateProvider>
     </Router>
   );
