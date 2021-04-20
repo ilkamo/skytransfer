@@ -330,8 +330,9 @@ const Uploader = () => {
       )}
 
       <Dragger {...draggerConfig}>
+        <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
-          <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
+          <CloudUploadOutlined style={{ color: '#20bf6b' }} />
         </p>
         <p className="ant-upload-text">
           {isMobile ? (
@@ -345,14 +346,13 @@ const Uploader = () => {
         ) : (
           ''
         )}
+        <ActivityBar
+          downloadProgress={downloadProgress}
+          decryptProgress={decryptProgress}
+          encryptProgress={encryptProgress}
+        />
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
-
-      <ActivityBar
-        downloadProgress={downloadProgress}
-        decryptProgress={decryptProgress}
-        encryptProgress={encryptProgress}
-      />
 
       {uploadedEncryptedFiles.length > 0 ? (
         <div className="default-margin">

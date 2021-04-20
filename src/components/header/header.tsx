@@ -14,7 +14,7 @@ const AppHeader = () => {
 
   return (
     <Header>
-      <div className="logo">SkyTransfer</div>
+      {/* <div className="logo">SkyTransfer</div> */}
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
         <Menu.Item
           key="copy-read-write"

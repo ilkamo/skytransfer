@@ -15,14 +15,7 @@ html, body {
 }
 
 .logo {
-  font-size: 20px;
-  float: left;
+  font-size: 30px;
   color: #20bf6b;
   font-weight: bold;
-  text-align: left;
-  margin-right: 10px;
-}
-
-.site-layout {
-  height: 100%;
 }
