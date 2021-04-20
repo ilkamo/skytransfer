@@ -1,4 +1,4 @@
-import { Progress, Tooltip, Card } from 'antd';
+import { Progress, Tooltip } from 'antd';
 
 import { CloudDownloadOutlined, SecurityScanOutlined } from '@ant-design/icons';
 
