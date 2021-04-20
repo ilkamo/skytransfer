@@ -1,7 +1,6 @@
 import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
-import { genKeyPairAndSeed } from 'skynet-js';
 
 import {
   EncryptionType,
@@ -13,39 +12,28 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import {
-  Button,
-  Alert,
-  message,
-  Modal,
-  Menu,
-  Upload,
-  Spin,
-  Tree,
-  Empty,
-} from 'antd';
+import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty } from 'antd';
 
 import {
   CloudUploadOutlined,
-  DeleteOutlined,
-  CopyOutlined,
+  DownloadOutlined,
   DownOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../crypto/encrypt';
-import AESFileDecrypt from '../crypto/decrypt';
-import {
-  MAX_PARALLEL_UPLOAD,
-  SESSION_KEY_NAME,
-  UPLOAD_ENDPOINT,
-} from '../../config';
+import AESFileEncrypt from '../../crypto/encrypt';
+import AESFileDecrypt from '../../crypto/decrypt';
+import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
 import ActivityBar from './activity-bar';
 import axios from 'axios';
+
+import SessionManager from '../../session/session-manager';
+import { useStateContext } from '../../state/state';
+import { ActionType } from '../../state/reducer';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -69,8 +57,6 @@ const utils: Utils = new Utils();
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [sessionPublicKey, setSessionPublicKey] = useState('');
-  const [sessionPrivateKey, setSessionPrivateKey] = useState('');
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
     EncryptedFileReference[]
   >([]);
@@ -80,66 +66,39 @@ const Uploader = () => {
   const [loading, setLoading] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
 
-  const [encryptionKey, setEncryptionKey] = useState('');
-
-  const publicKeyFromPrivateKey = (privateKey: string): string => {
-    return privateKey.substr(privateKey.length - 64);
-  };
+  const { dispatch } = useStateContext();
 
   const initSession = async () => {
-    const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
-    if (sessionKey) {
-      setSessionPublicKey(publicKeyFromPrivateKey(sessionKey));
-      setSessionPrivateKey(sessionKey);
-      setEncryptionKey(utils.generateEncryptionKey(sessionKey));
-
-      const files = await utils.getSessionEncryptedFiles(
-        publicKeyFromPrivateKey(sessionKey)
-      );
-      if (!files) {
-        setLoading(false);
-        return;
-      }
-
-      setUploadedEncryptedFiles((prev) => [...prev, ...files]);
+    const files = await utils.getSessionEncryptedFiles(
+      SessionManager.sessionPublicKey
+    );
+    if (!files) {
       setLoading(false);
-    } else {
-      const { publicKey, privateKey } = genKeyPairAndSeed();
-      setSessionPublicKey(publicKey);
-      setSessionPrivateKey(privateKey);
-      setEncryptionKey(utils.generateEncryptionKey(privateKey));
-      localStorage.setItem(SESSION_KEY_NAME, privateKey);
-      setLoading(false);
+      return;
     }
+
+    dispatch({
+      type: ActionType.READ_WRITE,
+    });
+
+    setUploadedEncryptedFiles((prev) => [...prev, ...files]);
+    setLoading(false);
   };
 
   useConstructor(() => {
     initSession();
   });
 
-  const getReadOnlyLink = () => {
-    return `${window.location.hostname}/#/${sessionPublicKey}/${encryptionKey}`;
-  };
-
-  const getReadWriteLink = () => {
-    return `${window.location.hostname}/#/${sessionPrivateKey}/${encryptionKey}`;
-  };
-
   const copyReadOnlyLink = () => {
-    navigator.clipboard.writeText(getReadOnlyLink());
+    navigator.clipboard.writeText(SessionManager.readOnlyLink);
     setUploadCompleted(false);
     message.info('SkyTransfer read only link copied');
   };
 
   const copyReadWriteLink = () => {
-    navigator.clipboard.writeText(getReadWriteLink());
+    navigator.clipboard.writeText(SessionManager.readWriteLink);
     setUploadCompleted(false);
     message.info('SkyTransfer read/write link copied');
-  };
-
-  const destroySession = () => {
-    localStorage.removeItem(SESSION_KEY_NAME);
-    window.location.reload();
   };
 
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -171,7 +130,10 @@ const Uploader = () => {
   }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
+    const decrypt = new AESFileDecrypt(
+      encryptedFile,
+      SessionManager.sessionEncryptionKey
+    );
 
     const file: File = await decrypt.decrypt(
       (completed, eProgress) => {
@@ -212,7 +174,7 @@ const Uploader = () => {
         try {
           message.loading('Syncing files in SkyDB...');
           await utils.storeSessionEncryptedFiles(
-            sessionPrivateKey,
+            SessionManager.sessionPrivateKey,
             uploadedEncryptedFiles
           );
 
@@ -226,12 +188,7 @@ const Uploader = () => {
         setUploading(false);
       }, 5000);
     }
-  }, [
-    uploadingFileList,
-    toStoreInSkyDBCount,
-    uploadedEncryptedFiles,
-    sessionPrivateKey,
-  ]);
+  }, [uploadingFileList, toStoreInSkyDBCount, uploadedEncryptedFiles]);
 
   useEffect(() => {
     setIsEncrypting(encryptionQueue.length !== 0);
@@ -245,7 +202,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(file, encryptionKey);
+      const fe = new AESFileEncrypt(file, SessionManager.sessionEncryptionKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);
@@ -360,33 +317,7 @@ const Uploader = () => {
   const isLoading = uploading || loading;
 
   return (
-    <div className="container">
-      <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
-        <Menu.Item
-          key="copy-read-write"
-          onClick={copyReadWriteLink}
-          icon={<CopyOutlined />}
-        >
-          Read/write link
-        </Menu.Item>
-        <Menu.Item
-          key="copy-read-only"
-          onClick={copyReadOnlyLink}
-          icon={<CopyOutlined />}
-        >
-          Read only link
-        </Menu.Item>
-        <Menu.Item
-          key="new-session"
-          onClick={destroySession}
-          icon={<DeleteOutlined />}
-        >
-          New session
-        </Menu.Item>
-        <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
-          About SkyTransfer
-        </Menu.Item>
-      </Menu>
+    <>
       {errorMessage ? (
         <Alert
           className="error-message"
@@ -399,8 +330,9 @@ const Uploader = () => {
       )}
 
       <Dragger {...draggerConfig}>
+        <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
-          <CloudUploadOutlined /* style={{ color: '#27ae60' }} */ />
+          <CloudUploadOutlined style={{ color: '#20bf6b' }} />
         </p>
         <p className="ant-upload-text">
           {isMobile ? (
@@ -414,14 +346,13 @@ const Uploader = () => {
         ) : (
           ''
         )}
+        <ActivityBar
+          downloadProgress={downloadProgress}
+          decryptProgress={decryptProgress}
+          encryptProgress={encryptProgress}
+        />
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
-
-      <ActivityBar
-        downloadProgress={downloadProgress}
-        decryptProgress={decryptProgress}
-        encryptProgress={encryptProgress}
-      />
 
       {uploadedEncryptedFiles.length > 0 ? (
         <div className="default-margin">
@@ -461,16 +392,21 @@ const Uploader = () => {
       )}
 
       {!isLoading && uploadedEncryptedFiles.length > 0 && (
-        <Button
-          onClick={async () => {
-            message.loading(`Download and decryption started`);
-            for (const encyptedFile of uploadedEncryptedFiles) {
-              await downloadFile(encyptedFile);
-            }
-          }}
-        >
-          Download all!
-        </Button>
+        <div style={{ textAlign: 'center' }}>
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            size="large"
+            onClick={async () => {
+              message.loading(`Download and decryption started`);
+              for (const encyptedFile of uploadedEncryptedFiles) {
+                await downloadFile(encyptedFile);
+              }
+            }}
+          >
+            Download all files
+          </Button>
+        </div>
       )}
 
       <Modal
@@ -497,7 +433,7 @@ const Uploader = () => {
               name: 'Read-write link',
               content: (
                 <QR
-                  qrValue={getReadWriteLink()}
+                  qrValue={SessionManager.readWriteLink}
                   linkOnClick={copyReadWriteLink}
                 />
               ),
@@ -506,7 +442,7 @@ const Uploader = () => {
               name: 'Read-only link',
               content: (
                 <QR
-                  qrValue={getReadOnlyLink()}
+                  qrValue={SessionManager.readOnlyLink}
                   linkOnClick={copyReadOnlyLink}
                 />
               ),
@@ -514,7 +450,7 @@ const Uploader = () => {
           ]}
         />
       </Modal>
-    </div>
+    </>
   );
 };
 

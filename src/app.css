@@ -2,11 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
 
 html, body {
-  background-color: #f5f6fa;
+  background-color: #f0f2f5;
 }
 
 .layout {
-  background-color: #f5f6fa;
+  background-color: #f0f2f5;
 }
 
 .App {
@@ -14,9 +14,8 @@ html, body {
   font-family: 'Lato', sans-serif;
 }
 
-.title {
-  font-size: 26px;
-  text-align: center;
+.logo {
+  font-size: 30px;
   color: #20bf6b;
   font-weight: bold;
 }

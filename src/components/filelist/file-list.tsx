@@ -6,17 +6,14 @@ import { useHistory } from 'react-router-dom';
 import Utils from '../../utils/utils';
 import { EncryptedFileReference } from '../../models/encryption';
 
-import { Button, Empty, Divider, Menu, message, Tree, Spin, Alert } from 'antd';
-import {
-  PlusOutlined,
-  CopyOutlined,
-  ReloadOutlined,
-  DownOutlined,
-} from '@ant-design/icons';
+import { Button, Empty, Divider, message, Tree, Spin, Alert } from 'antd';
+import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import AESFileDecrypt from '../crypto/decrypt';
+import AESFileDecrypt from '../../crypto/decrypt';
 import { SESSION_KEY_NAME } from '../../config';
 import ActivityBar from '../uploader/activity-bar';
+import { useStateContext } from '../../state/state';
+import { ActionType } from '../../state/reducer';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -30,6 +27,7 @@ const FileList = () => {
   const utils: Utils = new Utils();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
+  const { dispatch } = useStateContext();
 
   const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
 
@@ -44,6 +42,10 @@ const FileList = () => {
       setlLoading(false);
       return;
     }
+
+    dispatch({
+      type: ActionType.READ_ONLY,
+    });
 
     setLoadedFiles((prev) => [...prev, ...files]);
     setlLoading(false);
@@ -91,99 +93,60 @@ const FileList = () => {
     }
   };
 
-  const canResumeSession = (): boolean => {
-    const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
-    return sessionKey !== undefined;
-  };
-
-  const destroySession = () => {
-    localStorage.removeItem(SESSION_KEY_NAME);
-    history.push('/');
-  };
-
   return (
-    <div>
-      <div className="container">
-        <Menu className="default-margin" selectedKeys={[]} mode="horizontal">
-          <Menu.Item
-            onClick={destroySession}
-            key="new-session"
-            icon={<PlusOutlined />}
-          >
-            <a href="/" rel="noopener noreferrer">
-              Start a SkyTransfer
-            </a>
-          </Menu.Item>
-          <Menu.Item
-            key="resume-session"
-            disabled={!canResumeSession()}
-            icon={<ReloadOutlined />}
-          >
-            <a href="/" rel="noopener noreferrer">
-              Resume SkyTransfer
-            </a>
-          </Menu.Item>
-          <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
-            <a href="/" rel="noopener noreferrer">
-              About SkyTransfer
-            </a>
-          </Menu.Item>
-        </Menu>
-        <div>
-          <Divider orientation="left">Shared files</Divider>
-          {loadedFiles.length > 0 ? (
-            <div>
-              <Alert
-                message="Click on a file to start downloading"
-                type="info"
-              />
-              <ActivityBar
-                downloadProgress={downloadProgress}
-                decryptProgress={decryptProgress}
-                encryptProgress={0}
-              />
-              <Tree
-                className="file-tree default-margin"
-                showLine={true}
-                defaultExpandAll={true}
-                switcherIcon={<DownOutlined />}
-                onSelect={(selectedKeys, info) => {
-                  if (info.node.children && info.node.children.length !== 0) {
-                    return; // folder
-                  }
+    <>
+      <Divider orientation="left">Shared files</Divider>
+      {loadedFiles.length > 0 ? (
+        <>
+          <Alert message="Click on a file to start downloading" type="info" />
+          <ActivityBar
+            downloadProgress={downloadProgress}
+            decryptProgress={decryptProgress}
+            encryptProgress={0}
+          />
+          <Tree
+            className="file-tree default-margin"
+            showLine={true}
+            defaultExpandAll={true}
+            switcherIcon={<DownOutlined />}
+            onSelect={(selectedKeys, info) => {
+              if (info.node.children && info.node.children.length !== 0) {
+                return; // folder
+              }
 
-                  //{utils.fileSize(item.size)
+              //{utils.fileSize(item.size)
 
-                  const key: string = `${info.node.key}`;
-                  const ff = loadedFiles.find(
-                    (f) => f.uuid === key.split('_')[0]
-                  );
-                  if (ff) {
-                    message.loading(`Download and decryption started`);
-                    downloadFile(ff);
-                  }
-                }}
-                treeData={renderTree(loadedFiles)}
-              />
-              <Button
-                onClick={async () => {
-                  message.loading(`Download and decryption started`);
-                  for (const encyptedFile of loadedFiles) {
-                    await downloadFile(encyptedFile);
-                  }
-                }}
-              >
-                Download all!
-              </Button>
-            </div>
-          ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-              {loading ? <Spin /> : <span>No shared data found</span>}
-            </Empty>
-          )}
-        </div>
-      </div>
-    </div>
+              const key: string = `${info.node.key}`;
+              const ff = loadedFiles.find((f) => f.uuid === key.split('_')[0]);
+              if (ff) {
+                message.loading(`Download and decryption started`);
+                downloadFile(ff);
+              }
+            }}
+            treeData={renderTree(loadedFiles)}
+          />
+          <div style={{ textAlign: 'center' }}>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              size="large"
+              onClick={async () => {
+                message.loading(`Download and decryption started`);
+                for (const encyptedFile of loadedFiles) {
+                  await downloadFile(encyptedFile);
+                }
+              }}
+            >
+              Download all files
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
+          {loading ? <Spin /> : <span>No shared data found</span>}
+        </Empty>
+      )}
+    </>
   );
 };
 

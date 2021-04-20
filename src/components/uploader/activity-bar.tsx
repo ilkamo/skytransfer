@@ -1,4 +1,4 @@
-import { Progress, Tooltip, Card } from 'antd';
+import { Progress, Tooltip } from 'antd';
 
 import { CloudDownloadOutlined, SecurityScanOutlined } from '@ant-design/icons';
 
@@ -14,7 +14,7 @@ const ActivityBar = ({
   decryptProgress,
 }: ActivityBarProps) => {
   return (
-    <Card className="activity-bar default-margin" style={{ background: 'none' }}>
+    <div className="activity-bar default-margin" style={{ background: 'none' }}>
       <Tooltip
         trigger={['hover', 'click']}
         placement="right"
@@ -65,7 +65,7 @@ const ActivityBar = ({
         strokeColor="#52c41a"
         trailColor="#cccccc"
       />
-    </Card>
+    </div>
   );
 };
 
