@@ -19,7 +19,7 @@
   border: 1px dashed #bdc3c7 !important;
   border-radius: 2px !important;
   background-color: white;
-  padding: 20px;
+  padding: 10px;
 }
 
 .drop-container:hover {
@@ -86,6 +86,6 @@
 }
 
 .skytransfer-logo {
-  width: 120px;
+  width: 90px;
   margin: 10px auto;
 }

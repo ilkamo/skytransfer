@@ -84,11 +84,15 @@ export default class AESFileDecrypt implements FileDecrypt {
         return new File([fileEnc], this.encryptedFile.fileName, { type: this.encryptedFile.mimeType });
     }
 
-    private decryptBlob(encryptedData: Blob): BlobPart {
-        var decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
-        var typedArray = this.convertWordArrayToUint8Array(decrypted);
-
-        return typedArray;
+    private async decryptBlob(encryptedData: Blob): Promise<BlobPart> {
+        return new Promise((resolve) => {
+            // To give some CPU time in order to refresh the UI.
+            setTimeout(() => {
+                var decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
+                var typedArray = this.convertWordArrayToUint8Array(decrypted);
+                resolve(typedArray);
+            }, 100);
+        });
     }
 
     private convertWordArrayToUint8Array(wordArray) {

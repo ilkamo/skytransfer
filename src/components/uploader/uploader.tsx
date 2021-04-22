@@ -36,7 +36,6 @@ import { useStateContext } from '../../state/state';
 import { ActionType } from '../../state/reducer';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content'
 
