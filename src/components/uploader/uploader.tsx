@@ -38,6 +38,7 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
+import { DraggerContent } from './dragger-content'
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -329,6 +330,7 @@ const Uploader = () => {
   const loaderIcon = <LoadingOutlined style={{ fontSize: 24, color: "#20bf6b" }} spin />;
 
   const isLoading = uploading || loading;
+  const logoURL = process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg';
 
   return (
     <>
@@ -350,22 +352,12 @@ const Uploader = () => {
             name: 'Upload file(s)',
             content: (
               <Dragger className="drop-container" {...draggerConfig} directory={false} multiple disabled={uploadingInProgress}>
-                <div className="ant-upload-drag-icon logo">SkyTransfer</div>
-                <p className="ant-upload-drag-icon">
-                 <img alt="logo" className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
-                </p>
-                <p className="ant-upload-text">
-                  {isMobile ? (
-                    <span>Click here to upload</span>
-                  ) : (
-                    <span>Drag & Drop file(s) to upload</span>
-                  )}
-                </p>
-                {isEncrypting ? (
-                  <Spin tip="File encryption/upload started. Please wait ..." />
-                ) : (
-                  ''
-                )}
+                <DraggerContent
+                  onlyClickable={isMobile}
+                  isEncrypting={isEncrypting}
+                  logoURL={logoURL}
+                  draggableMessage="Drag & Drop file(s) to upload"
+                />
                 <UploadActivityBar
                   encryptProgress={encryptProgress}
                 />
@@ -376,22 +368,12 @@ const Uploader = () => {
             name: 'Upload directory',
             content: (
               <Dragger className="drop-container" {...draggerConfig} directory={true} disabled={uploadingInProgress}>
-                <div className="ant-upload-drag-icon logo">SkyTransfer</div>
-                <p className="ant-upload-drag-icon">
-                  <img alt="logo" className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
-                </p>
-                <p className="ant-upload-text">
-                  {isMobile ? (
-                    <span>Click here to upload</span>
-                  ) : (
-                    <span>Drag & Drop directory here to upload</span>
-                  )}
-                </p>
-                {isEncrypting ? (
-                  <Spin tip="File encryption/upload started. Please wait ..." />
-                ) : (
-                  ''
-                )}
+                <DraggerContent
+                  onlyClickable={isMobile}
+                  isEncrypting={isEncrypting}
+                  logoURL={logoURL}
+                  draggableMessage="Drag & Drop directory here to upload"
+                />
                 <UploadActivityBar
                   encryptProgress={encryptProgress}
                 />
