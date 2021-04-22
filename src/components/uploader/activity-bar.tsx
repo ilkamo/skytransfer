@@ -2,17 +2,19 @@ import { Progress, Tooltip } from 'antd';
 
 import { CloudDownloadOutlined, SecurityScanOutlined } from '@ant-design/icons';
 
-type ActivityBarProps = {
-  downloadProgress: number;
+type UploadActivityBarProps = {
   encryptProgress: number;
+};
+
+type DownloadActivityBarProps = {
+  downloadProgress: number;
   decryptProgress: number;
 };
 
-const ActivityBar = ({
-  downloadProgress,
+
+const UploadActivityBar = ({
   encryptProgress,
-  decryptProgress,
-}: ActivityBarProps) => {
+}: UploadActivityBarProps) => {
   return (
     <div className="activity-bar default-margin" style={{ background: 'none' }}>
       <Tooltip
@@ -31,7 +33,16 @@ const ActivityBar = ({
         strokeColor="#52c41a"
         trailColor="#cccccc"
       />
-      <br />
+    </div>
+  );
+};
+
+const DownloadActivityBar = ({
+  downloadProgress,
+  decryptProgress,
+}: DownloadActivityBarProps) => {
+  return (
+    <div className="activity-bar default-margin" style={{ background: 'none' }}>
       <Tooltip
         trigger={['hover', 'click']}
         placement="right"
@@ -69,4 +80,7 @@ const ActivityBar = ({
   );
 };
 
-export default ActivityBar;
+export const ActivityBars = {
+  UploadActivityBar: UploadActivityBar,
+  DownloadActivityBar: DownloadActivityBar
+}

@@ -11,7 +11,7 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty } from 'antd';
+import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty, Divider } from 'antd';
 
 import {
   CloudUploadOutlined,
@@ -27,7 +27,8 @@ import AESFileDecrypt from '../../crypto/file-decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
-import ActivityBar from './activity-bar';
+import { ActivityBars } from './activity-bar';
+
 import axios from 'axios';
 
 import SessionManager from '../../session/session-manager';
@@ -40,6 +41,7 @@ import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
+const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
 const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
@@ -335,7 +337,7 @@ const Uploader = () => {
         ''
       )}
 
-      <Dragger {...draggerConfig}>
+      <Dragger className="drop-container" {...draggerConfig}>
         <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
           <CloudUploadOutlined style={{ color: '#20bf6b' }} />
@@ -352,16 +354,19 @@ const Uploader = () => {
         ) : (
           ''
         )}
-        <ActivityBar
-          downloadProgress={downloadProgress}
-          decryptProgress={decryptProgress}
+        <UploadActivityBar
           encryptProgress={encryptProgress}
         />
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <div className="default-margin">
+        <div className="file-list default-margin">
+          <DownloadActivityBar
+            decryptProgress={decryptProgress}
+            downloadProgress={downloadProgress}
+          />
+          <Divider>Uploaded files</Divider>
           <DirectoryTree
             multiple
             showIcon={false}
