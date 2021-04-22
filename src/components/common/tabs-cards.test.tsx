@@ -2,11 +2,11 @@ import React from 'react';
 import { render } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 
-import TabCards from './tabs-cards';
+import {TabsCards} from './tabs-cards';
 
 describe('TabsCards', () => {
   test('renders correctly when there are no values', () => {
-    const { container } = render(<TabCards values={[]} />)
+    const { container } = render(<TabsCards values={[]} />)
 
 
     expect(container).toMatchSnapshot();
@@ -24,7 +24,7 @@ describe('TabsCards', () => {
           }
       ];
   
-      const { container } = render(<TabCards values={values} />);
+      const { container } = render(<TabsCards tabType="line" values={values} />);
 
       expect(container).toMatchSnapshot();
   });

@@ -4,19 +4,18 @@ import {
 
 const { TabPane } = Tabs;
 
-type TabCardValue = {
+type TabsCardValue = {
     name: string
     content: React.ReactNode
 }
 
 type TabCardProps = {
-    values: TabCardValue[]
+    tabType?: 'line' | 'card' | 'editable-card';
+    values: TabsCardValue[]
 }
 
-const TabsCards = ({ values }: TabCardProps) => {
-    const components = values.map((value: TabCardValue, index: number) => <TabPane tab={value.name} key={index}>{value.content}</TabPane>);
+export const TabsCards = ({ values, tabType = "card" }: TabCardProps) => {
+    const components = values.map((value: TabsCardValue, index: number) => <TabPane tab={value.name} key={index}>{value.content}</TabPane>);
 
-    return <Tabs type="card">{components}</Tabs>
+    return <Tabs type={tabType}>{components}</Tabs>
 }
-
-export default TabsCards;
