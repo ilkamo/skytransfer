@@ -11,7 +11,17 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty, Divider } from 'antd';
+import {
+  Button,
+  Alert,
+  message,
+  Modal,
+  Upload,
+  Spin,
+  Tree,
+  Empty,
+  Divider,
+} from 'antd';
 
 import {
   DownloadOutlined,
@@ -37,13 +47,13 @@ import { ActionType } from '../../state/reducer';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
-import { DraggerContent } from './dragger-content'
+import { DraggerContent } from './dragger-content';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -54,7 +64,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => { }, 5000);
+let timeoutID = setTimeout(() => {}, 5000);
 
 let uploadCount = 0;
 
@@ -65,7 +75,9 @@ const Uploader = () => {
   >([]);
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(false);
+  const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(
+    false
+  );
   const [loading, setLoading] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
@@ -75,7 +87,7 @@ const Uploader = () => {
   const initSession = async () => {
     const files = await getEncryptedFiles(
       SessionManager.sessionPublicKey,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
     if (!files) {
       setLoading(false);
@@ -139,7 +151,7 @@ const Uploader = () => {
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(
       encryptedFile,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
 
     const file: File = await decrypt.decrypt(
@@ -183,7 +195,7 @@ const Uploader = () => {
           await storeEncryptedFiles(
             SessionManager.sessionPrivateKey,
             deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-            uploadedEncryptedFiles,
+            uploadedEncryptedFiles
           );
 
           message.success('Sync completed');
@@ -212,7 +224,7 @@ const Uploader = () => {
 
       const fe = new AESFileEncrypt(
         file,
-        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
       );
       resolve(
         fe.encrypt((completed, eProgress) => {
@@ -326,7 +338,9 @@ const Uploader = () => {
     },
   };
 
-  const loaderIcon = <LoadingOutlined style={{ fontSize: 24, color: "#20bf6b" }} spin />;
+  const loaderIcon = (
+    <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
+  );
 
   const isLoading = uploading || loading;
   const logoURL = process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg';
@@ -350,33 +364,44 @@ const Uploader = () => {
           {
             name: 'Upload file(s)',
             content: (
-              <Dragger className="drop-container" {...draggerConfig} directory={false} multiple disabled={uploadingInProgress}>
-                <DraggerContent
-                  onlyClickable={isMobile}
-                  isEncrypting={isEncrypting}
-                  logoURL={logoURL}
-                  draggableMessage="Drag & Drop file(s) to upload"
-                />
-                <UploadActivityBar
-                  encryptProgress={encryptProgress}
-                />
-              </Dragger>
+              <div>
+                <Dragger
+                  className="drop-container"
+                  {...draggerConfig}
+                  directory={false}
+                  multiple
+                  disabled={uploadingInProgress}
+                >
+                  <DraggerContent
+                    onlyClickable={isMobile}
+                    isEncrypting={isEncrypting}
+                    logoURL={logoURL}
+                    draggableMessage="Drag & Drop file(s) to upload"
+                  />
+                  <UploadActivityBar encryptProgress={encryptProgress} />
+                </Dragger>
+              </div>
             ),
           },
           {
             name: 'Upload directory',
             content: (
-              <Dragger className="drop-container" {...draggerConfig} directory={true} disabled={uploadingInProgress}>
-                <DraggerContent
-                  onlyClickable={isMobile}
-                  isEncrypting={isEncrypting}
-                  logoURL={logoURL}
-                  draggableMessage="Drag & Drop directory here to upload"
-                />
-                <UploadActivityBar
-                  encryptProgress={encryptProgress}
-                />
-              </Dragger>
+              <div>
+                <Dragger
+                  className="drop-container"
+                  {...draggerConfig}
+                  directory={true}
+                  disabled={uploadingInProgress}
+                >
+                  <DraggerContent
+                    onlyClickable={isMobile}
+                    isEncrypting={isEncrypting}
+                    logoURL={logoURL}
+                    draggableMessage="Drag & Drop directory here to upload"
+                  />
+                  <UploadActivityBar encryptProgress={encryptProgress} />
+                </Dragger>
+              </div>
             ),
           },
         ]}
@@ -388,13 +413,12 @@ const Uploader = () => {
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
-          {
-            isLoading && (
-              <div style={{ textAlign: 'center' }}>
-                <Spin style={{ marginRight: "8px" }} indicator={loaderIcon} />Sync in progress...
-              </div>
-            )
-          }
+          {isLoading && (
+            <div style={{ textAlign: 'center' }}>
+              <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />
+              Sync in progress...
+            </div>
+          )}
           <Divider>Uploaded files</Divider>
           <DirectoryTree
             multiple
