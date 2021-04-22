@@ -12,7 +12,3 @@ export interface EncryptedFileReference {
   size: number
   encryptedSize: number
 }
-
-export interface SkyDBEncryptedData {
-  data: EncryptedFileReference[]
-}

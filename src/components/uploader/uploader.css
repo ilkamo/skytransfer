@@ -1,11 +1,12 @@
 .container {
   margin: 20px auto;
-  max-width: 1600px;
+  width: 1200px;
 }
 
 @media only screen and (max-width: 1600px) {
   .container {
     margin: 20px 5%;
+    width: 90%;
   }
 }
 
@@ -24,8 +25,6 @@
 
 .file-error {
   display: inline-block;
-  /* vertical-align: top; */
-  /* margin-left: 50px; */
   color: #9aa9bb;
 }
 
@@ -48,10 +47,14 @@
 }
 
 .file-tree {
-  border: 1px dashed #ccc;
   font-size: 16px;
   background: transparent;
   padding: 10px;
+}
+
+.file-list {
+  border: 1px dashed #ccc;
+  background: #fafafa;
 }
 
 .ant-tree-switcher {

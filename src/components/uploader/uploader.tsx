@@ -6,13 +6,12 @@ import {
   EncryptionType,
   EncryptedFileReference,
 } from '../../models/encryption';
-import Utils from '../../utils/utils';
 
 import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty } from 'antd';
+import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty, Divider } from 'antd';
 
 import {
   CloudUploadOutlined,
@@ -23,8 +22,8 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../../crypto/encrypt';
-import AESFileDecrypt from '../../crypto/decrypt';
+import AESFileEncrypt from '../../crypto/file-encrypt';
+import AESFileDecrypt from '../../crypto/file-decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
@@ -35,6 +34,10 @@ import axios from 'axios';
 import SessionManager from '../../session/session-manager';
 import { useStateContext } from '../../state/state';
 import { ActionType } from '../../state/reducer';
+import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
+
+
+import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -55,8 +58,6 @@ let timeoutID = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
-const utils: Utils = new Utils();
-
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
@@ -71,8 +72,9 @@ const Uploader = () => {
   const { dispatch } = useStateContext();
 
   const initSession = async () => {
-    const files = await utils.getSessionEncryptedFiles(
-      SessionManager.sessionPublicKey
+    const files = await getEncryptedFiles(
+      SessionManager.sessionPublicKey,
+      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
     );
     if (!files) {
       setLoading(false);
@@ -134,7 +136,7 @@ const Uploader = () => {
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(
       encryptedFile,
-      SessionManager.sessionEncryptionKey
+      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
     );
 
     const file: File = await decrypt.decrypt(
@@ -175,9 +177,10 @@ const Uploader = () => {
       timeoutID = setTimeout(async () => {
         try {
           message.loading('Syncing files in SkyDB...');
-          await utils.storeSessionEncryptedFiles(
+          await storeEncryptedFiles(
             SessionManager.sessionPrivateKey,
-            uploadedEncryptedFiles
+            deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+            uploadedEncryptedFiles,
           );
 
           message.success('Sync completed');
@@ -204,7 +207,10 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(file, SessionManager.sessionEncryptionKey);
+      const fe = new AESFileEncrypt(
+        file,
+        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+      );
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);
@@ -355,42 +361,41 @@ const Uploader = () => {
       </Dragger>
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <>
+        <div className="file-list default-margin">
           <DownloadActivityBar
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
-          <div className="default-margin">
-            <DirectoryTree
-              multiple
-              showIcon={false}
-              showLine
-              className="file-tree default-margin"
-              disabled={isLoading}
-              defaultExpandAll={true}
-              switcherIcon={<DownOutlined className="directory-switcher" />}
-              onSelect={(selectedKeys, info) => {
-                if (info.node.children && info.node.children.length !== 0) {
-                  return; // it is a folder
-                }
+          <Divider>Uploaded files</Divider>
+          <DirectoryTree
+            multiple
+            showIcon={false}
+            showLine
+            className="file-tree default-margin"
+            disabled={isLoading}
+            defaultExpandAll={true}
+            switcherIcon={<DownOutlined className="directory-switcher" />}
+            onSelect={(selectedKeys, info) => {
+              if (info.node.children && info.node.children.length !== 0) {
+                return; // it is a folder
+              }
 
-                /* 
-                  TODO: use utils.fileSize(item.size) to add more file info
-                */
+              /* 
+                TODO: use utils.fileSize(item.size) to add more file info
+              */
 
-                const key: string = `${info.node.key}`;
-                const ff = uploadedEncryptedFiles.find(
-                  (f) => f.uuid === key.split('_')[0]
-                );
-                if (ff) {
-                  message.loading(`Download and decryption started`);
-                  downloadFile(ff);
-                }
-              }}
-              treeData={renderTree(uploadedEncryptedFiles)}
-            />
-          </div>
-        </>
+              const key: string = `${info.node.key}`;
+              const ff = uploadedEncryptedFiles.find(
+                (f) => f.uuid === key.split('_')[0]
+              );
+              if (ff) {
+                message.loading(`Download and decryption started`);
+                downloadFile(ff);
+              }
+            }}
+            treeData={renderTree(uploadedEncryptedFiles)}
+          />
+        </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
           {loading ? <Spin /> : <span>No uploaded data</span>}

@@ -2,19 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useHistory } from 'react-router-dom';
-
-import Utils from '../../utils/utils';
 import { EncryptedFileReference } from '../../models/encryption';
 
-import { Button, Empty, Divider, message, Tree, Spin, Alert } from 'antd';
+import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import AESFileDecrypt from '../../crypto/decrypt';
+import AESFileDecrypt from '../../crypto/file-decrypt';
 import { SESSION_KEY_NAME } from '../../config';
 import { useStateContext } from '../../state/state';
 import { ActionType } from '../../state/reducer';
+import { getEncryptedFiles } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
+
 const { DownloadActivityBar } = ActivityBars;
 
 const useConstructor = (callBack = () => { }) => {
@@ -26,7 +26,6 @@ const useConstructor = (callBack = () => { }) => {
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
-  const utils: Utils = new Utils();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
   const { dispatch } = useStateContext();
@@ -39,7 +38,7 @@ const FileList = () => {
       history.push('/');
     }
 
-    const files = await utils.getSessionEncryptedFiles(transferKey);
+    const files = await getEncryptedFiles(transferKey, encryptionKey);
     if (!files) {
       setlLoading(false);
       return;
@@ -97,36 +96,38 @@ const FileList = () => {
 
   return (
     <>
-      <Divider orientation="left">Shared files</Divider>
+      <Divider orientation="left">Shared files - click on a file to start downloading</Divider>
       {loadedFiles.length > 0 ? (
         <>
-          <Alert message="Click on a file to start downloading" type="info" />
-          <DownloadActivityBar
-            downloadProgress={downloadProgress}
-            decryptProgress={decryptProgress}
-          />
-          <Tree
-            className="file-tree default-margin"
-            showLine={true}
-            defaultExpandAll={true}
-            switcherIcon={<DownOutlined />}
-            onSelect={(selectedKeys, info) => {
-              if (info.node.children && info.node.children.length !== 0) {
-                return; // folder
-              }
+          <div className="file-list">
+            <DownloadActivityBar
+              downloadProgress={downloadProgress}
+              decryptProgress={decryptProgress}
+            />
+            <Divider />
+            <Tree
+              className="file-tree default-margin"
+              showLine={true}
+              defaultExpandAll={true}
+              switcherIcon={<DownOutlined />}
+              onSelect={(selectedKeys, info) => {
+                if (info.node.children && info.node.children.length !== 0) {
+                  return; // folder
+                }
 
-              //{utils.fileSize(item.size)
+                //{utils.fileSize(item.size)
 
-              const key: string = `${info.node.key}`;
-              const ff = loadedFiles.find((f) => f.uuid === key.split('_')[0]);
-              if (ff) {
-                message.loading(`Download and decryption started`);
-                downloadFile(ff);
-              }
-            }}
-            treeData={renderTree(loadedFiles)}
-          />
-          <div style={{ textAlign: 'center' }}>
+                const key: string = `${info.node.key}`;
+                const ff = loadedFiles.find((f) => f.uuid === key.split('_')[0]);
+                if (ff) {
+                  message.loading(`Download and decryption started`);
+                  downloadFile(ff);
+                }
+              }}
+              treeData={renderTree(loadedFiles)}
+            />
+          </div>
+          <div className="default-margin" style={{ textAlign: 'center' }}>
             <Button
               type="primary"
               icon={<DownloadOutlined />}

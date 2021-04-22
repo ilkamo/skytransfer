@@ -1,24 +1,20 @@
-import { genKeyPairAndSeed, genKeyPairFromSeed } from "skynet-js";
+import { genKeyPairAndSeed } from "skynet-js";
 import { SESSION_KEY_NAME } from "../config";
+import { deriveEncryptionKeyFromKey } from "../crypto/crypto";
 
 export default class SessionManager {
     static get sessionPrivateKey(): string {
-        const sessionKey = localStorage.getItem(SESSION_KEY_NAME);
-        if (sessionKey) {
-            return sessionKey;
+        let sessionKey = localStorage.getItem(SESSION_KEY_NAME);
+        if (!sessionKey) {
+            sessionKey = genKeyPairAndSeed().privateKey
+            localStorage.setItem(SESSION_KEY_NAME, sessionKey);
         }
 
-        const { privateKey } = genKeyPairAndSeed();
-        localStorage.setItem(SESSION_KEY_NAME, privateKey);
-        return privateKey;
+        return sessionKey;
     }
 
     static get sessionPublicKey(): string {
         return this.sessionPrivateKey.substr(this.sessionPrivateKey.length - 64);
-    }
-
-    static get sessionEncryptionKey(): string {
-        return genKeyPairFromSeed(`${this.sessionPrivateKey}-aes-encrypt`).privateKey;
     }
 
     static destroySession() {
@@ -26,10 +22,10 @@ export default class SessionManager {
     }
 
     static get readOnlyLink() {
-        return `${window.location.hostname}/#/${this.sessionPublicKey}/${this.sessionEncryptionKey}`;
+        return `${window.location.hostname}/#/${this.sessionPublicKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
 
     static get readWriteLink() {
-        return `${window.location.hostname}/#/${this.sessionPrivateKey}/${this.sessionEncryptionKey}`;
+        return `${window.location.hostname}/#/${this.sessionPrivateKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
 }
