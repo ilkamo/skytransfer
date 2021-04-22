@@ -14,7 +14,6 @@ import { v4 as uuid } from 'uuid';
 import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty, Divider } from 'antd';
 
 import {
-  CloudUploadOutlined,
   DownloadOutlined,
   DownOutlined,
   LoadingOutlined,
@@ -343,7 +342,7 @@ const Uploader = () => {
       <Dragger className="drop-container" {...draggerConfig}>
         <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
-          <img className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
+          <img alt="logo" className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
         </p>
         <p className="ant-upload-text">
           {isMobile ? (
