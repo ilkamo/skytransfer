@@ -1,5 +1,5 @@
 import { genKeyPairAndSeed } from "skynet-js";
-import { SESSION_KEY_NAME, SESSION_UUID_KEY_NAME } from "../config";
+import { SESSION_KEY_NAME } from "../config";
 import { deriveEncryptionKeyFromKey } from "../crypto/crypto";
 
 export default class SessionManager {
@@ -19,7 +19,6 @@ export default class SessionManager {
 
     static destroySession() {
         localStorage.removeItem(SESSION_KEY_NAME);
-        localStorage.removeItem(SESSION_UUID_KEY_NAME);
     }
 
     static get readOnlyLink() {
