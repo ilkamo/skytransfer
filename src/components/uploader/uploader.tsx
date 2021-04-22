@@ -14,7 +14,6 @@ import { v4 as uuid } from 'uuid';
 import { Button, Alert, message, Modal, Upload, Spin, Tree, Empty, Divider } from 'antd';
 
 import {
-  CloudUploadOutlined,
   DownloadOutlined,
   DownOutlined,
   LoadingOutlined,
@@ -353,7 +352,7 @@ const Uploader = () => {
               <Dragger className="drop-container" {...draggerConfig} directory={false} multiple disabled={uploadingInProgress}>
                 <div className="ant-upload-drag-icon logo">SkyTransfer</div>
                 <p className="ant-upload-drag-icon">
-                  <CloudUploadOutlined style={{ color: '#20bf6b' }} />
+                 <img alt="logo" className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
                 </p>
                 <p className="ant-upload-text">
                   {isMobile ? (
@@ -379,7 +378,7 @@ const Uploader = () => {
               <Dragger className="drop-container" {...draggerConfig} directory={true} disabled={uploadingInProgress}>
                 <div className="ant-upload-drag-icon logo">SkyTransfer</div>
                 <p className="ant-upload-drag-icon">
-                  <CloudUploadOutlined style={{ color: '#20bf6b' }} />
+                  <img alt="logo" className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
                 </p>
                 <p className="ant-upload-text">
                   {isMobile ? (
