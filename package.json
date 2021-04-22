@@ -23,7 +23,7 @@
     "react-qr-svg": "^2.3.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
-    "skynet-js": "^4.0.1-beta",
+    "skynet-js": "^4.0.2-beta",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
