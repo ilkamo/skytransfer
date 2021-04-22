@@ -337,7 +337,7 @@ const Uploader = () => {
         ''
       )}
 
-      <Dragger {...draggerConfig}>
+      <Dragger className="drop-container" {...draggerConfig}>
         <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
           <CloudUploadOutlined style={{ color: '#20bf6b' }} />
