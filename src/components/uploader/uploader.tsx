@@ -26,7 +26,7 @@ import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
-import TabCards from '../common/tabs-cards';
+import { TabsCards } from '../common/tabs-cards';
 import QR from './qr';
 import { ActivityBars } from './activity-bar';
 
@@ -66,9 +66,10 @@ const Uploader = () => {
   >([]);
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [uploadCompleted, setUploadCompleted] = useState(false);
+  const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
+  const [uploadingInProgress, setUploadingInProgress] = useState(false);
 
   const { dispatch } = useStateContext();
 
@@ -96,13 +97,15 @@ const Uploader = () => {
 
   const copyReadOnlyLink = () => {
     navigator.clipboard.writeText(SessionManager.readOnlyLink);
-    setUploadCompleted(false);
+    setUploadingInProgress(false);
+    setShowUploadCompletedModal(false);
     message.info('SkyTransfer read only link copied');
   };
 
   const copyReadWriteLink = () => {
     navigator.clipboard.writeText(SessionManager.readWriteLink);
-    setUploadCompleted(false);
+    setUploadingInProgress(false);
+    setShowUploadCompletedModal(false);
     message.info('SkyTransfer read/write link copied');
   };
 
@@ -190,7 +193,7 @@ const Uploader = () => {
           setErrorMessage('Could not sync session encrypted files: ' + error);
         }
 
-        setUploadCompleted(true);
+        setShowUploadCompletedModal(true);
         setUploading(false);
       }, 5000);
     }
@@ -259,9 +262,10 @@ const Uploader = () => {
       showRemoveIcon: true,
     },
     customRequest: uploadFile,
-    openFileDialogOnClick: isMobile,
+    openFileDialogOnClick: true,
     onChange(info) {
-      setUploadCompleted(false);
+      setUploadingInProgress(true);
+      setShowUploadCompletedModal(false);
       setUploading(true);
       setUploadingFileList(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
 
@@ -340,28 +344,63 @@ const Uploader = () => {
         ''
       )}
 
-      <Dragger className="drop-container" {...draggerConfig}>
-        <div className="ant-upload-drag-icon logo">SkyTransfer</div>
-        <p className="ant-upload-drag-icon">
-          <CloudUploadOutlined style={{ color: '#20bf6b' }} />
-        </p>
-        <p className="ant-upload-text">
-          {isMobile ? (
-            <span>Click here to upload</span>
-          ) : (
-            <span>Drag & Drop files/folders here to upload</span>
-          )}
-        </p>
-        {isEncrypting ? (
-          <Spin tip="File encryption/upload started. Please wait ..." />
-        ) : (
-          ''
-        )}
-        <UploadActivityBar
-          encryptProgress={encryptProgress}
-        />
-        {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
-      </Dragger>
+      <TabsCards
+        tabType="line"
+        values={[
+          {
+            name: 'Upload file(s)',
+            content: (
+              <Dragger className="drop-container" {...draggerConfig} directory={false} multiple disabled={uploadingInProgress}>
+                <div className="ant-upload-drag-icon logo">SkyTransfer</div>
+                <p className="ant-upload-drag-icon">
+                  <CloudUploadOutlined style={{ color: '#20bf6b' }} />
+                </p>
+                <p className="ant-upload-text">
+                  {isMobile ? (
+                    <span>Click here to upload</span>
+                  ) : (
+                    <span>Drag & Drop file(s) to upload</span>
+                  )}
+                </p>
+                {isEncrypting ? (
+                  <Spin tip="File encryption/upload started. Please wait ..." />
+                ) : (
+                  ''
+                )}
+                <UploadActivityBar
+                  encryptProgress={encryptProgress}
+                />
+              </Dragger>
+            ),
+          },
+          {
+            name: 'Upload directory',
+            content: (
+              <Dragger className="drop-container" {...draggerConfig} directory={true} disabled={uploadingInProgress}>
+                <div className="ant-upload-drag-icon logo">SkyTransfer</div>
+                <p className="ant-upload-drag-icon">
+                  <CloudUploadOutlined style={{ color: '#20bf6b' }} />
+                </p>
+                <p className="ant-upload-text">
+                  {isMobile ? (
+                    <span>Click here to upload</span>
+                  ) : (
+                    <span>Drag & Drop directory here to upload</span>
+                  )}
+                </p>
+                {isEncrypting ? (
+                  <Spin tip="File encryption/upload started. Please wait ..." />
+                ) : (
+                  ''
+                )}
+                <UploadActivityBar
+                  encryptProgress={encryptProgress}
+                />
+              </Dragger>
+            ),
+          },
+        ]}
+      />
 
       {uploadedEncryptedFiles.length > 0 ? (
         <div className="file-list default-margin">
@@ -372,7 +411,7 @@ const Uploader = () => {
           {
             isLoading && (
               <div style={{ textAlign: 'center' }}>
-                <Spin style={{marginRight: "8px"}} indicator={loaderIcon} />Sync in progress...
+                <Spin style={{ marginRight: "8px" }} indicator={loaderIcon} />Sync in progress...
               </div>
             )
           }
@@ -433,10 +472,11 @@ const Uploader = () => {
       <Modal
         title="Upload completed"
         centered
-        visible={uploadCompleted}
+        visible={showUploadCompletedModal}
         cancelText="Continue"
         onCancel={() => {
-          setUploadCompleted(false);
+          setShowUploadCompletedModal(false);
+          setUploadingInProgress(false);
         }}
         footer={null}
       >
@@ -448,7 +488,7 @@ const Uploader = () => {
           links allow file download without editing.
         </p>
 
-        <TabCards
+        <TabsCards
           values={[
             {
               name: 'Read-write link',

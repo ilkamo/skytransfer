@@ -71,7 +71,7 @@ exports[`TabsCards renders correctly when there are no values 1`] = `
 exports[`TabsCards renders correctly with values 1`] = `
 <div>
   <div
-    class="ant-tabs ant-tabs-top ant-tabs-card"
+    class="ant-tabs ant-tabs-top"
   >
     <div
       class="ant-tabs-nav"
