@@ -343,7 +343,7 @@ const Uploader = () => {
       <Dragger className="drop-container" {...draggerConfig}>
         <div className="ant-upload-drag-icon logo">SkyTransfer</div>
         <p className="ant-upload-drag-icon">
-          <CloudUploadOutlined style={{ color: '#20bf6b' }} />
+          <img className="skytransfer-logo" src={process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg'} />
         </p>
         <p className="ant-upload-text">
           {isMobile ? (
@@ -372,7 +372,7 @@ const Uploader = () => {
           {
             isLoading && (
               <div style={{ textAlign: 'center' }}>
-                <Spin style={{marginRight: "8px"}} indicator={loaderIcon} />Sync in progress...
+                <Spin style={{ marginRight: "8px" }} indicator={loaderIcon} />Sync in progress...
               </div>
             )
           }
