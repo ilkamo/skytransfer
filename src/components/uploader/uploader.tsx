@@ -17,6 +17,7 @@ import {
   CloudUploadOutlined,
   DownloadOutlined,
   DownOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -322,6 +323,8 @@ const Uploader = () => {
     },
   };
 
+  const loaderIcon = <LoadingOutlined style={{ fontSize: 24, color: "#20bf6b" }} spin />;
+
   const isLoading = uploading || loading;
 
   return (
@@ -366,6 +369,13 @@ const Uploader = () => {
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
+          {
+            isLoading && (
+              <div style={{ textAlign: 'center' }}>
+                <Spin style={{marginRight: "8px"}} indicator={loaderIcon} />Sync in progress...
+              </div>
+            )
+          }
           <Divider>Uploaded files</Divider>
           <DirectoryTree
             multiple
