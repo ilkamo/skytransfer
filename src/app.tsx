@@ -4,7 +4,6 @@ import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
-import Session from './components/session/session';
 
 import { Layout } from 'antd';
 import ApplicationStateProvider from './state/state';
@@ -30,11 +29,6 @@ function App() {
               <Route path="/:transferKey/:encryptionKey">
                 <Content>
                   <FileList />
-                </Content>
-              </Route>
-              <Route path="/session">
-                <Content>
-                  <Session />
                 </Content>
               </Route>
               <Route path="/">
