@@ -2,20 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useHistory } from 'react-router-dom';
-
-import Utils from '../../utils/utils';
 import { EncryptedFileReference } from '../../models/encryption';
 
 import { Button, Empty, Divider, message, Tree, Spin, Alert } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import AESFileDecrypt from '../../crypto/decrypt';
+import AESFileDecrypt from '../../crypto/file-decrypt';
 import { SESSION_KEY_NAME } from '../../config';
 import ActivityBar from '../uploader/activity-bar';
 import { useStateContext } from '../../state/state';
 import { ActionType } from '../../state/reducer';
+import { getEncryptedFiles } from '../../skynet/skynet';
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -24,7 +23,6 @@ const useConstructor = (callBack = () => {}) => {
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
-  const utils: Utils = new Utils();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
   const { dispatch } = useStateContext();
@@ -37,7 +35,7 @@ const FileList = () => {
       history.push('/');
     }
 
-    const files = await utils.getSessionEncryptedFiles(transferKey);
+    const files = await getEncryptedFiles(transferKey, encryptionKey);
     if (!files) {
       setlLoading(false);
       return;
