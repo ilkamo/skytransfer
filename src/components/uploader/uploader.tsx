@@ -175,7 +175,6 @@ const Uploader = () => {
   };
 
   const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
-  const [encryptionQueue, setEncryptionQueue] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
@@ -231,8 +230,6 @@ const Uploader = () => {
 
   const uploadFile = async (options) => {
     const { onSuccess, onError, file, onProgress } = options;
-
-    setEncryptionQueue((prev) => [...prev, file]);
     const encryptedFile = await queueParallelEncryption(file);
 
     const formData = new FormData();
@@ -285,12 +282,6 @@ const Uploader = () => {
         status === 'removed'
       ) {
         uploadCount--;
-      }
-
-      if (status === 'uploading') {
-        setEncryptionQueue((prev) =>
-          prev.filter((f) => f.uid !== info.file.uid)
-        );
       }
 
       if (status === 'done') {
