@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { SkynetClient } from 'skynet-js';
-import { DEFAULT_DOMAIN } from '../../config';
 
 const useConstructor = (callBack = () => { }) => {
     const hasBeenCalled = useRef(false);
@@ -13,7 +12,7 @@ const Session = () => {
     const initSession = async () => {
         console.log("init session");
 
-        const client = new SkynetClient(DEFAULT_DOMAIN);
+        const client = new SkynetClient();
         const dataDomain = 'skytransfer.hns';
 
         try {
