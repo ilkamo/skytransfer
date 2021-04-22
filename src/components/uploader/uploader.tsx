@@ -79,7 +79,6 @@ const Uploader = () => {
     false
   );
   const [loading, setLoading] = useState(true);
-  const [isEncrypting, setIsEncrypting] = useState(false);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
 
   const { dispatch } = useStateContext();
@@ -209,10 +208,6 @@ const Uploader = () => {
       }, 5000);
     }
   }, [uploadingFileList, toStoreInSkyDBCount, uploadedEncryptedFiles]);
-
-  useEffect(() => {
-    setIsEncrypting(encryptionQueue.length !== 0);
-  }, [encryptionQueue]);
 
   const queueParallelEncryption = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
@@ -364,7 +359,7 @@ const Uploader = () => {
           {
             name: 'Upload file(s)',
             content: (
-              <div>
+              <div style={{ paddingBottom: '4px' }}>
                 <Dragger
                   className="drop-container"
                   {...draggerConfig}
@@ -374,7 +369,6 @@ const Uploader = () => {
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
-                    isEncrypting={isEncrypting}
                     logoURL={logoURL}
                     draggableMessage="Drag & Drop file(s) to upload"
                   />
@@ -386,7 +380,7 @@ const Uploader = () => {
           {
             name: 'Upload directory',
             content: (
-              <div>
+              <div style={{ paddingBottom: '10px' }}>
                 <Dragger
                   className="drop-container"
                   {...draggerConfig}
@@ -395,7 +389,6 @@ const Uploader = () => {
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
-                    isEncrypting={isEncrypting}
                     logoURL={logoURL}
                     draggableMessage="Drag & Drop directory here to upload"
                   />
