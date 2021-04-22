@@ -28,7 +28,8 @@ import AESFileDecrypt from '../../crypto/decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import TabCards from '../common/tabs-cards';
 import QR from './qr';
-import ActivityBar from './activity-bar';
+import { ActivityBars } from './activity-bar';
+
 import axios from 'axios';
 
 import SessionManager from '../../session/session-manager';
@@ -37,8 +38,9 @@ import { ActionType } from '../../state/reducer';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
+const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -49,7 +51,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => {}, 5000);
+let timeoutID = setTimeout(() => { }, 5000);
 
 let uploadCount = 0;
 
@@ -346,45 +348,49 @@ const Uploader = () => {
         ) : (
           ''
         )}
-        <ActivityBar
-          downloadProgress={downloadProgress}
-          decryptProgress={decryptProgress}
+        <UploadActivityBar
           encryptProgress={encryptProgress}
         />
         {/* <p className="ant-upload-hint">Your files will be encrypted before uploading</p> */}
       </Dragger>
 
       {uploadedEncryptedFiles.length > 0 ? (
-        <div className="default-margin">
-          <DirectoryTree
-            multiple
-            showIcon={false}
-            showLine
-            className="file-tree default-margin"
-            disabled={isLoading}
-            defaultExpandAll={true}
-            switcherIcon={<DownOutlined className="directory-switcher" />}
-            onSelect={(selectedKeys, info) => {
-              if (info.node.children && info.node.children.length !== 0) {
-                return; // it is a folder
-              }
-
-              /* 
-                TODO: use utils.fileSize(item.size) to add more file info
-              */
-
-              const key: string = `${info.node.key}`;
-              const ff = uploadedEncryptedFiles.find(
-                (f) => f.uuid === key.split('_')[0]
-              );
-              if (ff) {
-                message.loading(`Download and decryption started`);
-                downloadFile(ff);
-              }
-            }}
-            treeData={renderTree(uploadedEncryptedFiles)}
+        <>
+          <DownloadActivityBar
+            decryptProgress={decryptProgress}
+            downloadProgress={downloadProgress}
           />
-        </div>
+          <div className="default-margin">
+            <DirectoryTree
+              multiple
+              showIcon={false}
+              showLine
+              className="file-tree default-margin"
+              disabled={isLoading}
+              defaultExpandAll={true}
+              switcherIcon={<DownOutlined className="directory-switcher" />}
+              onSelect={(selectedKeys, info) => {
+                if (info.node.children && info.node.children.length !== 0) {
+                  return; // it is a folder
+                }
+
+                /* 
+                  TODO: use utils.fileSize(item.size) to add more file info
+                */
+
+                const key: string = `${info.node.key}`;
+                const ff = uploadedEncryptedFiles.find(
+                  (f) => f.uuid === key.split('_')[0]
+                );
+                if (ff) {
+                  message.loading(`Download and decryption started`);
+                  downloadFile(ff);
+                }
+              }}
+              treeData={renderTree(uploadedEncryptedFiles)}
+            />
+          </div>
+        </>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
           {loading ? <Spin /> : <span>No uploaded data</span>}

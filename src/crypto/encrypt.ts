@@ -40,7 +40,7 @@ export default class AESFileEncrypt implements FileEncrypt {
                 );
             }
 
-            const progress = Math.floor(i + 1 / totalChunks * 100);
+            const progress = Math.floor((i + 1) / totalChunks * 100);
             onEncryptProgress(false, progress);
 
             this.parts.push(chunkPart);

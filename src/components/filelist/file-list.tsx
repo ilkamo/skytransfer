@@ -11,11 +11,13 @@ import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../../crypto/decrypt';
 import { SESSION_KEY_NAME } from '../../config';
-import ActivityBar from '../uploader/activity-bar';
 import { useStateContext } from '../../state/state';
 import { ActionType } from '../../state/reducer';
 
-const useConstructor = (callBack = () => {}) => {
+import { ActivityBars } from '../uploader/activity-bar';
+const { DownloadActivityBar } = ActivityBars;
+
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -99,10 +101,9 @@ const FileList = () => {
       {loadedFiles.length > 0 ? (
         <>
           <Alert message="Click on a file to start downloading" type="info" />
-          <ActivityBar
+          <DownloadActivityBar
             downloadProgress={downloadProgress}
             decryptProgress={decryptProgress}
-            encryptProgress={0}
           />
           <Tree
             className="file-tree default-margin"

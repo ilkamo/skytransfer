@@ -21,4 +21,4 @@ const QR = ({ qrValue, linkOnClick }: QRProps) => {
   </>
 }
 
-export default  QR;
+export default QR;
