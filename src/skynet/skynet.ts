@@ -98,9 +98,6 @@ export const getUserPublicSessions = async (): Promise<PublicSession[]> => {
         const mySky = await mySkyLogin();
         const { data } = await mySky.getJSON(sessionsPath);
 
-        console.log("getJSON data");
-        console.log(data);
-
         if (data && 'sessions' in data) {
             sessions = data.sessions as PublicSession[];
         }
@@ -121,22 +118,13 @@ export const storeUserSession = async (
         let sessions = await getUserPublicSessions();
         sessions = [...sessions, ...newSessions];
 
-        const data = await mySky.setJSON(sessionsPath, { sessions });
-        console.log(data);
-
-        await contentRecord.recordInteraction({
-            skylink: data.skylink,
-            metadata: {
-                action: 'addedPublicSkyTransferSession',
-                sessionLink: newSessions[0].link
-            },
-        });
+        const { skylink } = await mySky.setJSON(sessionsPath, { sessions });
 
         await contentRecord.recordNewContent({
-            skylink: data.skylink,
+            skylink: skylink,
             metadata: {
-                action: 'addedPublicSkyTransferSession',
-                sessionLink: newSessions[0].link
+                action: 'addedPublicSkyTransferSessions',
+                newSessions: newSessions
             },
         });
     } catch (e) {
