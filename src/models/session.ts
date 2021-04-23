@@ -5,6 +5,9 @@ export interface Session {
     createdAt: number // timestamp
 }
 
-export interface Sessions {
-    [sessionUUID: string]: Session
+export interface PublicSession {
+    id: string
+    name: string
+    link: string
+    createdAt: number // timestamp
 }

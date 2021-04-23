@@ -1,14 +1,13 @@
-import { SkynetClient } from "skynet-js";
+import { PublicSession } from './../models/session';
+import { MySky, SkynetClient } from "skynet-js";
 import { DEFAULT_DOMAIN, ENCRYPTED_FILES_SKYDB_KEY_NAME } from "../config";
 import { JsonCrypto } from "../crypto/json";
 import { EncryptedFileReference } from "../models/encryption";
-import { Session, Sessions } from "../models/session";
-import { v4 as uuid } from 'uuid';
 
 const skynetClient = new SkynetClient(DEFAULT_DOMAIN);
 
 const dataDomain = 'skytransfer.hns';
-const sessionsPath = "skytransfer.hns/sessions.json";
+const sessionsPath = "skytransfer.hns/publicSessions.json";
 
 export const storeEncryptedFiles = async (
     privateKey: string,
@@ -64,63 +63,51 @@ export const getEncryptedFiles = async (
     });
 }
 
-// The encryption key should be derived from user private key.
-// No needed when mysky will introduce hidden files.
-export const getUserSessions = async (encryptionKey: string): Promise<Sessions> => {
-    const mySky = await skynetClient.loadMySky(dataDomain);
-    const loggedIn = await mySky.checkLogin();
-    if (!loggedIn) {
-        return;
-    }
-
-    const jsonCrypto = new JsonCrypto(encryptionKey);
-
-    let sessions: Sessions = {};
+export const mySkyLogin = async (): Promise<MySky> => {
     try {
-        const { data } = await mySky.getJSON(sessionsPath);
-        if (data.encryptedData && typeof data.encryptedData === "string") {
-            sessions = jsonCrypto.decrypt(data.encryptedData);
+        const client = new SkynetClient("https://siasky.ney");
+        const mySky = await client.loadMySky(dataDomain);
+        const loggedIn = await mySky.checkLogin();
+        if (!loggedIn) {
+            if (!await mySky.requestLoginAccess()) {
+                throw Error("could not login");
+            }
         }
+        return mySky;
     } catch (e) {
-        console.log("could not getUserSessions: " + e);
+        console.log("mySkyLogin error: ");
+        console.error(e);
+        throw e;
+    }
+}
+
+export const getUserPublicSessions = async (): Promise<PublicSession[]> => {
+    let sessions: PublicSession[] = [];
+
+    try {
+        const mySky = await mySkyLogin();
+        const { data } = await mySky.getJSON(sessionsPath);
+        sessions = data.sessions as PublicSession[];
+    } catch (e) {
+        console.log("could not getUserSessions");
+        console.error(e);
     }
 
     return sessions;
 }
 
-// The encryption key should be derived from user private key.
-// No needed when mysky will introduce hidden files.
 export const storeUserSession = async (
-    encryptionKey: string,
-    sessionName: string,
-    sessionKey: string,
+    newSessions: PublicSession[],
 ) => {
     try {
-        const mySky = await skynetClient.loadMySky(dataDomain);
-        const loggedIn = await mySky.checkLogin();
-        if (!loggedIn) {
-            return;
-        }
+        const mySky = await mySkyLogin();
 
-        const jsonCrypto = new JsonCrypto(encryptionKey);
+        let sessions = await getUserPublicSessions();
+        sessions = [...sessions, ...newSessions];
 
-        let sessions: Sessions = {};
-        sessions = await getUserSessions(encryptionKey);
-
-        const sessionUUID = uuid();
-
-        const newSession: Session = {
-            id: sessionUUID,
-            name: sessionName,
-            key: sessionKey,
-            createdAt: new Date().getTime(),
-        }
-
-        sessions[sessionUUID] = newSession;
-
-        const encryptedSessions = jsonCrypto.encrypt(sessions);
-        await mySky.setJSON(sessionsPath, { encryptedData: encryptedSessions });
+        await mySky.setJSON(sessionsPath, { sessions });
     } catch (e) {
-        console.log("could not storeUserSession: " + e);
+        console.log("could not storeUserSession:");
+        console.error(e);
     }
 }
