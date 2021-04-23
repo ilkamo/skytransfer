@@ -66,7 +66,7 @@ const Account = () => {
         message="Warning"
         description="This is an advanced functionality. Make sure you know what you are doing! Once you publish a SkyTransfer
       link, any user of Skynet which know your userID will be able to
-      discover and access the files you published. Use with caution. More info in the about section."
+      discover and access the files you published. Use with caution. All public sessions are stored in your MySky `skytransfer.hns/publicSessions.json`. More info in the about section."
         type="warning"
       />
       {isloading ? (
