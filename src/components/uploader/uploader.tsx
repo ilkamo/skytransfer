@@ -478,7 +478,7 @@ const Uploader = () => {
         <TabsCards
           values={[
             {
-              name: 'Share files',
+              name: 'Share',
               content: (
                 <QR
                   qrValue={SessionManager.readWriteLink}
