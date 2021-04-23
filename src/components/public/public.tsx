@@ -64,7 +64,7 @@ const Account = () => {
         message="Warning"
         description="This is an advanced functionality. Make sure you know what you are doing! Once you publish a SkyTransfer
       link, any user of Skynet which know your userID will be able to
-      discover and access the files you shared. Use with caution."
+      discover and access the files you published. Use with caution. More info in the about section."
         type="warning"
       />
       {isloading ? (
@@ -76,17 +76,20 @@ const Account = () => {
           {userID && isLogged && (
             <div className="default-margin">
               <Divider orientation="left">MySky userID</Divider>
-              <Input disabled readOnly defaultValue={userID} />
+              <Input readOnly defaultValue={userID} />
             </div>
           )}
           <Divider className="default-margin" orientation="left">
-            Public a new SkyTransfer session link
+            Public actual session link
           </Divider>
           <Form name="basic" onFinish={onFinish}>
             <Form.Item
               name="sessionName"
               rules={[
-                { required: true, message: 'Please add a SkyTransfer name' },
+                {
+                  required: true,
+                  message: 'Please add a SkyTransfer session name',
+                },
               ]}
             >
               <Input placeholder="Session name" />
@@ -123,7 +126,9 @@ const Account = () => {
                     open
                   </a>,
                 ]}
-              />
+              >
+                {item.name}
+              </List.Item>
             )}
           />
         </>
