@@ -103,6 +103,7 @@ const Account = () => {
                 disabled
                 readOnly
                 defaultValue={SessionManager.readOnlyLink}
+                value={SessionManager.readOnlyLink}
                 placeholder="SkyTransfer link"
               />
             </Form.Item>
