@@ -9,6 +9,7 @@ import { Layout } from 'antd';
 import ApplicationStateProvider from './state/state';
 import AppHeader from './components/header/header';
 import Account from './components/public/public';
+import About from './components/about/about';
 
 const { Content, Footer } = Layout;
 
@@ -28,6 +29,11 @@ function App() {
               <Route path="/public">
                 <Content>
                   <Account />
+                </Content>
+              </Route>
+              <Route path="/about">
+                <Content>
+                  <About />
                 </Content>
               </Route>
               <Route path="/">

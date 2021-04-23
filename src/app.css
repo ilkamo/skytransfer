@@ -1,7 +1,8 @@
 @import '~antd/dist/antd.css';
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
 
-html, body {
+html,
+body {
   font-family: 'Lato', sans-serif;
   background: #f0f2f5;
 }
@@ -20,3 +21,15 @@ html, body {
 /* .layout {
   background-color:transparent;
 } */
+
+.container {
+  margin: 20px auto;
+  width: 1080px;
+}
+
+@media only screen and (max-width: 1200px) {
+  .container {
+    margin: 20px 5%;
+    width: 90%;
+  }
+}

@@ -22,11 +22,11 @@ export default class SessionManager {
     }
 
     static get readOnlyLink() {
-        return `${window.location.hostname}/#/${this.sessionPublicKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+        return `https://${window.location.hostname}/#/${this.sessionPublicKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
 
     static get readWriteLink() {
-        return `${window.location.hostname}/#/${this.sessionPrivateKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+        return `https://${window.location.hostname}/#/${this.sessionPrivateKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
 
     static canResume() {

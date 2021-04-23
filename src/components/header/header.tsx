@@ -83,7 +83,13 @@ const AppHeader = () => {
         >
           Public
         </Menu.Item>
-        <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
+        <Menu.Item
+          key="about-us"
+          onClick={() => {
+            history.push('/about');
+          }}
+          icon={<CopyOutlined />}
+        >
           About
         </Menu.Item>
       </Menu>

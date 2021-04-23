@@ -1,20 +1,3 @@
-.container {
-  margin: 20px auto;
-  width: 1200px;
-}
-
-@media only screen and (max-width: 1600px) {
-  .container {
-    margin: 20px 5%;
-    width: 90%;
-  }
-}
-
-.container p {
-  color: red;
-  text-align: center;
-}
-
 .drop-container {
   border: 1px dashed #bdc3c7 !important;
   border-radius: 2px !important;
