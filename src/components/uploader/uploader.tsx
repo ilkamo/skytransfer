@@ -109,14 +109,14 @@ const Uploader = () => {
     navigator.clipboard.writeText(SessionManager.readOnlyLink);
     setUploadingInProgress(false);
     setShowUploadCompletedModal(false);
-    message.info('SkyTransfer read only link copied');
+    message.info('SkyTransfer link copied');
   };
 
   const copyReadWriteLink = () => {
     navigator.clipboard.writeText(SessionManager.readWriteLink);
     setUploadingInProgress(false);
     setShowUploadCompletedModal(false);
-    message.info('SkyTransfer read/write link copied');
+    message.info('SkyTransfer draft link copied');
   };
 
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -470,16 +470,15 @@ const Uploader = () => {
       >
         <p>
           Your <strong>SkyTransfer</strong> is ready. Your files have been
-          correctly encrytypted and uploaded on Skynet. Copy and share your
-          SkyTransfer link or just continue uploading. When you share a
-          read/write link, others can add files to your SkyTransfer. Read only
-          links allow file download without editing.
+          correctly encrytypted and uploaded on Skynet. Copy the link and share your
+          files or just continue uploading. When you share a
+          draft, others can add files to your SkyTransfer.
         </p>
 
         <TabsCards
           values={[
             {
-              name: 'Read-write link',
+              name: 'Share files',
               content: (
                 <QR
                   qrValue={SessionManager.readWriteLink}
@@ -488,7 +487,7 @@ const Uploader = () => {
               ),
             },
             {
-              name: 'Read-only link',
+              name: 'Share draft',
               content: (
                 <QR
                   qrValue={SessionManager.readOnlyLink}

@@ -6,6 +6,7 @@ import {
   LinkOutlined,
   RedoOutlined,
   EditOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
 import SessionManager from '../../session/session-manager';
 import { useStateContext } from '../../state/state';
@@ -40,7 +41,7 @@ const AppHeader = () => {
           }}
           icon={<LinkOutlined />}
         >
-          Share files
+          Share
         </Menu.Item>
         <Menu.Item
           key="copy-read-only"
@@ -72,6 +73,15 @@ const AppHeader = () => {
           icon={<RedoOutlined />}
         >
           Resume
+        </Menu.Item>
+        <Menu.Item
+          key="public-session"
+          onClick={() => {
+            history.push('/public');
+          }}
+          icon={<EyeOutlined />}
+        >
+          Public
         </Menu.Item>
         <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
           About

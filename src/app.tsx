@@ -8,7 +8,7 @@ import FileList from './components/filelist/file-list';
 import { Layout } from 'antd';
 import ApplicationStateProvider from './state/state';
 import AppHeader from './components/header/header';
-import Account from './components/account/account';
+import Account from './components/public/public';
 
 const { Content, Footer } = Layout;
 
@@ -25,7 +25,7 @@ function App() {
                   <FileList />
                 </Content>
               </Route>
-              <Route path="/account">
+              <Route path="/public">
                 <Content>
                   <Account />
                 </Content>
