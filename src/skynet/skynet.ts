@@ -65,7 +65,7 @@ export const getEncryptedFiles = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
     try {
-        const client = new SkynetClient("https://siasky.ney");
+        const client = new SkynetClient("https://siasky.net");
         const mySky = await client.loadMySky(dataDomain);
         const loggedIn = await mySky.checkLogin();
         if (!loggedIn) {
