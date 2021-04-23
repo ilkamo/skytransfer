@@ -371,7 +371,7 @@ const Uploader = () => {
           {
             name: 'Upload directory',
             content: (
-              <div style={{ paddingBottom: '10px' }}>
+              <div style={{ paddingBottom: '4px' }}>
                 <Dragger
                   className="drop-container"
                   {...draggerConfig}
