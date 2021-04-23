@@ -1,12 +1,17 @@
 import { useRef, useState } from 'react';
-import { getUserPublicSessions, storeUserSession } from '../../skynet/skynet';
+import {
+  getUserPublicSessions,
+  mySkyLogin,
+  storeUserSession,
+} from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider } from 'antd';
+import { Form, Input, Button, Divider, Alert } from 'antd';
 import { PublicSession } from '../../models/session';
 
 import { List } from 'antd';
 
 import { v4 as uuid } from 'uuid';
+import { MySky } from 'skynet-js';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -17,31 +22,57 @@ const useConstructor = (callBack = () => {}) => {
 
 const Account = () => {
   const [userSessions, setUserSessions] = useState<PublicSession[]>([]);
+  const [isLogged, setIsLogged] = useState(false);
+  const [userID, setUserID] = useState('');
+  const [isloading, setIsLoading] = useState(true);
+
+  let mySky: MySky = null;
 
   useConstructor(async () => {
-    setUserSessions(await getUserPublicSessions());
+    try {
+      mySky = await mySkyLogin();
+      setUserID(await mySky.userID());
+      setIsLogged(true);
+      setUserSessions(await getUserPublicSessions(mySky));
+    } catch (error) {
+      setIsLogged(false);
+    }
+    setIsLoading(false);
   });
 
   const onFinish = async (values: any) => {
+    setIsLoading(true);
     const session: PublicSession = {
       id: uuid(),
       name: values.sessionName,
       link: values.sessionLink,
       createdAt: new Date().getTime(),
     };
+
     setUserSessions((p) => [...p, session]);
-    await storeUserSession([session]);
+
+    if (mySky !== null) {
+      await storeUserSession(mySky, [session]);
+    }
+    setIsLoading(false);
   };
 
   return (
     <>
+      <Alert
+        message="Warning"
+        description="This is an advanced functionality. Make sure you know what you are doing! Once you publish a SkyTransfer
+      link, any user of Skynet which know your userID will be able to
+      discover and access the files you shared. Use with caution."
+        type="warning"
+      />
       <Divider orientation="left">
-        Create and public a new SkyTransfer session
+        Public a new SkyTransfer session link
       </Divider>
       <Form name="basic" onFinish={onFinish}>
         <Form.Item
           name="sessionName"
-          rules={[{ required: true, message: 'Please add a session name' }]}
+          rules={[{ required: true, message: 'Please add a SkyTransfer name' }]}
         >
           <Input placeholder="Session name" />
         </Form.Item>
@@ -50,7 +81,7 @@ const Account = () => {
           name="sessionLink"
           rules={[{ required: true, message: 'Please add a session link' }]}
         >
-          <Input placeholder="Session link" />
+          <Input placeholder="SkyTransfer link" />
         </Form.Item>
 
         <Form.Item>
