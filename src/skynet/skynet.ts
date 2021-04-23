@@ -112,17 +112,26 @@ export const storeUserSession = async (
 ) => {
     try {
         let sessions = await getUserPublicSessions(mySky);
-        sessions = [...sessions, ...newSessions];
+        let shouldUpdate = false;
 
-        const { skylink } = await mySky.setJSON(sessionsPath, { sessions });
-
-        await contentRecord.recordNewContent({
-            skylink: skylink,
-            metadata: {
-                action: 'addedPublicSkyTransferSessions',
-                newSessions: newSessions
-            },
+        newSessions.forEach(n => {
+            if (sessions.findIndex(s => s.link === n.link || s.id === n.id) === -1) {
+                sessions.push(n);
+                shouldUpdate = true;
+            }
         });
+
+        if (shouldUpdate) {
+            const { skylink } = await mySky.setJSON(sessionsPath, { sessions });
+
+            await contentRecord.recordNewContent({
+                skylink: skylink,
+                metadata: {
+                    action: 'addedPublicSkyTransferSessions',
+                    newSessions: newSessions
+                },
+            });
+        }
     } catch (e) {
         console.log("could not storeUserSession:");
         console.error(e);
