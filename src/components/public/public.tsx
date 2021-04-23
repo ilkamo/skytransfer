@@ -58,6 +58,8 @@ const Account = () => {
     setIsLoading(false);
   };
 
+  const sessionLink = SessionManager.readOnlyLink;
+
   return (
     <>
       <Alert
@@ -82,13 +84,17 @@ const Account = () => {
           <Divider className="default-margin" orientation="left">
             Public actual session link
           </Divider>
-          <Form name="basic" onFinish={onFinish}>
+          <Form
+            name="basic"
+            onFinish={onFinish}
+            initialValues={{ sessionLink }}
+          >
             <Form.Item
               name="sessionName"
               rules={[
                 {
                   required: true,
-                  message: 'Please add a SkyTransfer session name',
+                  message: 'Please add a session name',
                 },
               ]}
             >
@@ -99,16 +105,10 @@ const Account = () => {
               name="sessionLink"
               rules={[{ required: true, message: 'Please add a session link' }]}
             >
-              <Input
-                disabled
-                readOnly
-                defaultValue={SessionManager.readOnlyLink}
-                value={SessionManager.readOnlyLink}
-                placeholder="SkyTransfer link"
-              />
+              <Input disabled readOnly placeholder="SkyTransfer link" />
             </Form.Item>
 
-            <Form.Item>
+            <Form.Item style={{ textAlign: 'center' }}>
               <Button type="primary" htmlType="submit">
                 Public
               </Button>
@@ -121,14 +121,13 @@ const Account = () => {
             dataSource={userSessions}
             renderItem={(item) => (
               <List.Item
-                title={item.name}
                 actions={[
                   <a href={item.link} key={`${item.id}`}>
                     open
                   </a>,
                 ]}
               >
-                {item.name}
+                <List.Item.Meta title={item.name} />
               </List.Item>
             )}
           />
