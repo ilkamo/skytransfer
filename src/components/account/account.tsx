@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { getUserPublicSessions, storeUserSession } from '../../skynet/skynet';
 
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, Divider } from 'antd';
 import { PublicSession } from '../../models/session';
 
 import { List } from 'antd';
@@ -35,6 +35,9 @@ const Account = () => {
 
   return (
     <>
+      <Divider orientation="left">
+        Create and public a new SkyTransfer session
+      </Divider>
       <Form name="basic" onFinish={onFinish}>
         <Form.Item
           name="sessionName"
@@ -52,16 +55,17 @@ const Account = () => {
 
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Submit
+            Public
           </Button>
         </Form.Item>
       </Form>
+      <Divider orientation="left">Public SkyTransfer sessions</Divider>
       <List
         bordered
         dataSource={userSessions}
         renderItem={(item) => (
           <List.Item>
-            {item.name} - {item.link}
+            <a href={item.link}>{item.name}</a>
           </List.Item>
         )}
       />

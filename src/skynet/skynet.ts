@@ -9,6 +9,7 @@ const skynetClient = new SkynetClient(DEFAULT_DOMAIN);
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = "skytransfer.hns/publicSessions.json";
+
 const contentRecord = new ContentRecordDAC();
 
 export const storeEncryptedFiles = async (
@@ -67,8 +68,8 @@ export const getEncryptedFiles = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
     try {
-        const client = new SkynetClient("https://siasky.net");
-        const mySky = await client.loadMySky(dataDomain);
+        const client = new SkynetClient();
+        const mySky = await client.loadMySky(dataDomain, { debug: true });
 
         // @ts-ignore
         await mySky.loadDacs(contentRecord);
@@ -125,12 +126,18 @@ export const storeUserSession = async (
 
         await contentRecord.recordInteraction({
             skylink: data.skylink,
-            metadata: { action: 'addedPublicSkyTransferSession' },
+            metadata: {
+                action: 'addedPublicSkyTransferSession',
+                sessionLink: newSessions[0].link
+            },
         });
 
         await contentRecord.recordNewContent({
             skylink: data.skylink,
-            metadata: { action: 'addedPublicSkyTransferSession' },
+            metadata: {
+                action: 'addedPublicSkyTransferSession',
+                sessionLink: newSessions[0].link
+            },
         });
     } catch (e) {
         console.log("could not storeUserSession:");
