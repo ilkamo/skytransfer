@@ -21,13 +21,13 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
+let mySky: MySky = null;
+
 const Account = () => {
   const [userSessions, setUserSessions] = useState<PublicSession[]>([]);
   const [isLogged, setIsLogged] = useState(false);
   const [userID, setUserID] = useState('');
   const [isloading, setIsLoading] = useState(true);
-
-  let mySky: MySky = null;
 
   useConstructor(async () => {
     try {
@@ -52,9 +52,11 @@ const Account = () => {
 
     setUserSessions((p) => [...p, session]);
 
-    if (mySky !== null) {
-      await storeUserSession(mySky, [session]);
+    if (mySky === null) {
+      mySky = await mySkyLogin();
     }
+
+    await storeUserSession(mySky, [session]);
     setIsLoading(false);
   };
 
