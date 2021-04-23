@@ -81,8 +81,6 @@ export const mySkyLogin = async (): Promise<MySky> => {
             }
         }
 
-        console.log(await mySky.userID());
-
         return mySky;
     } catch (e) {
         console.log("mySkyLogin error: ");
@@ -91,11 +89,10 @@ export const mySkyLogin = async (): Promise<MySky> => {
     }
 }
 
-export const getUserPublicSessions = async (): Promise<PublicSession[]> => {
+export const getUserPublicSessions = async (mySky: MySky): Promise<PublicSession[]> => {
     let sessions: PublicSession[] = [];
 
     try {
-        const mySky = await mySkyLogin();
         const { data } = await mySky.getJSON(sessionsPath);
 
         if (data && 'sessions' in data) {
@@ -110,12 +107,11 @@ export const getUserPublicSessions = async (): Promise<PublicSession[]> => {
 }
 
 export const storeUserSession = async (
+    mySky: MySky,
     newSessions: PublicSession[],
 ) => {
     try {
-        const mySky = await mySkyLogin();
-
-        let sessions = await getUserPublicSessions();
+        let sessions = await getUserPublicSessions(mySky);
         sessions = [...sessions, ...newSessions];
 
         const { skylink } = await mySky.setJSON(sessionsPath, { sessions });

@@ -28,4 +28,8 @@ export default class SessionManager {
     static get readWriteLink() {
         return `${window.location.hostname}/#/${this.sessionPrivateKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
+
+    static canResume() {
+        return localStorage.getItem(SESSION_KEY_NAME) !== null;
+    }
 }

@@ -1,9 +1,17 @@
 import { Menu, message, Layout } from 'antd';
 
-import { CopyOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  LinkOutlined,
+  RedoOutlined,
+  EditOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import SessionManager from '../../session/session-manager';
 import { useStateContext } from '../../state/state';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const { Header } = Layout;
 
@@ -11,31 +19,39 @@ const AppHeader = () => {
   const { state } = useStateContext();
   const { isReadOnlySession } = state;
   const history = useHistory();
+  let location = useLocation();
+
+  const [canResumeSession, setCanResumeSession] = useState(false);
+
+  useEffect(() => {
+    setCanResumeSession(
+      location.pathname !== '/' && SessionManager.canResume()
+    );
+  }, [location]);
 
   return (
     <Header>
-      {/* <div className="logo">SkyTransfer</div> */}
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
         <Menu.Item
           key="copy-read-write"
           disabled={isReadOnlySession}
           onClick={() => {
             navigator.clipboard.writeText(SessionManager.readWriteLink);
-            message.info('SkyTransfer read-write link copied');
+            message.info('SkyTransfer link copied');
           }}
           icon={<LinkOutlined />}
         >
-          Read/write link
+          Share
         </Menu.Item>
         <Menu.Item
           key="copy-read-only"
           onClick={() => {
             navigator.clipboard.writeText(SessionManager.readOnlyLink);
-            message.info('SkyTransfer read-only link copied');
+            message.info('SkyTransfer editable link copied');
           }}
-          icon={<LinkOutlined />}
+          icon={<EditOutlined />}
         >
-          Read only link
+          Share draft
         </Menu.Item>
         <Menu.Item
           key="new-session"
@@ -46,10 +62,29 @@ const AppHeader = () => {
           }}
           icon={<DeleteOutlined />}
         >
-          New session
+          New
+        </Menu.Item>
+        <Menu.Item
+          key="resume-session"
+          onClick={() => {
+            history.push('/');
+          }}
+          disabled={!canResumeSession}
+          icon={<RedoOutlined />}
+        >
+          Resume
+        </Menu.Item>
+        <Menu.Item
+          key="public-session"
+          onClick={() => {
+            history.push('/public');
+          }}
+          icon={<EyeOutlined />}
+        >
+          Public
         </Menu.Item>
         <Menu.Item key="about-us" disabled icon={<CopyOutlined />}>
-          About SkyTransfer
+          About
         </Menu.Item>
       </Menu>
     </Header>
