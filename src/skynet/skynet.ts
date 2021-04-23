@@ -1,10 +1,10 @@
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from "skynet-js";
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from "../config";
+import { DEFAULT_DOMAIN, ENCRYPTED_FILES_SKYDB_KEY_NAME } from "../config";
 import { JsonCrypto } from "../crypto/json";
 import { EncryptedFileReference } from "../models/encryption";
 
-const skynetClient = new SkynetClient();
+const skynetClient = new SkynetClient(DEFAULT_DOMAIN);
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = "skytransfer.hns/publicSessions.json";
@@ -65,7 +65,8 @@ export const getEncryptedFiles = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
     try {
-        const mySky = await skynetClient.loadMySky(dataDomain);
+        const client = new SkynetClient("https://siasky.ney");
+        const mySky = await client.loadMySky(dataDomain);
         const loggedIn = await mySky.checkLogin();
         if (!loggedIn) {
             if (!await mySky.requestLoginAccess()) {
