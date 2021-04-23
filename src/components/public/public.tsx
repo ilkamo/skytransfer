@@ -73,7 +73,7 @@ const Account = () => {
       />
       {isloading ? (
         <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin tip="Loading MySky session..." size="large" />
+          <Spin tip="Loading MySky stuff..." size="large" />
         </div>
       ) : (
         <>
