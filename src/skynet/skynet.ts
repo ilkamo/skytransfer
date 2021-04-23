@@ -69,6 +69,10 @@ export const mySkyLogin = async (): Promise<MySky> => {
     try {
         const client = new SkynetClient("https://siasky.net");
         const mySky = await client.loadMySky(dataDomain);
+        
+        // @ts-ignore
+        await mySky.loadDacs(contentRecord);
+
         const loggedIn = await mySky.checkLogin();
         if (!loggedIn) {
             if (!await mySky.requestLoginAccess()) {
@@ -77,9 +81,6 @@ export const mySkyLogin = async (): Promise<MySky> => {
         }
 
         console.log(await mySky.userID());
-        
-        // @ts-ignore
-        await mySky.loadDacs(contentRecord);
 
         return mySky;
     } catch (e) {
