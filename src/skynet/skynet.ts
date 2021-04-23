@@ -1,3 +1,4 @@
+import { ContentRecordDAC } from '@skynetlabs/content-record-library';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from "skynet-js";
 import { DEFAULT_DOMAIN, ENCRYPTED_FILES_SKYDB_KEY_NAME } from "../config";
@@ -8,6 +9,7 @@ const skynetClient = new SkynetClient(DEFAULT_DOMAIN);
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = "skytransfer.hns/publicSessions.json";
+const contentRecord = new ContentRecordDAC();
 
 export const storeEncryptedFiles = async (
     privateKey: string,
@@ -73,6 +75,12 @@ export const mySkyLogin = async (): Promise<MySky> => {
                 throw Error("could not login");
             }
         }
+
+        console.log(await mySky.userID());
+        
+        // @ts-ignore
+        await mySky.loadDacs(contentRecord);
+
         return mySky;
     } catch (e) {
         console.log("mySkyLogin error: ");
@@ -87,7 +95,13 @@ export const getUserPublicSessions = async (): Promise<PublicSession[]> => {
     try {
         const mySky = await mySkyLogin();
         const { data } = await mySky.getJSON(sessionsPath);
-        sessions = data.sessions as PublicSession[];
+
+        console.log("getJSON data");
+        console.log(data);
+
+        if (data && 'sessions' in data) {
+            sessions = data.sessions as PublicSession[];
+        }
     } catch (e) {
         console.log("could not getUserSessions");
         console.error(e);
@@ -105,7 +119,8 @@ export const storeUserSession = async (
         let sessions = await getUserPublicSessions();
         sessions = [...sessions, ...newSessions];
 
-        await mySky.setJSON(sessionsPath, { sessions });
+        const data = await mySky.setJSON(sessionsPath, { sessions });
+        console.log(data);
     } catch (e) {
         console.log("could not storeUserSession:");
         console.error(e);
