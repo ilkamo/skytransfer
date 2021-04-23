@@ -69,7 +69,7 @@ export const mySkyLogin = async (): Promise<MySky> => {
     try {
         const client = new SkynetClient("https://siasky.net");
         const mySky = await client.loadMySky(dataDomain);
-        
+
         // @ts-ignore
         await mySky.loadDacs(contentRecord);
 
@@ -122,6 +122,16 @@ export const storeUserSession = async (
 
         const data = await mySky.setJSON(sessionsPath, { sessions });
         console.log(data);
+
+        await contentRecord.recordInteraction({
+            skylink: data.skylink,
+            metadata: { action: 'addedPublicSkyTransferSession' },
+        });
+
+        await contentRecord.recordNewContent({
+            skylink: data.skylink,
+            metadata: { action: 'addedPublicSkyTransferSession' },
+        });
     } catch (e) {
         console.log("could not storeUserSession:");
         console.error(e);
