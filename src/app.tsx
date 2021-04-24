@@ -23,14 +23,14 @@ your files. When you share a draft, others
 can add more files to your SkyTransfer.
 </p>;
 
-function App() {
-  const [state, setState] = useState<State>({shareModalVisible:false});
+const [state, setState] = useState<State>({shareModalVisible:false});
 
+function App() {
   return (
     <Router>
       <Layout className="layout">
         <AppHeader shareOnClick={() => {
-          setState((s) => ({...s, shareModalVisible:true}));
+          setState({...state, shareModalVisible:true});
         }} />
         <Content className="container">
           <Switch>
@@ -60,7 +60,7 @@ function App() {
           title="Share"
           header={ShareModalHeader}
           visible={state.shareModalVisible}
-          onCancel={() => setState((s) => ({...s, shareModalVisible:false}))}
+          onCancel={() => setState({...state, shareModalVisible:false})}
         />
 
         <Footer style={{ textAlign: 'center' }}>

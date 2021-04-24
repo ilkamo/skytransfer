@@ -61,7 +61,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => {}, 5000);
+let timeoutID = setTimeout(() => {}, 0);
 
 let uploadCount = 0;
 
@@ -77,6 +77,11 @@ const Uploader = () => {
   );
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
+
+  const finishUpload = () => {
+    setUploadingInProgress(false);
+    setShowUploadCompletedModal(false);
+  };
 
   const initSession = async () => {
     const files = await getEncryptedFiles(
@@ -448,14 +453,8 @@ const Uploader = () => {
           can add files to your SkyTransfer.
         </p>
         }
-        shareLinkOnClick={() => {
-          setUploadingInProgress(false);
-          setShowUploadCompletedModal(false);
-        }}
-        shareDraftLinkOnClick={() => {
-          setUploadingInProgress(false);
-          setShowUploadCompletedModal(false);
-        }}
+        shareLinkOnClick={finishUpload}
+        shareDraftLinkOnClick={finishUpload}
       />
     </>
   );
