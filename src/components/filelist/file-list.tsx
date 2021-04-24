@@ -9,8 +9,6 @@ import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import { SESSION_KEY_NAME } from '../../config';
-import { useStateContext } from '../../state/state';
-import { ActionType } from '../../state/reducer';
 import { getEncryptedFiles } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
@@ -28,7 +26,6 @@ const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
-  const { dispatch } = useStateContext();
 
   const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
 
@@ -43,10 +40,6 @@ const FileList = () => {
       setlLoading(false);
       return;
     }
-
-    dispatch({
-      type: ActionType.READ_ONLY,
-    });
 
     setLoadedFiles((prev) => [...prev, ...files]);
     setlLoading(false);
