@@ -96,7 +96,7 @@ const FileList = () => {
 
   return (
     <>
-      <Divider orientation="left">Shared files - click on a file to start downloading</Divider>
+      <Divider orientation="left">Shared files</Divider>
       {loadedFiles.length > 0 ? (
         <>
           <div className="file-list">
