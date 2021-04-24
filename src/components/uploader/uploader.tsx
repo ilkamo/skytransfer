@@ -42,8 +42,6 @@ import { ActivityBars } from './activity-bar';
 import axios from 'axios';
 
 import SessionManager from '../../session/session-manager';
-import { useStateContext } from '../../state/state';
-import { ActionType } from '../../state/reducer';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
@@ -81,8 +79,6 @@ const Uploader = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
 
-  const { dispatch } = useStateContext();
-
   const initSession = async () => {
     const files = await getEncryptedFiles(
       SessionManager.sessionPublicKey,
@@ -92,10 +88,6 @@ const Uploader = () => {
       setLoading(false);
       return;
     }
-
-    dispatch({
-      type: ActionType.READ_WRITE,
-    });
 
     setUploadedEncryptedFiles((prev) => [...prev, ...files]);
     setLoading(false);

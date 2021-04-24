@@ -9,23 +9,25 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import SessionManager from '../../session/session-manager';
-import { useStateContext } from '../../state/state';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const { Header } = Layout;
 
 const AppHeader = () => {
-  const { state } = useStateContext();
-  const { isReadOnlySession } = state;
   const history = useHistory();
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
+  const [isReadOnlySession, setIsReadOnlySession] = useState(false);
 
   useEffect(() => {
     setCanResumeSession(
       location.pathname !== '/' && SessionManager.canResume()
+    );
+    console.log(location.pathname);
+    setIsReadOnlySession(
+      location.pathname !== '/' && SessionManager.isReadOnlyFromLink()
     );
   }, [location]);
 
@@ -33,7 +35,7 @@ const AppHeader = () => {
     <Header>
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
         <Menu.Item
-          key="copy-read-only"
+          key="share"
           onClick={() => {
             navigator.clipboard.writeText(SessionManager.readOnlyLink);
             message.info('SkyTransfer link copied');
@@ -43,7 +45,7 @@ const AppHeader = () => {
           Share
         </Menu.Item>
         <Menu.Item
-          key="copy-read-write"
+          key="share-draft"
           disabled={isReadOnlySession}
           onClick={() => {
             navigator.clipboard.writeText(SessionManager.readWriteLink);
@@ -54,7 +56,17 @@ const AppHeader = () => {
           Share draft
         </Menu.Item>
         <Menu.Item
-          key="new-session"
+          key="resume-draft"
+          onClick={() => {
+            history.push('/');
+          }}
+          disabled={!canResumeSession}
+          icon={<RedoOutlined />}
+        >
+          Resume draft
+        </Menu.Item>
+        <Menu.Item
+          key="new-draft"
           onClick={() => {
             SessionManager.destroySession();
             history.push('/');
@@ -62,26 +74,16 @@ const AppHeader = () => {
           }}
           icon={<DeleteOutlined />}
         >
-          New
+          New draft
         </Menu.Item>
         <Menu.Item
-          key="resume-session"
-          onClick={() => {
-            history.push('/');
-          }}
-          disabled={!canResumeSession}
-          icon={<RedoOutlined />}
-        >
-          Resume
-        </Menu.Item>
-        <Menu.Item
-          key="public-session"
+          key="publish"
           onClick={() => {
             history.push('/public');
           }}
           icon={<EyeOutlined />}
         >
-          Public
+          Publish
         </Menu.Item>
         <Menu.Item
           key="about-us"

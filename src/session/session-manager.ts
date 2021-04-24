@@ -21,7 +21,14 @@ export default class SessionManager {
         localStorage.removeItem(SESSION_KEY_NAME);
     }
 
+    static isReadOnlyFromLink() {
+        return window.location.hash.split('/').length === 3 && window.location.hash.split('/')[1].length === 64;
+    }
+
     static get readOnlyLink() {
+        if (this.isReadOnlyFromLink()) {
+            return `https://${window.location.hostname}/${window.location.hash}`;
+        }
         return `https://${window.location.hostname}/#/${this.sessionPublicKey}/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
     };
 
