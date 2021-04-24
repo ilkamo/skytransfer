@@ -79,9 +79,7 @@ export default class AESFileDecrypt implements FileDecrypt {
 
         onDecryptProgress(true, 100);
 
-        const fileEnc = new Blob(this.parts, { type: this.encryptedFile.mimeType });
-
-        return new File([fileEnc], this.encryptedFile.fileName, { type: this.encryptedFile.mimeType });
+        return new File(this.parts, this.encryptedFile.fileName, { type: this.encryptedFile.mimeType });
     }
 
     private async decryptBlob(encryptedData: Blob): Promise<BlobPart> {

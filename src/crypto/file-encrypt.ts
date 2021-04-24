@@ -48,9 +48,7 @@ export default class AESFileEncrypt implements FileEncrypt {
 
         onEncryptProgress(true, 100);
 
-        const fileEnc = new Blob(this.parts, { type: this.file.type });
-
-        return new File([fileEnc], this.file.name, { type: this.file.type });
+        return new File(this.parts, this.file.name, { type: this.file.type });
     }
 
     private async encryptBlob(fileBlob: Blob): Promise<BlobPart> {
