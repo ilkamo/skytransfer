@@ -18,7 +18,7 @@ const About = () => {
       </p>
       <p>
         Use the minimal but powerful uploader (file picker or drag&drop) for{' '}
-        <strong>uploading and sharing one or multiple files</strong> by a{' '}
+        <strong>uploading and sharing one or multiple files</strong> with a{' '}
         <strong>single link</strong> or <strong>QR code</strong>.
       </p>
       <p>
@@ -32,23 +32,23 @@ const About = () => {
         draft!
       </p>
       <p>
-        SkyTransfer supports <strong>directories upload</strong> and is able to
+        SkyTransfer supports uploading <strong>directories</strong> and is able to
         manage nested folders.
       </p>
       <p>
-        Last but not least, you can <strong>Public your SkyTransfer</strong>.
+        Last but not least, you can <strong>Publish your SkyTransfer</strong>.
         What does it exactly mean? Let's explain it with an example. Imagine{' '}
-        SkyTransfer like a box where you can put inside different files. This
+        SkyTransfer as a box that you can put different files in. This
         box can be opened by others only if they have the correct key. There is
-        no other way of doing it. By publishing a SkyTransfer, you send this box
-        with all files on the public Skynet. In addition, you are attaching the
-        keys to it so, when others find it, they can use the keys to open it.
+        no other way of doing it. By publishing a SkyTransfer, you advertise this box
+        with all its files on the public Skynet. In addition, you are attaching the
+        keys to it so when others find your public box, they can use the keys to open it.
         Publish a SkyTransfer only when you are really aware of the
         consequences!
       </p>
       <p>
-        SkyTransfer is still in development. Please report any issue, new idea
-        or bug.
+        SkyTransfer is still in development. Please report any issues, new ideas
+        or bugs.
       </p>
     </div>
   );
