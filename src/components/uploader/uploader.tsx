@@ -470,9 +470,9 @@ const Uploader = () => {
       >
         <p>
           Your <strong>SkyTransfer</strong> is ready. Your files have been
-          correctly encrytypted and uploaded on Skynet. Copy the link and share your
-          files or just continue uploading. When you share a
-          draft, others can add files to your SkyTransfer.
+          encrytypted and uploaded on Skynet. Copy the link and share
+          your files or just continue uploading. When you share a draft, others
+          can add files to your SkyTransfer.
         </p>
 
         <TabsCards
@@ -481,8 +481,8 @@ const Uploader = () => {
               name: 'Share',
               content: (
                 <QR
-                  qrValue={SessionManager.readWriteLink}
-                  linkOnClick={copyReadWriteLink}
+                  qrValue={SessionManager.readOnlyLink}
+                  linkOnClick={copyReadOnlyLink}
                 />
               ),
             },
@@ -490,8 +490,8 @@ const Uploader = () => {
               name: 'Share draft',
               content: (
                 <QR
-                  qrValue={SessionManager.readOnlyLink}
-                  linkOnClick={copyReadOnlyLink}
+                  qrValue={SessionManager.readWriteLink}
+                  linkOnClick={copyReadWriteLink}
                 />
               ),
             },

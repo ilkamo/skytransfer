@@ -33,10 +33,9 @@ const AppHeader = () => {
     <Header>
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
         <Menu.Item
-          key="copy-read-write"
-          disabled={isReadOnlySession}
+          key="copy-read-only"
           onClick={() => {
-            navigator.clipboard.writeText(SessionManager.readWriteLink);
+            navigator.clipboard.writeText(SessionManager.readOnlyLink);
             message.info('SkyTransfer link copied');
           }}
           icon={<LinkOutlined />}
@@ -44,9 +43,10 @@ const AppHeader = () => {
           Share
         </Menu.Item>
         <Menu.Item
-          key="copy-read-only"
+          key="copy-read-write"
+          disabled={isReadOnlySession}
           onClick={() => {
-            navigator.clipboard.writeText(SessionManager.readOnlyLink);
+            navigator.clipboard.writeText(SessionManager.readWriteLink);
             message.info('SkyTransfer editable link copied');
           }}
           icon={<EditOutlined />}
