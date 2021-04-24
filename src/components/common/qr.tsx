@@ -9,7 +9,7 @@ type QRProps = {
     linkOnClick: () => void
 }
 
-const QR = ({ qrValue, linkOnClick }: QRProps) => {
+export const QR = ({ qrValue, linkOnClick }: QRProps) => {
     return <>
     <QRCode
       bgColor="#FFFFFF"
@@ -20,5 +20,3 @@ const QR = ({ qrValue, linkOnClick }: QRProps) => {
     <Button type="dashed" block size="middle" onClick={linkOnClick}>Copy link!</Button>
   </>
 }
-
-export default QR;
