@@ -25,7 +25,6 @@ const AppHeader = () => {
     setCanResumeSession(
       location.pathname !== '/' && SessionManager.canResume()
     );
-    console.log(location.pathname);
     setIsReadOnlySession(
       location.pathname !== '/' && SessionManager.isReadOnlyFromLink()
     );

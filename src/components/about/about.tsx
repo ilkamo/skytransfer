@@ -10,11 +10,11 @@ const About = () => {
       </p>
       <p>
         <span className="title">SkyTransfer</span> is an open source
-        decentralized file sharing platform. Do you have a difficult time{' '}
-        <strong>sharing files between devices</strong>? Are you writing an email
-        and you need to <strong>attach different files</strong>? Are you
-        struggling with a ton of <strong>pictures to share</strong>? Let's try
-        doing it using SkyTransfer.
+        decentralized file sharing platform. Do you have difficulty{' '}
+        <strong>sharing files with others</strong> or{' '}
+        <strong>between different devices</strong>? Are you writing an email and
+        you need to <strong>attach files</strong>? Are you struggling with a ton
+        of <strong>pictures to share</strong>? Try doing it using SkyTransfer.
       </p>
       <p>
         Use the minimal but powerful uploader (file picker or drag&drop) for{' '}
@@ -22,29 +22,27 @@ const About = () => {
         <strong>single link</strong> or <strong>QR code</strong>.
       </p>
       <p>
-        Uploaded files are <strong>encrypted using the AES algorithm</strong> so
+        Uploaded files are <strong>encrypted using the AES algorithm</strong>:
         no one can access them without your permission. Only{' '}
-        <strong>by sharing the link</strong>, other people can{' '}
+        by <strong>sharing the link</strong>, other people can{' '}
         <strong>download and decrypt</strong> the content you uploaded. In
-        addition, <strong>by sharing a draft</strong>, people can continue
-        uploading into the same SkyTransfer{' '}
-        <strong>adding more files to it</strong>. Be careful when you share a
-        draft!
+        addition, by <strong>sharing a draft</strong>, people can continue
+        uploading more data into the same SkyTransfer directory. Be careful when
+        you share a draft!
       </p>
       <p>
-        SkyTransfer supports uploading <strong>directories</strong> and is able to
-        manage nested folders.
+        SkyTransfer supports <strong>uploading entire directories</strong>.
       </p>
       <p>
-        Last but not least, you can <strong>Publish your SkyTransfer</strong>.
-        What does it exactly mean? Let's explain it with an example. Imagine{' '}
-        SkyTransfer as a box that you can put different files in. This
-        box can be opened by others only if they have the correct key. There is
-        no other way of doing it. By publishing a SkyTransfer, you advertise this box
-        with all its files on the public Skynet. In addition, you are attaching the
-        keys to it so when others find your public box, they can use the keys to open it.
-        Publish a SkyTransfer only when you are really aware of the
-        consequences!
+        Last but not least, thanks to MySky integration you can{' '}
+        <strong>Publish your main directory</strong>. What does it exactly mean?
+        Let's explain it with an example. Imagine SkyTransfer as a box that you
+        can put different files in. This box can be opened by others only if
+        they have the correct key. There is no other way of doing it. By
+        publishing your SkyTransfer, you advertise this box with all its files
+        on the public Skynet. At the same time, you attach the keys to the box
+        so others can open it. Publish a SkyTransfer only when you are really
+        aware of the consequences!
       </p>
       <p>
         SkyTransfer is still in development. Please report any issues, new ideas
