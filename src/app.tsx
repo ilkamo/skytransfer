@@ -23,9 +23,9 @@ your files. When you share a draft, others
 can add more files to your SkyTransfer.
 </p>;
 
-const [state, setState] = useState<State>({shareModalVisible:false});
+const App = () => {
+  const [state, setState] = useState<State>({shareModalVisible:false});
 
-function App() {
   return (
     <Router>
       <Layout className="layout">
