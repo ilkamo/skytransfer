@@ -43,8 +43,7 @@ export const ShareModal = ({ title, visible, onCancel, header, shareLinkOnClick=
         ),
     };
 
-
-    const tabs = SessionManager.isReadOnlyFromLink ? [shareTab]: [shareTab, shareDraftTab];
+    const tabs = SessionManager.isReadOnlyFromLink() ? [shareTab]: [shareTab, shareDraftTab];
 
     return (<Modal
         title={title}
