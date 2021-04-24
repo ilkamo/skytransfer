@@ -11,10 +11,7 @@ type DownloadActivityBarProps = {
   decryptProgress: number;
 };
 
-
-const UploadActivityBar = ({
-  encryptProgress,
-}: UploadActivityBarProps) => {
+const UploadActivityBar = ({ encryptProgress }: UploadActivityBarProps) => {
   return (
     <div className="activity-bar default-margin" style={{ background: 'none' }}>
       <Tooltip
@@ -82,5 +79,5 @@ const DownloadActivityBar = ({
 
 export const ActivityBars = {
   UploadActivityBar: UploadActivityBar,
-  DownloadActivityBar: DownloadActivityBar
-}
+  DownloadActivityBar: DownloadActivityBar,
+};

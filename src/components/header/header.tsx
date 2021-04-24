@@ -14,10 +14,10 @@ import { useEffect, useState } from 'react';
 const { Header } = Layout;
 
 type HeaderProps = {
-  shareOnClick: () => void
-}
+  shareOnClick: () => void;
+};
 
-const AppHeader = ({shareOnClick}: HeaderProps) => {
+const AppHeader = ({ shareOnClick }: HeaderProps) => {
   const history = useHistory();
   let location = useLocation();
 
@@ -32,11 +32,7 @@ const AppHeader = ({shareOnClick}: HeaderProps) => {
   return (
     <Header>
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
-        <Menu.Item
-          key="share"
-          onClick={shareOnClick}
-          icon={<LinkOutlined />}
-        >
+        <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
           Share
         </Menu.Item>
         <Menu.Item
