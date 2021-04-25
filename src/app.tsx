@@ -18,20 +18,25 @@ export interface State {
   shareModalVisible: boolean;
 }
 
-const ShareModalHeader = <p>Share your <strong>SkyTransfer</strong> directory. Copy the link and share
-your files. When you share a draft, others
-can add more files to your SkyTransfer.
-</p>;
+const ShareModalHeader = (
+  <p>
+    Share your <strong>SkyTransfer</strong> directory. Copy the link and share
+    your files. When you share a draft, others can add more files to your
+    SkyTransfer.
+  </p>
+);
 
 const App = () => {
-  const [state, setState] = useState<State>({shareModalVisible:false});
+  const [state, setState] = useState<State>({ shareModalVisible: false });
 
   return (
     <Router>
       <Layout className="layout">
-        <AppHeader shareOnClick={() => {
-          setState({...state, shareModalVisible:true});
-        }} />
+        <AppHeader
+          shareOnClick={() => {
+            setState({ ...state, shareModalVisible: true });
+          }}
+        />
         <Content className="container">
           <Switch>
             <Route path="/:transferKey/:encryptionKey">
@@ -60,7 +65,7 @@ const App = () => {
           title="Share"
           header={ShareModalHeader}
           visible={state.shareModalVisible}
-          onCancel={() => setState({...state, shareModalVisible:false})}
+          onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
 
         <Footer style={{ textAlign: 'center' }}>
@@ -92,6 +97,6 @@ const App = () => {
       </Layout>
     </Router>
   );
-}
+};
 
 export default App;
