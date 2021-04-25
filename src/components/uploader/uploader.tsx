@@ -15,7 +15,6 @@ import {
   Button,
   Alert,
   message,
-  Modal,
   Upload,
   Spin,
   Tree,
@@ -36,7 +35,6 @@ import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
-import QR from './qr';
 import { ActivityBars } from './activity-bar';
 
 import axios from 'axios';
@@ -46,6 +44,7 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
+import { ShareModal } from '../common/share-modal';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -62,7 +61,7 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => {}, 5000);
+let timeoutID = setTimeout(() => {}, 0);
 
 let uploadCount = 0;
 
@@ -78,6 +77,11 @@ const Uploader = () => {
   );
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
+
+  const finishUpload = () => {
+    setUploadingInProgress(false);
+    setShowUploadCompletedModal(false);
+  };
 
   const initSession = async () => {
     const files = await getEncryptedFiles(
@@ -96,20 +100,6 @@ const Uploader = () => {
   useConstructor(() => {
     initSession();
   });
-
-  const copyReadOnlyLink = () => {
-    navigator.clipboard.writeText(SessionManager.readOnlyLink);
-    setUploadingInProgress(false);
-    setShowUploadCompletedModal(false);
-    message.info('SkyTransfer link copied');
-  };
-
-  const copyReadWriteLink = () => {
-    navigator.clipboard.writeText(SessionManager.readWriteLink);
-    setUploadingInProgress(false);
-    setShowUploadCompletedModal(false);
-    message.info('SkyTransfer draft link copied');
-  };
 
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [decryptProgress, setDecryptProgress] = useState(0);
@@ -448,48 +438,24 @@ const Uploader = () => {
           </Button>
         </div>
       )}
-
-      <Modal
+      <ShareModal 
         title="Upload completed"
-        centered
         visible={showUploadCompletedModal}
-        cancelText="Continue"
         onCancel={() => {
           setShowUploadCompletedModal(false);
           setUploadingInProgress(false);
         }}
-        footer={null}
-      >
-        <p>
+        header={
+          <p>
           Your <strong>SkyTransfer</strong> is ready. Your files have been
           encrytypted and uploaded on Skynet. Copy the link and share
           your files or just continue uploading. When you share a draft, others
           can add files to your SkyTransfer.
         </p>
-
-        <TabsCards
-          values={[
-            {
-              name: 'Share',
-              content: (
-                <QR
-                  qrValue={SessionManager.readOnlyLink}
-                  linkOnClick={copyReadOnlyLink}
-                />
-              ),
-            },
-            {
-              name: 'Share draft',
-              content: (
-                <QR
-                  qrValue={SessionManager.readWriteLink}
-                  linkOnClick={copyReadWriteLink}
-                />
-              ),
-            },
-          ]}
-        />
-      </Modal>
+        }
+        shareLinkOnClick={finishUpload}
+        shareDraftLinkOnClick={finishUpload}
+      />
     </>
   );
 };
