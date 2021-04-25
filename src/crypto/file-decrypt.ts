@@ -2,8 +2,9 @@ import { SkynetClient } from 'skynet-js';
 import CryptoJS from 'crypto-js';
 import { EncryptedFileReference } from '../models/encryption';
 import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from './crypto';
-import { DEFAULT_DOMAIN } from '../config';
+import { DEFAULT_DOMAIN, MAX_AXIOS_RETRIES } from '../config';
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 
 export default class AESFileDecrypt implements FileDecrypt {
   readonly encryptedFile: EncryptedFileReference;
@@ -31,17 +32,22 @@ export default class AESFileDecrypt implements FileDecrypt {
     onDecryptProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => {},
+    ) => void = () => { },
     onFileDownloadProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => {}
+    ) => void = () => { }
   ): Promise<File> {
     const url = await this.skynetClient.getSkylinkUrl(
       this.encryptedFile.skylink
     );
 
     let data: Blob;
+
+    axiosRetry(axios, {
+      retries: MAX_AXIOS_RETRIES,
+      retryCondition: (_e) => true, // retry no matter what
+    });
 
     try {
       const response = await axios({
