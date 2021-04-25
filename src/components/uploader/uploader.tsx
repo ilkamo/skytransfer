@@ -33,11 +33,12 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
-import { MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
+import { MAX_AXIOS_RETRIES, MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 
 import SessionManager from '../../session/session-manager';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
@@ -223,6 +224,11 @@ const Uploader = () => {
         onProgress({ percent: (e.loaded / e.total) * 100 }, encryptedFile);
       },
     };
+
+    axiosRetry(axios, {
+      retries: MAX_AXIOS_RETRIES,
+      retryCondition: (_e) => true, // retry no matter what
+    });
 
     axios
       .post(UPLOAD_ENDPOINT, formData, config)
