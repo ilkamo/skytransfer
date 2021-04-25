@@ -2,8 +2,7 @@ import { EncryptedFileReference } from '../models/encryption';
 import { FileNode } from '../models/file-tree';
 
 export function renderTree(paths: EncryptedFileReference[]): FileNode[] {
-  let result: FileNode[] = []
-  
+  let result: FileNode[] = [];
   let level = { result };
 
   paths.forEach((f) => {
