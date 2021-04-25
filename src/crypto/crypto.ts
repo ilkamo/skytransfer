@@ -11,7 +11,6 @@ export interface FileDecrypt {
   decrypt(): Promise<File>;
 }
 
-
 export const deriveEncryptionKeyFromKey = (key): string => {
   return genKeyPairFromSeed(`${key}-aes-encrypt`).privateKey;
 };

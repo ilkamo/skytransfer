@@ -6,7 +6,7 @@ export default class AESFileEncrypt implements FileEncrypt {
   readonly file: File;
   readonly encryptionKey: string;
 
-  currentChunkStartByte: number;
+  currentChunkStartByte: number
   currentChunkFinalByte: number;
 
   parts: BlobPart[] = [];
