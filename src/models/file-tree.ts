@@ -1,6 +1,6 @@
 export interface FileNode {
-  title: string;
-  key: string;
-  children?: FileNode[];
-  isLeaf: boolean;
+    title: string
+    key: string
+    children?: FileNode[]
+    isLeaf: boolean
 }

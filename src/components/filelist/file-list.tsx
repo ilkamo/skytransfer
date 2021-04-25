@@ -15,7 +15,7 @@ import { ActivityBars } from '../uploader/activity-bar';
 
 const { DownloadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -111,9 +111,7 @@ const FileList = () => {
                 //{utils.fileSize(item.size)
 
                 const key: string = `${info.node.key}`;
-                const ff = loadedFiles.find(
-                  (f) => f.uuid === key.split('_')[0]
-                );
+                const ff = loadedFiles.find((f) => f.uuid === key.split('_')[0]);
                 if (ff) {
                   message.loading(`Download and decryption started`);
                   downloadFile(ff);

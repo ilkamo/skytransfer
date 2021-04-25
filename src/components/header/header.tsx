@@ -1,10 +1,11 @@
-import { Menu, Layout } from 'antd';
+import { Menu, message, Layout } from 'antd';
 
 import {
   CopyOutlined,
   DeleteOutlined,
   LinkOutlined,
   RedoOutlined,
+  EditOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
 import SessionManager from '../../session/session-manager';
@@ -13,27 +14,45 @@ import { useEffect, useState } from 'react';
 
 const { Header } = Layout;
 
-type HeaderProps = {
-  shareOnClick: () => void;
-};
-
-const AppHeader = ({ shareOnClick }: HeaderProps) => {
+const AppHeader = () => {
   const history = useHistory();
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
+  const [isReadOnlySession, setIsReadOnlySession] = useState(false);
 
   useEffect(() => {
     setCanResumeSession(
       location.pathname !== '/' && SessionManager.canResume()
+    );
+    setIsReadOnlySession(
+      location.pathname !== '/' && SessionManager.isReadOnlyFromLink()
     );
   }, [location]);
 
   return (
     <Header>
       <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
-        <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
+        <Menu.Item
+          key="share"
+          onClick={() => {
+            navigator.clipboard.writeText(SessionManager.readOnlyLink);
+            message.info('SkyTransfer link copied');
+          }}
+          icon={<LinkOutlined />}
+        >
           Share
+        </Menu.Item>
+        <Menu.Item
+          key="share-draft"
+          disabled={isReadOnlySession}
+          onClick={() => {
+            navigator.clipboard.writeText(SessionManager.readWriteLink);
+            message.info('SkyTransfer editable link copied');
+          }}
+          icon={<EditOutlined />}
+        >
+          Share draft
         </Menu.Item>
         <Menu.Item
           key="resume-draft"
