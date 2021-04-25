@@ -1,6 +1,7 @@
 import './app.css';
 
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { useState } from 'react';
 
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
@@ -9,14 +10,28 @@ import { Layout } from 'antd';
 import AppHeader from './components/header/header';
 import Account from './components/public/public';
 import About from './components/about/about';
+import { ShareModal } from './components/common/share-modal';
 
 const { Content, Footer } = Layout;
 
-function App() {
+export interface State {
+  shareModalVisible: boolean;
+}
+
+const ShareModalHeader = <p>Share your <strong>SkyTransfer</strong> directory. Copy the link and share
+your files. When you share a draft, others
+can add more files to your SkyTransfer.
+</p>;
+
+const App = () => {
+  const [state, setState] = useState<State>({shareModalVisible:false});
+
   return (
     <Router>
       <Layout className="layout">
-        <AppHeader />
+        <AppHeader shareOnClick={() => {
+          setState({...state, shareModalVisible:true});
+        }} />
         <Content className="container">
           <Switch>
             <Route path="/:transferKey/:encryptionKey">
@@ -41,6 +56,13 @@ function App() {
             </Route>
           </Switch>
         </Content>
+        <ShareModal
+          title="Share"
+          header={ShareModalHeader}
+          visible={state.shareModalVisible}
+          onCancel={() => setState({...state, shareModalVisible:false})}
+        />
+
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"
