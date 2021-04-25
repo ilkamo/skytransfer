@@ -23,8 +23,8 @@ const About = () => {
       </p>
       <p>
         Uploaded files are <strong>encrypted using the AES algorithm</strong>:
-        no one can access them without your permission. Only{' '}
-        by <strong>sharing the link</strong>, other people can{' '}
+        no one can access them without your permission. Only by{' '}
+        <strong>sharing the link</strong>, other people can{' '}
         <strong>download and decrypt</strong> the content you uploaded. In
         addition, by <strong>sharing a draft</strong>, people can continue
         uploading more data into the same SkyTransfer directory. Be careful when
