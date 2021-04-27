@@ -83,7 +83,7 @@ const Uploader = () => {
   );
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
-  const [errorCount, setErrorCount] = useState(0);
+  const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const finishUpload = () => {
@@ -106,7 +106,8 @@ const Uploader = () => {
   };
 
   const skyDBSyncer = async () => {
-    const stillInProgressFilesCount = fileListToUpload.length - errorCount;
+    const stillInProgressFilesCount =
+      fileListToUpload.length - uidsOfErrorFiles.length;
 
     const intervalSkyDBSync =
       toStoreInSkyDBCount > SKYDB_SYNC_FACTOR &&
@@ -285,15 +286,16 @@ const Uploader = () => {
       // error | success | done | uploading | removed
       switch (status) {
         case 'removed': {
-          uploadCount--;
-          setFileListToUpload((prev) =>
-            prev.filter((f) => f.uid !== info.file.uid)
-          );
+          if (uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1) {
+            uploadCount--;
+          }
+          setUidsOfErrorFiles((p) => p.filter((uid) => uid !== info.file.uid));
+          setFileListToUpload((prev) => prev.filter((f) => f.uid !== info.file.uid));
           break;
         }
         case 'error': {
           uploadCount--;
-          setErrorCount((p) => p + 1);
+          setUidsOfErrorFiles((p) => [...p, info.file.uid]);
           message.error(`${info.file.name} file upload failed.`);
           break;
         }
