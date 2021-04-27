@@ -32,11 +32,11 @@ export default class AESFileDecrypt implements FileDecrypt {
     onDecryptProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => { },
+    ) => void = () => {},
     onFileDownloadProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => { }
+    ) => void = () => {}
   ): Promise<File> {
     const url = await this.skynetClient.getSkylinkUrl(
       this.encryptedFile.skylink
