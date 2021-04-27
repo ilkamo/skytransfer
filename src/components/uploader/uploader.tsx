@@ -84,6 +84,7 @@ const Uploader = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
+  const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const finishUpload = () => {
     setUploadingInProgress(false);
@@ -104,8 +105,54 @@ const Uploader = () => {
     setLoading(false);
   };
 
+  const skyDBSyncer = async () => {
+    const stillInProgressFilesCount = fileListToUpload.length - errorCount;
+
+    const intervalSkyDBSync =
+      toStoreInSkyDBCount > SKYDB_SYNC_FACTOR &&
+      stillInProgressFilesCount > MIN_SKYDB_SYNC_FACTOR;
+
+    const uploadCompletedSkyDBSync =
+      toStoreInSkyDBCount > 0 &&
+      uploadedEncryptedFiles.length > 0 &&
+      stillInProgressFilesCount === 0;
+
+    if (stillInProgressFilesCount === 0 && toStoreInSkyDBCount === 0) {
+      setUploading(false);
+    }
+
+    if (
+      !skydbSyncInProgress &&
+      (intervalSkyDBSync || uploadCompletedSkyDBSync)
+    ) {
+      skydbSyncInProgress = true;
+      try {
+        message.loading('Syncing files in SkyDB...');
+        await storeEncryptedFiles(
+          SessionManager.sessionPrivateKey,
+          deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+          uploadedEncryptedFiles
+        );
+
+        message.success('Sync completed');
+        setToStoreInSkyDBCount(0);
+      } catch (error) {
+        setErrorMessage('Could not sync session encrypted files: ' + error);
+      }
+
+      skydbSyncInProgress = false;
+      if (uploadCompletedSkyDBSync) {
+        setShowUploadCompletedModal(true);
+      }
+    }
+  };
+
   useConstructor(() => {
     initSession();
+  });
+
+  useEffect(() => {
+    skyDBSyncer();
   });
 
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -162,50 +209,6 @@ const Uploader = () => {
       document.body.removeChild(elem);
     }
   };
-
-  const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
-
-  setInterval(async () => {
-    const stillInProgressFilesCount = fileListToUpload.length - errorCount;
-
-    const intervalSkyDBSync =
-      toStoreInSkyDBCount > SKYDB_SYNC_FACTOR &&
-      stillInProgressFilesCount > MIN_SKYDB_SYNC_FACTOR;
-
-    const uploadCompletedSkyDBSync =
-      toStoreInSkyDBCount > 0 &&
-      uploadedEncryptedFiles.length > 0 &&
-      stillInProgressFilesCount === 0;
-
-    if (stillInProgressFilesCount === 0 && toStoreInSkyDBCount === 0) {
-      setUploading(false);
-    }
-
-    if (
-      !skydbSyncInProgress &&
-      (intervalSkyDBSync || uploadCompletedSkyDBSync)
-    ) {
-      skydbSyncInProgress = true;
-      try {
-        message.loading('Syncing files in SkyDB...');
-        await storeEncryptedFiles(
-          SessionManager.sessionPrivateKey,
-          deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-          uploadedEncryptedFiles
-        );
-
-        message.success('Sync completed');
-        setToStoreInSkyDBCount(0);
-      } catch (error) {
-        setErrorMessage('Could not sync session encrypted files: ' + error);
-      }
-
-      skydbSyncInProgress = false;
-      if (uploadCompletedSkyDBSync) {
-        setShowUploadCompletedModal(true);
-      }
-    }
-  }, 2000);
 
   const queueParallelEncryption = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
