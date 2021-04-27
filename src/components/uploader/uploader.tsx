@@ -33,7 +33,13 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
-import { MAX_AXIOS_RETRIES, MAX_PARALLEL_UPLOAD, UPLOAD_ENDPOINT } from '../../config';
+import {
+  MAX_AXIOS_RETRIES,
+  MAX_PARALLEL_UPLOAD,
+  MIN_SKYDB_SYNC_FACTOR,
+  SKYDB_SYNC_FACTOR,
+  UPLOAD_ENDPOINT,
+} from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
@@ -62,9 +68,8 @@ const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-let timeoutID = setTimeout(() => {}, 0);
-
 let uploadCount = 0;
+let skydbSyncInProgress = false;
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -78,6 +83,7 @@ const Uploader = () => {
   );
   const [loading, setLoading] = useState(true);
   const [uploadingInProgress, setUploadingInProgress] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
 
   const finishUpload = () => {
     setUploadingInProgress(false);
@@ -157,39 +163,49 @@ const Uploader = () => {
     }
   };
 
-  const [uploadingFileList, setUploadingFileList] = useState<UploadFile[]>([]);
+  const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
-  useEffect(() => {
-    if (uploadingFileList.length === 0 && toStoreInSkyDBCount === 0) {
+  setInterval(async () => {
+    const stillInProgressFilesCount = fileListToUpload.length - errorCount;
+
+    const intervalSkyDBSync =
+      toStoreInSkyDBCount > SKYDB_SYNC_FACTOR &&
+      stillInProgressFilesCount > MIN_SKYDB_SYNC_FACTOR;
+
+    const uploadCompletedSkyDBSync =
+      toStoreInSkyDBCount > 0 &&
+      uploadedEncryptedFiles.length > 0 &&
+      stillInProgressFilesCount === 0;
+
+    if (stillInProgressFilesCount === 0 && toStoreInSkyDBCount === 0) {
       setUploading(false);
     }
 
     if (
-      toStoreInSkyDBCount > 0 &&
-      uploadedEncryptedFiles.length > 0 &&
-      uploadingFileList.length === 0
+      !skydbSyncInProgress &&
+      (intervalSkyDBSync || uploadCompletedSkyDBSync)
     ) {
-      clearInterval(timeoutID);
-      timeoutID = setTimeout(async () => {
-        try {
-          message.loading('Syncing files in SkyDB...');
-          await storeEncryptedFiles(
-            SessionManager.sessionPrivateKey,
-            deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-            uploadedEncryptedFiles
-          );
+      skydbSyncInProgress = true;
+      try {
+        message.loading('Syncing files in SkyDB...');
+        await storeEncryptedFiles(
+          SessionManager.sessionPrivateKey,
+          deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+          uploadedEncryptedFiles
+        );
 
-          message.success('Sync completed');
-          setToStoreInSkyDBCount(0);
-        } catch (error) {
-          setErrorMessage('Could not sync session encrypted files: ' + error);
-        }
+        message.success('Sync completed');
+        setToStoreInSkyDBCount(0);
+      } catch (error) {
+        setErrorMessage('Could not sync session encrypted files: ' + error);
+      }
 
+      skydbSyncInProgress = false;
+      if (uploadCompletedSkyDBSync) {
         setShowUploadCompletedModal(true);
-        setUploading(false);
-      }, 5000);
+      }
     }
-  }, [uploadingFileList, toStoreInSkyDBCount, uploadedEncryptedFiles]);
+  }, 2000);
 
   const queueParallelEncryption = (file: File): Promise<File> => {
     return new Promise(async (resolve) => {
@@ -247,7 +263,7 @@ const Uploader = () => {
     name: 'file',
     multiple: true,
     action: UPLOAD_ENDPOINT,
-    fileList: uploadingFileList,
+    fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {
       showRemoveIcon: true,
@@ -258,57 +274,53 @@ const Uploader = () => {
       setUploadingInProgress(true);
       setShowUploadCompletedModal(false);
       setUploading(true);
-      setUploadingFileList(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
+
+      setFileListToUpload(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
 
       const { status } = info.file;
 
       // error | success | done | uploading | removed
-      if (
-        status === 'error' ||
-        status === 'success' ||
-        status === 'done' ||
-        status === 'removed'
-      ) {
-        uploadCount--;
-      }
-
-      if (status === 'done') {
-        const uploadedFile = info.fileList.find((f) => f.uid === info.file.uid);
-        if (!uploadedFile) {
-          message.error(
-            `${info.file.name} "something really bad happened, contact the developer`
+      switch (status) {
+        case 'removed': {
+          uploadCount--;
+          setFileListToUpload((prev) =>
+            prev.filter((f) => f.uid !== info.file.uid)
           );
+          break;
         }
+        case 'error': {
+          uploadCount--;
+          setErrorCount((p) => p + 1);
+          message.error(`${info.file.name} file upload failed.`);
+          break;
+        }
+        case 'done': {
+          const relativePath = info.file.originFileObj.webkitRelativePath
+            ? info.file.originFileObj.webkitRelativePath
+            : info.file.name;
 
-        const relativePath = info.file.originFileObj.webkitRelativePath
-          ? info.file.originFileObj.webkitRelativePath
-          : info.file.name;
+          const tempFile: EncryptedFileReference = {
+            uuid: uuid(),
+            skylink: info.file.response.data.skylink,
+            encryptionType: EncryptionType.AES,
+            fileName: info.file.name,
+            mimeType: info.file.type,
+            relativePath: relativePath,
+            size: info.file.size,
+            encryptedSize: info.file.response.encryptedFileSize,
+          };
 
-        const tempFile: EncryptedFileReference = {
-          uuid: uuid(),
-          skylink: info.file.response.data.skylink,
-          encryptionType: EncryptionType.AES,
-          fileName: info.file.name,
-          mimeType: info.file.type,
-          relativePath: relativePath,
-          size: info.file.size,
-          encryptedSize: info.file.response.encryptedFileSize,
-        };
+          message.success(`${info.file.name} file uploaded successfully.`);
 
-        message.success(`${info.file.name} file uploaded successfully.`);
-
-        setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
-        setToStoreInSkyDBCount((prev) => prev + 1);
-        setUploadingFileList((prev) =>
-          prev.filter((f) => f.uid !== info.file.uid)
-        );
-      } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+          setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
+          setToStoreInSkyDBCount((prev) => prev + 1);
+          uploadCount--;
+          setFileListToUpload((prev) =>
+            prev.filter((f) => f.uid !== info.file.uid)
+          );
+          break;
+        }
       }
-    },
-    onRemove(file): boolean {
-      setUploadingFileList((prev) => prev.filter((f) => f.uid !== file.uid));
-      return true;
     },
   };
 
