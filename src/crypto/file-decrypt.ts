@@ -79,12 +79,11 @@ export default class AESFileDecrypt implements FileDecrypt {
           },
         });
 
-        // onFileDownloadProgress(true, 100);
-        const data: Blob = response.data;
-
+        
         const progress = Math.floor(((i + 1) / totalChunks) * 100);
         onDecryptProgress(false, progress);
-
+        
+        const data: Blob = response.data;
         const chunkPart = await this.decryptBlob(data);
         this.parts.push(chunkPart);
       } catch (error) {
@@ -107,7 +106,7 @@ export default class AESFileDecrypt implements FileDecrypt {
         var decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
         var typedArray = this.convertWordArrayToUint8Array(decrypted);
         resolve(typedArray);
-      }, 100);
+      }, 200);
     });
   }
 

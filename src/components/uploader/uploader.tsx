@@ -2,9 +2,7 @@ import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 
-import {
-  EncryptedFileReference,
-} from '../../models/encryption';
+import { EncryptedFileReference } from '../../models/encryption';
 
 import { isMobile } from 'react-device-detect';
 

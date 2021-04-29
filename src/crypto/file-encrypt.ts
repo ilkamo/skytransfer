@@ -13,8 +13,6 @@ export default class AESFileEncrypt implements FileEncrypt {
   constructor(file: File, encryptionKey: string) {
     this.file = file;
     this.encryptionKey = encryptionKey;
-
-    // This is the one used for new uploaded files.
     this.chunkResolver = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
   }
 
