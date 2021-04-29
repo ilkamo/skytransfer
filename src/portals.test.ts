@@ -25,11 +25,11 @@ describe('Portals', () => {
         });
 
         test('returns correct values for known portal', () => {
-            setWindowLocation('https://skytransfer.hns.skydrain.net');
+            setWindowLocation('https://skytransfer.hns.siasky.net');
             const result = Portals.current();
             const expected: Portal = {
-                domain: 'skydrain.net',
-                displayName: 'Skydrain.net'
+                domain: 'siasky.net',
+                displayName: 'Siasky.net'
             }
 
 
@@ -50,10 +50,6 @@ describe('Portals', () => {
                     domain: 'skyportal.xyz',
                     displayName: 'SkyPortal.xyz'
                 },
-                {
-                    domain: 'skydrain.net',
-                    displayName: 'Skydrain.net'
-                },
             ];
 
 
@@ -67,10 +63,6 @@ describe('Portals', () => {
                 {
                     domain:'siasky.net',
                     displayName:'Siasky.net'
-                },
-                {
-                    domain: 'skydrain.net',
-                    displayName: 'Skydrain.net'
                 },
             ];
 
@@ -127,7 +119,7 @@ describe('Portals', () => {
                 displayName: 'SOME_PORTAL_DISPLAY_NAME',
             };
             const result = Portals.getEndpointInPortal(portal);
-            const expected = 'https://skytransfer.hns.siasky.net';
+            const expected = 'https://skytransfer.hns.SOME_PORTAL_DOMAIN';
 
 
             expect(result).toEqual(expected);
