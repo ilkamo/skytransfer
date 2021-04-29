@@ -307,7 +307,7 @@ const Uploader = () => {
           const tempFile: EncryptedFileReference = {
             uuid: uuid(),
             skylink: info.file.response.data.skylink,
-            encryptionType: EncryptionType.AES,
+            encryptionType: EncryptionType.AES_4MB,
             fileName: info.file.name,
             mimeType: info.file.type,
             relativePath: relativePath,
