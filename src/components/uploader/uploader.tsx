@@ -80,12 +80,10 @@ const Uploader = () => {
     false
   );
   const [loading, setLoading] = useState(true);
-  const [uploadingInProgress, setUploadingInProgress] = useState(false);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const finishUpload = () => {
-    setUploadingInProgress(false);
     setShowUploadCompletedModal(false);
   };
 
@@ -273,7 +271,6 @@ const Uploader = () => {
     customRequest: uploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
-      setUploadingInProgress(true);
       setShowUploadCompletedModal(false);
       setUploading(true);
 
@@ -363,7 +360,7 @@ const Uploader = () => {
                   {...draggerConfig}
                   directory={false}
                   multiple
-                  disabled={uploadingInProgress}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -383,7 +380,7 @@ const Uploader = () => {
                   className="drop-container"
                   {...draggerConfig}
                   directory={true}
-                  disabled={uploadingInProgress}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -468,7 +465,6 @@ const Uploader = () => {
         visible={showUploadCompletedModal}
         onCancel={() => {
           setShowUploadCompletedModal(false);
-          setUploadingInProgress(false);
         }}
         header={
           <p>
