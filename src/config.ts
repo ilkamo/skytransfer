@@ -1,3 +1,5 @@
+import { EncryptionType } from "./models/encryption";
+
 export const DEFAULT_DOMAIN = 'https://skytransfer.hns.siasky.net';
 
 export const UPLOAD_ENDPOINT = `${DEFAULT_DOMAIN}/skynet/skyfile`;
@@ -13,3 +15,5 @@ export const MAX_AXIOS_RETRIES = 3;
 // more than MIN_SKYDB_SYNC_FACTOR files to upload.
 export const SKYDB_SYNC_FACTOR = 10;
 export const MIN_SKYDB_SYNC_FACTOR = 5;
+
+export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.AES_16MB;

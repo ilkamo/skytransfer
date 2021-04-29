@@ -1,23 +1,23 @@
 import CryptoJS from 'crypto-js';
-
-import { ENCRYPT_CHUNK_SIZE as CHUNK_SIZE, FileEncrypt } from './crypto';
+import { DEFAULT_ENCRYPTION_TYPE } from '../config';
+import { ChunkResolver } from './chunk-resolver';
+import { FileEncrypt } from './crypto';
 
 export default class AESFileEncrypt implements FileEncrypt {
-  readonly file: File;
-  readonly encryptionKey: string;
-
-  currentChunkStartByte: number;
-  currentChunkFinalByte: number;
+  private file: File;
+  private encryptionKey: string;
+  private chunkResolver: ChunkResolver;
 
   parts: BlobPart[] = [];
 
   constructor(file: File, encryptionKey: string) {
     this.file = file;
     this.encryptionKey = encryptionKey;
+    this.chunkResolver = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
+  }
 
-    this.currentChunkStartByte = 0;
-    this.currentChunkFinalByte =
-      CHUNK_SIZE > this.file.size ? this.file.size : CHUNK_SIZE;
+  get encryptChunkSize(): number {
+    return this.chunkResolver.encryptChunkSize;
   }
 
   async encrypt(
@@ -26,18 +26,21 @@ export default class AESFileEncrypt implements FileEncrypt {
       percentage: number
     ) => void = () => {}
   ): Promise<File> {
-    const totalChunks = Math.ceil(this.file.size / CHUNK_SIZE);
+    const totalChunks = Math.ceil(this.file.size / this.encryptChunkSize);
 
     for (let i = 0; i < totalChunks; i++) {
       let chunkPart: BlobPart;
 
       if (i === totalChunks - 1) {
         chunkPart = await this.encryptBlob(
-          this.file.slice(i * CHUNK_SIZE, this.file.size)
+          this.file.slice(i * this.encryptChunkSize, this.file.size)
         );
       } else {
         chunkPart = await this.encryptBlob(
-          this.file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+          this.file.slice(
+            i * this.encryptChunkSize,
+            (i + 1) * this.encryptChunkSize
+          )
         );
       }
 
