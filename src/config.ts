@@ -1,6 +1,6 @@
 import { EncryptionType } from "./models/encryption";
 
-export const DEFAULT_DOMAIN = 'https://skytransfer.hns.siasky.net';
+export const DEFAULT_DOMAIN = 'https://skytransfer.hns.skyportal.xyz';
 
 export const UPLOAD_ENDPOINT = `${DEFAULT_DOMAIN}/skynet/skyfile`;
 export const ENCRYPTED_FILES_SKYDB_KEY_NAME = 'ENCRYPTED_FILES';
