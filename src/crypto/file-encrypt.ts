@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js';
-import { EncryptionType } from '../models/encryption';
+import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
 import { FileEncrypt } from './crypto';
 
@@ -15,7 +15,7 @@ export default class AESFileEncrypt implements FileEncrypt {
     this.encryptionKey = encryptionKey;
 
     // This is the one used for new uploaded files.
-    this.chunkResolver = new ChunkResolver(EncryptionType.AES_64MB);
+    this.chunkResolver = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
   }
 
   get encryptChunkSize(): number {
@@ -26,7 +26,7 @@ export default class AESFileEncrypt implements FileEncrypt {
     onEncryptProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => { }
+    ) => void = () => {}
   ): Promise<File> {
     const totalChunks = Math.ceil(this.file.size / this.encryptChunkSize);
 
@@ -39,7 +39,10 @@ export default class AESFileEncrypt implements FileEncrypt {
         );
       } else {
         chunkPart = await this.encryptBlob(
-          this.file.slice(i * this.encryptChunkSize, (i + 1) * this.encryptChunkSize)
+          this.file.slice(
+            i * this.encryptChunkSize,
+            (i + 1) * this.encryptChunkSize
+          )
         );
       }
 

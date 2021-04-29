@@ -34,6 +34,7 @@ import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import {
+  DEFAULT_ENCRYPTION_TYPE,
   MAX_AXIOS_RETRIES,
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
@@ -286,11 +287,15 @@ const Uploader = () => {
       // error | success | done | uploading | removed
       switch (status) {
         case 'removed': {
-          if (uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1) {
+          if (
+            uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1
+          ) {
             uploadCount--;
           }
           setUidsOfErrorFiles((p) => p.filter((uid) => uid !== info.file.uid));
-          setFileListToUpload((prev) => prev.filter((f) => f.uid !== info.file.uid));
+          setFileListToUpload((prev) =>
+            prev.filter((f) => f.uid !== info.file.uid)
+          );
           break;
         }
         case 'error': {
@@ -307,7 +312,7 @@ const Uploader = () => {
           const tempFile: EncryptedFileReference = {
             uuid: uuid(),
             skylink: info.file.response.data.skylink,
-            encryptionType: EncryptionType.AES_4MB,
+            encryptionType: DEFAULT_ENCRYPTION_TYPE,
             fileName: info.file.name,
             mimeType: info.file.type,
             relativePath: relativePath,

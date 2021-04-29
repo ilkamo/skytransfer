@@ -30,11 +30,11 @@ export default class AESFileDecrypt implements FileDecrypt {
     onDecryptProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => { },
+    ) => void = () => {},
     onFileDownloadProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => { }
+    ) => void = () => {}
   ): Promise<File> {
     const url = await this.skynetClient.getSkylinkUrl(
       this.encryptedFile.skylink
@@ -49,7 +49,8 @@ export default class AESFileDecrypt implements FileDecrypt {
       this.encryptedFile.encryptedSize / this.decryptChunkSize
     );
 
-    let rangeStart, rangeEnd = 0;
+    let rangeStart,
+      rangeEnd = 0;
 
     for (let i = 0; i < totalChunks; i++) {
       rangeStart = i * this.decryptChunkSize;
