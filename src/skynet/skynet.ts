@@ -1,11 +1,12 @@
 import { ContentRecordDAC } from '@skynetlabs/content-record-library';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
-import { DEFAULT_DOMAIN, ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
+import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
+import { Portals } from '../portals';
 
-const skynetClient = new SkynetClient(DEFAULT_DOMAIN);
+const skynetClient = new SkynetClient(Portals.getEndpoint());
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';

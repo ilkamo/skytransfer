@@ -43,6 +43,12 @@ export default class SessionManager {
     }/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
   }
 
+  static getReadWriteLinkForURL(baseURL: string) {
+    return `${baseURL}/#/${
+      this.sessionPrivateKey
+    }/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+  }
+
   static canResume() {
     return localStorage.getItem(SESSION_KEY_NAME) !== null;
   }

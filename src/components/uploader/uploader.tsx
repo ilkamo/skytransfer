@@ -38,7 +38,6 @@ import {
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
-  UPLOAD_ENDPOINT,
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -52,6 +51,7 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
+import { Portals } from '../../portals';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -251,7 +251,7 @@ const Uploader = () => {
     });
 
     axios
-      .post(UPLOAD_ENDPOINT, formData, config)
+      .post(Portals.getUploadEndpoint(), formData, config)
       .then((res) => {
         onSuccess({
           data: res.data,
@@ -266,7 +266,7 @@ const Uploader = () => {
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: UPLOAD_ENDPOINT,
+    action: Portals.getEndpoint(),
     fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {
