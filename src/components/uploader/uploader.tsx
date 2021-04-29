@@ -362,7 +362,7 @@ const Uploader = () => {
                   {...draggerConfig}
                   directory={false}
                   multiple
-                  disabled={isLoading}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -382,7 +382,7 @@ const Uploader = () => {
                   className="drop-container"
                   {...draggerConfig}
                   directory={true}
-                  disabled={isLoading}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
