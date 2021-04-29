@@ -286,11 +286,15 @@ const Uploader = () => {
       // error | success | done | uploading | removed
       switch (status) {
         case 'removed': {
-          if (uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1) {
+          if (
+            uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1
+          ) {
             uploadCount--;
           }
           setUidsOfErrorFiles((p) => p.filter((uid) => uid !== info.file.uid));
-          setFileListToUpload((prev) => prev.filter((f) => f.uid !== info.file.uid));
+          setFileListToUpload((prev) =>
+            prev.filter((f) => f.uid !== info.file.uid)
+          );
           break;
         }
         case 'error': {

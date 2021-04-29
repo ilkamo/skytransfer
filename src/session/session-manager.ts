@@ -44,9 +44,9 @@ export default class SessionManager {
   }
 
   static getReadWriteLinkForURL(baseURL: string) {
-    return `${baseURL}/#/${
+    return `${baseURL}/#/${this.sessionPrivateKey}/${deriveEncryptionKeyFromKey(
       this.sessionPrivateKey
-    }/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+    )}`;
   }
 
   static canResume() {
