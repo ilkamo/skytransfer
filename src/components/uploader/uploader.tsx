@@ -82,12 +82,10 @@ const Uploader = () => {
     false
   );
   const [loading, setLoading] = useState(true);
-  const [uploadingInProgress, setUploadingInProgress] = useState(false);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const finishUpload = () => {
-    setUploadingInProgress(false);
     setShowUploadCompletedModal(false);
   };
 
@@ -275,7 +273,6 @@ const Uploader = () => {
     customRequest: uploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
-      setUploadingInProgress(true);
       setShowUploadCompletedModal(false);
       setUploading(true);
 
@@ -286,11 +283,15 @@ const Uploader = () => {
       // error | success | done | uploading | removed
       switch (status) {
         case 'removed': {
-          if (uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1) {
+          if (
+            uidsOfErrorFiles.findIndex((uid) => uid === info.file.uid) === -1
+          ) {
             uploadCount--;
           }
           setUidsOfErrorFiles((p) => p.filter((uid) => uid !== info.file.uid));
-          setFileListToUpload((prev) => prev.filter((f) => f.uid !== info.file.uid));
+          setFileListToUpload((prev) =>
+            prev.filter((f) => f.uid !== info.file.uid)
+          );
           break;
         }
         case 'error': {
@@ -361,7 +362,7 @@ const Uploader = () => {
                   {...draggerConfig}
                   directory={false}
                   multiple
-                  disabled={uploadingInProgress}
+                  disabled={isLoading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -381,7 +382,7 @@ const Uploader = () => {
                   className="drop-container"
                   {...draggerConfig}
                   directory={true}
-                  disabled={uploadingInProgress}
+                  disabled={isLoading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -466,7 +467,6 @@ const Uploader = () => {
         visible={showUploadCompletedModal}
         onCancel={() => {
           setShowUploadCompletedModal(false);
-          setUploadingInProgress(false);
         }}
         header={
           <p>
