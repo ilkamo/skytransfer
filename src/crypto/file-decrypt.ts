@@ -79,10 +79,9 @@ export default class AESFileDecrypt implements FileDecrypt {
           },
         });
 
-        
         const progress = Math.floor(((i + 1) / totalChunks) * 100);
         onDecryptProgress(false, progress);
-        
+
         const data: Blob = response.data;
         const chunkPart = await this.decryptBlob(data);
         this.parts.push(chunkPart);
