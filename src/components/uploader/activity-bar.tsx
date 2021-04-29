@@ -25,7 +25,7 @@ const UploadActivityBar = ({ encryptProgress }: UploadActivityBarProps) => {
       <Progress
         className="progress"
         percent={encryptProgress}
-        steps={35}
+        steps={26}
         size="small"
         strokeColor="#52c41a"
         trailColor="#cccccc"
@@ -46,12 +46,12 @@ const DownloadActivityBar = ({
         title="Active when a download is in progress."
       >
         <CloudDownloadOutlined style={{ marginRight: '4px' }} />
-        <span className="label progress">Download</span>
+        <span className="label progress">Download chunk(s)</span>
       </Tooltip>
       <Progress
         className="progress"
         percent={downloadProgress}
-        steps={35}
+        steps={26}
         size="small"
         strokeColor="#52c41a"
         trailColor="#cccccc"
@@ -68,7 +68,7 @@ const DownloadActivityBar = ({
       <Progress
         className="progress"
         percent={decryptProgress}
-        steps={35}
+        steps={26}
         size="small"
         strokeColor="#52c41a"
         trailColor="#cccccc"

@@ -2,10 +2,7 @@ import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 
-import {
-  EncryptionType,
-  EncryptedFileReference,
-} from '../../models/encryption';
+import { EncryptedFileReference } from '../../models/encryption';
 
 import { isMobile } from 'react-device-detect';
 
@@ -34,6 +31,7 @@ import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import {
+  DEFAULT_ENCRYPTION_TYPE,
   MAX_AXIOS_RETRIES,
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
@@ -308,7 +306,7 @@ const Uploader = () => {
           const tempFile: EncryptedFileReference = {
             uuid: uuid(),
             skylink: info.file.response.data.skylink,
-            encryptionType: EncryptionType.AES,
+            encryptionType: DEFAULT_ENCRYPTION_TYPE,
             fileName: info.file.name,
             mimeType: info.file.type,
             relativePath: relativePath,
