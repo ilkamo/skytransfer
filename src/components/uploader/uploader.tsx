@@ -3,7 +3,6 @@ import './uploader.css';
 import { useState, useRef, useEffect } from 'react';
 
 import {
-  EncryptionType,
   EncryptedFileReference,
 } from '../../models/encryption';
 
