@@ -2,17 +2,17 @@ import { SkynetClient } from 'skynet-js';
 import CryptoJS from 'crypto-js';
 import { EncryptedFileReference } from '../models/encryption';
 import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from './crypto';
+import { Portals } from '../portals';
 import { MAX_AXIOS_RETRIES } from '../config';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { Portals } from '../portals';
+import { ChunkResolver } from './chunk-resolver';
+import { FileDecrypt } from './crypto';
 
 export default class AESFileDecrypt implements FileDecrypt {
-  readonly encryptedFile: EncryptedFileReference;
-  readonly encryptionKey: string;
-
-  currentChunkStartByte: number;
-  currentChunkFinalByte: number;
+  private encryptedFile: EncryptedFileReference;
+  private encryptionKey: string;
+  private chunkResolver: ChunkResolver;
 
   skynetClient = new SkynetClient(Portals.getEndpoint());
 
@@ -21,12 +21,11 @@ export default class AESFileDecrypt implements FileDecrypt {
   constructor(encryptedFile: EncryptedFileReference, encryptionKey: string) {
     this.encryptedFile = encryptedFile;
     this.encryptionKey = encryptionKey;
+    this.chunkResolver = new ChunkResolver(encryptedFile.encryptionType);
+  }
 
-    this.currentChunkStartByte = 0;
-    this.currentChunkFinalByte =
-      CHUNK_SIZE > this.encryptedFile.encryptedSize
-        ? this.encryptedFile.encryptedSize
-        : CHUNK_SIZE;
+  get decryptChunkSize(): number {
+    return this.chunkResolver.decryptChunkSize;
   }
 
   async decrypt(
@@ -43,53 +42,55 @@ export default class AESFileDecrypt implements FileDecrypt {
       this.encryptedFile.skylink
     );
 
-    let data: Blob;
-
     axiosRetry(axios, {
       retries: MAX_AXIOS_RETRIES,
       retryCondition: (_e) => true, // retry no matter what
     });
 
-    try {
-      const response = await axios({
-        method: 'get',
-        url: url,
-        responseType: 'text',
-        onDownloadProgress: (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded / progressEvent.total) * 100
-          );
-          onFileDownloadProgress(false, progress);
-        },
-      });
-
-      onFileDownloadProgress(true, 100);
-      data = response.data;
-    } catch (error) {
-      onFileDownloadProgress(true, 0);
-    }
-
     const totalChunks = Math.ceil(
-      this.encryptedFile.encryptedSize / CHUNK_SIZE
+      this.encryptedFile.encryptedSize / this.decryptChunkSize
     );
 
+    let rangeStart,
+      rangeEnd = 0;
+
     for (let i = 0; i < totalChunks; i++) {
-      let chunkPart: BlobPart;
+      rangeStart = i * this.decryptChunkSize;
 
       if (i === totalChunks - 1) {
-        chunkPart = await this.decryptBlob(
-          data.slice(i * CHUNK_SIZE, this.encryptedFile.encryptedSize)
-        );
+        rangeEnd = this.encryptedFile.encryptedSize;
       } else {
-        chunkPart = await this.decryptBlob(
-          data.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-        );
+        rangeEnd = (i + 1) * this.decryptChunkSize;
       }
 
-      const progress = Math.floor(((i + 1) / totalChunks) * 100);
-      onDecryptProgress(false, progress);
+      const bytesRange = `bytes=${rangeStart}-${rangeEnd}`;
 
-      this.parts.push(chunkPart);
+      try {
+        const response = await axios({
+          method: 'get',
+          url: url,
+          headers: {
+            Range: bytesRange,
+          },
+          responseType: 'text',
+          onDownloadProgress: (progressEvent) => {
+            const progress = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
+            onFileDownloadProgress(false, progress);
+          },
+        });
+
+        const progress = Math.floor(((i + 1) / totalChunks) * 100);
+        onDecryptProgress(false, progress);
+
+        const data: Blob = response.data;
+        const chunkPart = await this.decryptBlob(data);
+        this.parts.push(chunkPart);
+      } catch (error) {
+        console.error(error);
+        onFileDownloadProgress(true, 0);
+      }
     }
 
     onDecryptProgress(true, 100);
@@ -106,7 +107,7 @@ export default class AESFileDecrypt implements FileDecrypt {
         var decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
         var typedArray = this.convertWordArrayToUint8Array(decrypted);
         resolve(typedArray);
-      }, 100);
+      }, 200);
     });
   }
 

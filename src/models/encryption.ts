@@ -1,5 +1,9 @@
 export enum EncryptionType {
-  AES,
+  AES_4MB,
+  AES_8MB,
+  AES_16MB,
+  AES_32MB,
+  AES_64MB,
 }
 
 export interface EncryptedFileReference {

@@ -2,10 +2,7 @@ import './uploader.css';
 
 import { useState, useRef, useEffect } from 'react';
 
-import {
-  EncryptionType,
-  EncryptedFileReference,
-} from '../../models/encryption';
+import { EncryptedFileReference } from '../../models/encryption';
 
 import { isMobile } from 'react-device-detect';
 
@@ -34,6 +31,7 @@ import { renderTree } from '../../utils/walker';
 import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import {
+  DEFAULT_ENCRYPTION_TYPE,
   MAX_AXIOS_RETRIES,
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
@@ -82,12 +80,10 @@ const Uploader = () => {
     false
   );
   const [loading, setLoading] = useState(true);
-  const [uploadingInProgress, setUploadingInProgress] = useState(false);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const finishUpload = () => {
-    setUploadingInProgress(false);
     setShowUploadCompletedModal(false);
   };
 
@@ -275,7 +271,6 @@ const Uploader = () => {
     customRequest: uploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
-      setUploadingInProgress(true);
       setShowUploadCompletedModal(false);
       setUploading(true);
 
@@ -311,7 +306,7 @@ const Uploader = () => {
           const tempFile: EncryptedFileReference = {
             uuid: uuid(),
             skylink: info.file.response.data.skylink,
-            encryptionType: EncryptionType.AES,
+            encryptionType: DEFAULT_ENCRYPTION_TYPE,
             fileName: info.file.name,
             mimeType: info.file.type,
             relativePath: relativePath,
@@ -365,7 +360,7 @@ const Uploader = () => {
                   {...draggerConfig}
                   directory={false}
                   multiple
-                  disabled={uploadingInProgress}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -385,7 +380,7 @@ const Uploader = () => {
                   className="drop-container"
                   {...draggerConfig}
                   directory={true}
-                  disabled={uploadingInProgress}
+                  disabled={uploading}
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
@@ -470,7 +465,6 @@ const Uploader = () => {
         visible={showUploadCompletedModal}
         onCancel={() => {
           setShowUploadCompletedModal(false);
-          setUploadingInProgress(false);
         }}
         header={
           <p>
