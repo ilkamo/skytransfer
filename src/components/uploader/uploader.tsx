@@ -49,7 +49,7 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
-import { Portals } from '../../portals';
+import { getEndpoint, getUploadEndpoint } from '../../portals';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -247,7 +247,7 @@ const Uploader = () => {
     });
 
     axios
-      .post(Portals.getUploadEndpoint(), formData, config)
+      .post(getUploadEndpoint(), formData, config)
       .then((res) => {
         onSuccess({
           data: res.data,
@@ -262,7 +262,7 @@ const Uploader = () => {
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: Portals.getEndpoint(),
+    action: getEndpoint(),
     fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {
