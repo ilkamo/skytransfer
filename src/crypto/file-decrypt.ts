@@ -1,13 +1,12 @@
 import { SkynetClient } from 'skynet-js';
 import CryptoJS from 'crypto-js';
 import { EncryptedFileReference } from '../models/encryption';
-import { DECRYPT_CHUNK_SIZE as CHUNK_SIZE, FileDecrypt } from './crypto';
+import { FileDecrypt } from './crypto';
 import { Portals } from '../portals';
 import { MAX_AXIOS_RETRIES } from '../config';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { ChunkResolver } from './chunk-resolver';
-import { FileDecrypt } from './crypto';
 
 export default class AESFileDecrypt implements FileDecrypt {
   private encryptedFile: EncryptedFileReference;
