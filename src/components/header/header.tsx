@@ -10,8 +10,14 @@ import {
 import SessionManager from '../../session/session-manager';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import {
+  getAlternativePortals,
+  getCurrentPortal,
+  setPortalWithDomain,
+} from '../../portals';
 
 const { Header } = Layout;
+const { SubMenu } = Menu;
 
 type HeaderProps = {
   shareOnClick: () => void;
@@ -22,12 +28,25 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
+  const [portal, setPortal] = useState(getCurrentPortal());
 
   useEffect(() => {
     setCanResumeSession(
       location.pathname !== '/' && SessionManager.canResume()
     );
   }, [location]);
+
+  const alternativePortals = getAlternativePortals().map((x) => {
+    const changePortal = () => {
+      setPortalWithDomain(x.domain);
+      setPortal(getCurrentPortal());
+    };
+    return (
+      <Menu.Item key={x.domain} onClick={changePortal}>
+        {x.displayName}
+      </Menu.Item>
+    );
+  });
 
   return (
     <Header>
@@ -74,6 +93,13 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
         >
           About
         </Menu.Item>
+        <SubMenu
+          key={portal.domain}
+          style={{ float: 'right' }}
+          title={portal.displayName}
+        >
+          {alternativePortals}
+        </SubMenu>
       </Menu>
     </Header>
   );
