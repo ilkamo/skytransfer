@@ -44,7 +44,11 @@ export const getUploadEndpoint = (): string  => {
     return `https://${getCurrentPortal().domain}/skynet/skyfile`;
 } 
 
-export const getEndpoint = (): string  => {
+export const getEndpointInCurrentPortal = (): string  => {
+    return `https://${getCurrentPortal().domain}`;
+} 
+
+export const getEndpointInDefaultPortal = (): string  => {
     return `https://${getDefaultPortal().domain}`;
 } 
 

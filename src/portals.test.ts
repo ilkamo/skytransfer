@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { Portal, getDefaultPortal, getCurrentPortal, setPortalWithDomain, getAlternativePortals, getUploadEndpoint, getEndpoint } from './portals';
+import { Portal, getDefaultPortal, getCurrentPortal, setPortalWithDomain, getAlternativePortals, getUploadEndpoint, getEndpointInDefaultPortal, getEndpointInCurrentPortal } from './portals';
 
 describe('Portals', () => {
     describe('getCurrentPortal()', () => {
@@ -60,11 +60,21 @@ describe('Portals', () => {
         });
     });
 
-    describe('getEndpoint()', () => {
+    describe('getEndpointInDefaultPortal()', () => {
         test('returns endpoint based on default portal', () => {
             setPortalWithDomain('skytransfer.hns.skyportal.xyz');
             const expected = 'https://skytransfer.hns.siasky.net';
-            const result = getEndpoint();
+            const result = getEndpointInDefaultPortal();
+
+            expect(result).toEqual(expected);
+        });
+    });
+
+    describe('getEndpointInCurrentPortal()', () => {
+        test('returns endpoint based on default portal', () => {
+            setPortalWithDomain('skytransfer.hns.skyportal.xyz');
+            const expected = 'https://skytransfer.hns.skyportal.xyz';
+            const result = getEndpointInCurrentPortal();
 
             expect(result).toEqual(expected);
         });

@@ -49,7 +49,7 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
-import { getEndpoint, getUploadEndpoint } from '../../portals';
+import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -262,7 +262,7 @@ const Uploader = () => {
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: getEndpoint(),
+    action: getEndpointInDefaultPortal(),
     fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {

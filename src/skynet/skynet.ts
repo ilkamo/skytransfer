@@ -4,9 +4,9 @@ import { MySky, SkynetClient } from 'skynet-js';
 import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
-import { getEndpoint } from '../portals';
+import { getEndpointInDefaultPortal } from '../portals';
 
-const skynetClient = new SkynetClient(getEndpoint());
+const skynetClient = new SkynetClient(getEndpointInDefaultPortal());
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';

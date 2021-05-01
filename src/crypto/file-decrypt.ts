@@ -2,7 +2,7 @@ import { SkynetClient } from 'skynet-js';
 import CryptoJS from 'crypto-js';
 import { EncryptedFileReference } from '../models/encryption';
 import { FileDecrypt } from './crypto';
-import { getCurrentPortal } from '../portals';
+import { getEndpointInCurrentPortal } from '../portals';
 import { MAX_AXIOS_RETRIES } from '../config';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
@@ -13,7 +13,7 @@ export default class AESFileDecrypt implements FileDecrypt {
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
 
-  skynetClient = new SkynetClient(getCurrentPortal().domain);
+  skynetClient = new SkynetClient(getEndpointInCurrentPortal());
 
   parts: BlobPart[] = [];
 
