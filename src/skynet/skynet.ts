@@ -127,10 +127,10 @@ export const storeUserSession = async (
     });
 
     if (shouldUpdate) {
-      const { skylink } = await mySky.setJSON(sessionsPath, { sessions });
+      const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
 
       await contentRecord.recordNewContent({
-        skylink: skylink,
+        skylink: dataLink,
         metadata: {
           action: 'addedPublicSkyTransferSessions',
           newSessions: newSessions,
