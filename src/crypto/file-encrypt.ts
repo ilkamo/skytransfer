@@ -55,7 +55,7 @@ export default class AESFileEncrypt implements FileEncrypt {
 
     // The returned file name is a random uuid() in order to not expose the file name to the portal.
     // The correct information is stored in the EncryptedFileReference.
-    return new File(this.parts, uuid(), { type: 'text/plain' });
+    return new File(this.parts, `skytransfer-${uuid()}`, { type: 'text/plain' });
   }
 
   private async encryptBlob(fileBlob: Blob): Promise<BlobPart> {
