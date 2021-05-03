@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js';
 import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
 import { FileEncrypt } from './crypto';
+import { v4 as uuid } from 'uuid';
 
 export default class AESFileEncrypt implements FileEncrypt {
   private file: File;
@@ -52,7 +53,9 @@ export default class AESFileEncrypt implements FileEncrypt {
 
     onEncryptProgress(true, 100);
 
-    return new File(this.parts, this.file.name, { type: this.file.type });
+    // The returned file name is a random uuid() in order to not expose the file name to the portal.
+    // The correct information is stored in the EncryptedFileReference.
+    return new File(this.parts, `skytransfer-${uuid()}`, { type: 'text/plain' });
   }
 
   private async encryptBlob(fileBlob: Blob): Promise<BlobPart> {
