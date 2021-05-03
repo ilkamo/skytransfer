@@ -1,5 +1,11 @@
 import { Menu, Layout } from 'antd';
 
+import { useReducer } from 'react';
+import {
+  getCurrentPortal,
+  getPortals,
+  setPortalWithDomain,
+} from '../../portals';
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -10,11 +16,7 @@ import {
 import SessionManager from '../../session/session-manager';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import {
-  getAlternativePortals,
-  getCurrentPortal,
-  setPortalWithDomain,
-} from '../../portals';
+import { ChangePortalIcon } from '../common/icons';
 
 const { Header } = Layout;
 const { SubMenu } = Menu;
@@ -28,7 +30,6 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
-  const [portal, setPortal] = useState(getCurrentPortal());
 
   useEffect(() => {
     setCanResumeSession(
@@ -36,11 +37,14 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
     );
   }, [location]);
 
-  const alternativePortals = getAlternativePortals().map((x) => {
+  // https://reactjs.org/docs/hooks-faq.html#is-there-something-like-forceupdate
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const portals = getPortals().map((x) => {
     const changePortal = () => {
       setPortalWithDomain(x.domain);
-      setPortal(getCurrentPortal());
+      forceUpdate();
     };
+
     return (
       <Menu.Item key={x.domain} onClick={changePortal}>
         {x.displayName}
@@ -50,7 +54,11 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
 
   return (
     <Header>
-      <Menu theme="dark" mode="horizontal" selectedKeys={[]}>
+      <Menu
+        theme="dark"
+        mode="horizontal"
+        selectedKeys={[getCurrentPortal().domain]}
+      >
         <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
           Share
         </Menu.Item>
@@ -94,11 +102,12 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           About
         </Menu.Item>
         <SubMenu
-          key={portal.domain}
+          key="portals"
           style={{ float: 'right' }}
-          title={portal.displayName}
+          title="Change Portal"
+          icon={<ChangePortalIcon />}
         >
-          {alternativePortals}
+          {portals}
         </SubMenu>
       </Menu>
     </Header>
