@@ -50,6 +50,7 @@ import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
+import { DirectoryTreeLine } from './directory-tree-line';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -101,6 +102,25 @@ const Uploader = () => {
     setLoading(false);
   };
 
+  const updateFilesInSkyDB = async () => {
+    skydbSyncInProgress = true;
+    try {
+      message.loading('Syncing files in SkyDB...');
+      await storeEncryptedFiles(
+        SessionManager.sessionPrivateKey,
+        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+        uploadedEncryptedFiles
+      );
+
+      message.success('Sync completed');
+      setToStoreInSkyDBCount(0);
+    } catch (error) {
+      setErrorMessage('Could not sync session encrypted files: ' + error);
+    } 
+
+    skydbSyncInProgress = false;
+  }
+
   const skyDBSyncer = async () => {
     const stillInProgressFilesCount =
       fileListToUpload.length - uidsOfErrorFiles.length;
@@ -122,22 +142,8 @@ const Uploader = () => {
       !skydbSyncInProgress &&
       (intervalSkyDBSync || uploadCompletedSkyDBSync)
     ) {
-      skydbSyncInProgress = true;
-      try {
-        message.loading('Syncing files in SkyDB...');
-        await storeEncryptedFiles(
-          SessionManager.sessionPrivateKey,
-          deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-          uploadedEncryptedFiles
-        );
+      await updateFilesInSkyDB();
 
-        message.success('Sync completed');
-        setToStoreInSkyDBCount(0);
-      } catch (error) {
-        setErrorMessage('Could not sync session encrypted files: ' + error);
-      }
-
-      skydbSyncInProgress = false;
       if (uploadCompletedSkyDBSync) {
         setShowUploadCompletedModal(true);
       }
@@ -412,25 +418,40 @@ const Uploader = () => {
             disabled={isLoading}
             defaultExpandAll={true}
             switcherIcon={<DownOutlined className="directory-switcher" />}
-            onSelect={(selectedKeys, info) => {
-              if (info.node.children && info.node.children.length !== 0) {
-                return; // it is a folder
-              }
-
-              /* 
-                TODO: use utils.fileSize(item.size) to add more file info
-              */
-
-              const key: string = `${info.node.key}`;
-              const ff = uploadedEncryptedFiles.find(
-                (f) => f.uuid === key.split('_')[0]
-              );
-              if (ff) {
-                message.loading(`Download and decryption started`);
-                downloadFile(ff);
-              }
-            }}
             treeData={renderTree(uploadedEncryptedFiles)}
+            selectable={false}
+            titleRender={(node) => <DirectoryTreeLine 
+                isLeaf={node.isLeaf} 
+                name={node.title.toString()} 
+                onDownloadClick={() => {
+                  debugger;
+                  if (!node.isLeaf) {
+                    return; 
+                  }
+                  const key: string = `${node.key}`;
+                  const ff = uploadedEncryptedFiles.find(
+                    (f) => f.uuid === key.split('_')[0]
+                  );
+                  if (ff) {
+                    message.loading(`Download and decryption started`);
+                    downloadFile(ff);
+                  }
+                }}
+                onDeleteClick={async() => {
+                  const key: string = `${node.key}`;
+                  const newUploadedEncryptedFiles = uploadedEncryptedFiles.map<EncryptedFileReference>(f =>  {
+                    if (f.uuid !== key.split('_')[0]) {
+                      f.skylink = '';
+                    }
+
+                    return f
+                  });
+                  setUploadedEncryptedFiles(newUploadedEncryptedFiles);
+                  setLoading(true);
+                  await updateFilesInSkyDB();
+                  setLoading(false);
+                }}
+                />}
           />
         </div>
       ) : (
