@@ -36,10 +36,6 @@ export const getCurrentPortal = (): Portal => {
     return getDefaultPortal();
 };
 
-export const getAlternativePortals = (): Portal[]  => {
-    return knownPortals.filter(x => x.domain !== getCurrentPortal().domain)
-} 
-
 export const getUploadEndpoint = (): string  => {
     return `https://${getCurrentPortal().domain}/skynet/skyfile`;
 } 
@@ -53,8 +49,10 @@ export const getEndpointInDefaultPortal = (): string  => {
 } 
 
 export const setPortalWithDomain = (domain: string) => {
-    const portal = getAlternativePortals().find(x => x.domain === domain);
+    const portal = knownPortals.find(x => x.domain === domain);
     if (portal !== undefined) {
         localStorage.setItem(LOCAL_STORAGE_KEY, portal.domain);
     }
 }
+
+export const getPortals = (): readonly Portal[]  => knownPortals;

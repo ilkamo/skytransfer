@@ -333,8 +333,6 @@ const Uploader = () => {
   );
 
   const isLoading = uploading || loading;
-  const logoURL = process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg';
-
   return (
     <>
       {errorMessage ? (
@@ -364,7 +362,6 @@ const Uploader = () => {
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
-                    logoURL={logoURL}
                     draggableMessage="Drag & Drop file(s) to upload"
                   />
                   <UploadActivityBar encryptProgress={encryptProgress} />
@@ -384,7 +381,6 @@ const Uploader = () => {
                 >
                   <DraggerContent
                     onlyClickable={isMobile}
-                    logoURL={logoURL}
                     draggableMessage="Drag & Drop directory here to upload"
                   />
                   <UploadActivityBar encryptProgress={encryptProgress} />

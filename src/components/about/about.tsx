@@ -1,12 +1,11 @@
+import { SkyTransferLogo } from '../common/logos';
 import './about.css';
-
-const logoURL = process.env.PUBLIC_URL + 'assets/skytransfer-opt.svg';
 
 const About = () => {
   return (
     <div className="about">
       <p style={{ textAlign: 'center' }}>
-        <img alt="logo" className="skytransfer-logo" src={logoURL} />
+        <SkyTransferLogo />
       </p>
       <p>
         <span className="title">SkyTransfer</span> is an open source

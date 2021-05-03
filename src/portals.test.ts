@@ -1,7 +1,15 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { Portal, getDefaultPortal, getCurrentPortal, setPortalWithDomain, getAlternativePortals, getUploadEndpoint, getEndpointInDefaultPortal, getEndpointInCurrentPortal } from './portals';
+import {
+    Portal,
+    getCurrentPortal,
+    setPortalWithDomain,
+    getUploadEndpoint,
+    getEndpointInDefaultPortal,
+    getEndpointInCurrentPortal,
+    getPortals
+} from './portals';
 
 describe('Portals', () => {
     describe('getCurrentPortal()', () => {
@@ -17,7 +25,7 @@ describe('Portals', () => {
         });
 
         test('returns returns correct portal based on localstorage', () => {
-            setPortalWithDomain( 'skydrain.net');
+            setPortalWithDomain('skydrain.net');
             const expected: Portal = {
                 domain: 'skydrain.net',
                 displayName: 'Skydrain.net'
@@ -30,9 +38,8 @@ describe('Portals', () => {
         });
     });
 
-    describe('getAlternativePortals()', () => {
+    describe('getPortals()', () => {
         test('returns correct values', () => {
-            setPortalWithDomain('skydrain.net');
             const expected: Portal[] = [
                 {
                     domain: 'skytransfer.hns.siasky.net',
@@ -42,8 +49,12 @@ describe('Portals', () => {
                     domain: 'skytransfer.hns.skyportal.xyz',
                     displayName: 'SkyPortal.xyz'
                 },
+                {
+                    domain: 'skydrain.net',
+                    displayName: 'Skydrain.net'
+                },
             ];
-            const result = getAlternativePortals();
+            const result = getPortals();
 
 
             expect(result).toEqual(expected);
