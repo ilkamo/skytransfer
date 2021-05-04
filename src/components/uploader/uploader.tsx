@@ -36,7 +36,7 @@ import {
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
-  SKYDB_SYNC_DEBOUNCE_MILISECONDS
+  SKYDB_SYNC_DEBOUNCE_MILISECONDS,
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -57,7 +57,7 @@ const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -449,7 +449,11 @@ const Uploader = () => {
                 }}
                 onDeleteClick={async () => {
                   const key: string = `${node.key}`;
-                  setUploadedEncryptedFiles(uploadedEncryptedFiles.filter(f => f.uuid !== key.split('_')[0]));
+                  setUploadedEncryptedFiles(
+                    uploadedEncryptedFiles.filter(
+                      (f) => f.uuid !== key.split('_')[0]
+                    )
+                  );
                   setToStoreInSkyDBCount(toStoreInSkyDBCount + 1);
                 }}
               />

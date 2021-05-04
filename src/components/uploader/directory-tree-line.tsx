@@ -1,8 +1,5 @@
 import { Button } from 'antd';
-import {
-  DownloadOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
+import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import { isMobile } from 'react-device-detect';
 import { useState } from 'react';
@@ -22,19 +19,19 @@ export const DirectoryTreeLine = ({
   onDownloadClick,
   onDeleteClick,
 }: DirectoryTreeLineProps) => {
-  const [hover, setHover] = useState(false)
+  const [hover, setHover] = useState(false);
   const showButtons = isMobile || hover;
 
   if (isLeaf) {
     return (
-      <div 
-      style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        height: '24px'
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          height: '24px',
+        }}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
         <span
           style={{
@@ -46,7 +43,7 @@ export const DirectoryTreeLine = ({
         >
           {name}
         </span>
-        {showButtons &&
+        {showButtons && (
           <div>
             <Button
               icon={<DownloadOutlined />}
@@ -69,7 +66,7 @@ export const DirectoryTreeLine = ({
               {isMobile ? '' : 'Delete'}
             </Button>
           </div>
-          }
+        )}
       </div>
     );
   }
