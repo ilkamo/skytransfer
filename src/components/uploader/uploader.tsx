@@ -36,6 +36,7 @@ import {
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
+  SKYDB_SYNC_DEBOUNCE_MILISECONDS
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -56,7 +57,7 @@ const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -103,6 +104,7 @@ const Uploader = () => {
   };
 
   const updateFilesInSkyDB = async () => {
+    setLoading(true);
     skydbSyncInProgress = true;
     try {
       message.loading('Syncing files in SkyDB...');
@@ -119,6 +121,7 @@ const Uploader = () => {
     }
 
     skydbSyncInProgress = false;
+    setLoading(false);
   };
 
   const skyDBSyncer = async () => {
@@ -155,7 +158,13 @@ const Uploader = () => {
   });
 
   useEffect(() => {
-    skyDBSyncer();
+    const timeoutID = setTimeout(() => {
+      skyDBSyncer();
+    }, SKYDB_SYNC_DEBOUNCE_MILISECONDS);
+
+    return () => {
+      clearTimeout(timeoutID);
+    };
   });
 
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -422,10 +431,10 @@ const Uploader = () => {
             selectable={false}
             titleRender={(node) => (
               <DirectoryTreeLine
+                disabled={isLoading}
                 isLeaf={node.isLeaf}
                 name={node.title.toString()}
                 onDownloadClick={() => {
-                  debugger;
                   if (!node.isLeaf) {
                     return;
                   }
@@ -440,19 +449,8 @@ const Uploader = () => {
                 }}
                 onDeleteClick={async () => {
                   const key: string = `${node.key}`;
-                  const newUploadedEncryptedFiles = uploadedEncryptedFiles.map<EncryptedFileReference>(
-                    (f) => {
-                      if (f.uuid !== key.split('_')[0]) {
-                        f.skylink = '';
-                      }
-
-                      return f;
-                    }
-                  );
-                  setUploadedEncryptedFiles(newUploadedEncryptedFiles);
-                  setLoading(true);
-                  await updateFilesInSkyDB();
-                  setLoading(false);
+                  setUploadedEncryptedFiles(uploadedEncryptedFiles.filter(f => f.uuid !== key.split('_')[0]));
+                  setToStoreInSkyDBCount(toStoreInSkyDBCount + 1);
                 }}
               />
             )}
