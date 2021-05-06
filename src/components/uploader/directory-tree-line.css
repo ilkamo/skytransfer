@@ -1,0 +1,45 @@
+.directory-tree-line {
+  display: flex;
+  justify-content: space-between;
+  height: 30px;
+}
+
+.directory-tree-line__btn {
+  margin-top: 3px;
+}
+
+.directory-tree-line__btn.download {
+  margin-right: 5px;
+  
+}
+
+.ant-tree.ant-tree-directory .ant-tree-treenode:hover::before {
+  background-color: #20bf6b40 !important;
+}
+
+@media (min-width: 480px) {
+  .directory-tree-line__filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: auto;
+  }
+  .directory-tree-line__buttons {
+    visibility: hidden;
+  }
+  .directory-tree-line:hover .directory-tree-line__buttons {
+    visibility: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .directory-tree-line__filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+  }
+  .directory-tree-line__buttons {
+    visibility: visible;
+  }
+}

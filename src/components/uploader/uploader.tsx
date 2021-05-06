@@ -17,12 +17,14 @@ import {
   Tree,
   Empty,
   Divider,
+  Modal,
 } from 'antd';
 
 import {
   DownloadOutlined,
   DownOutlined,
   LoadingOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -50,6 +52,7 @@ import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
+import { DirectoryTreeLine } from './directory-tree-line';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -74,7 +77,10 @@ const Uploader = () => {
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
     EncryptedFileReference[]
   >([]);
+
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
+  const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
+
   const [uploading, setUploading] = useState(false);
   const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(
     false
@@ -101,6 +107,28 @@ const Uploader = () => {
     setLoading(false);
   };
 
+  const updateFilesInSkyDB = async () => {
+    setLoading(true);
+    skydbSyncInProgress = true;
+    try {
+      message.loading('Syncing files in SkyDB...');
+      await storeEncryptedFiles(
+        SessionManager.sessionPrivateKey,
+        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+        uploadedEncryptedFiles
+      );
+
+      message.success('Sync completed');
+      setToStoreInSkyDBCount(0);
+      setToRemoveFromSkyDBCount(0);
+    } catch (error) {
+      setErrorMessage('Could not sync session encrypted files: ' + error);
+    }
+
+    skydbSyncInProgress = false;
+    setLoading(false);
+  };
+
   const skyDBSyncer = async () => {
     const stillInProgressFilesCount =
       fileListToUpload.length - uidsOfErrorFiles.length;
@@ -114,30 +142,19 @@ const Uploader = () => {
       uploadedEncryptedFiles.length > 0 &&
       stillInProgressFilesCount === 0;
 
+    const fileListEditedSkyDBSync =
+      toRemoveFromSkyDBCount > 0 && stillInProgressFilesCount === 0;
+
     if (stillInProgressFilesCount === 0 && toStoreInSkyDBCount === 0) {
       setUploading(false);
     }
 
     if (
       !skydbSyncInProgress &&
-      (intervalSkyDBSync || uploadCompletedSkyDBSync)
+      (intervalSkyDBSync || uploadCompletedSkyDBSync || fileListEditedSkyDBSync)
     ) {
-      skydbSyncInProgress = true;
-      try {
-        message.loading('Syncing files in SkyDB...');
-        await storeEncryptedFiles(
-          SessionManager.sessionPrivateKey,
-          deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-          uploadedEncryptedFiles
-        );
+      await updateFilesInSkyDB();
 
-        message.success('Sync completed');
-        setToStoreInSkyDBCount(0);
-      } catch (error) {
-        setErrorMessage('Could not sync session encrypted files: ' + error);
-      }
-
-      skydbSyncInProgress = false;
       if (uploadCompletedSkyDBSync) {
         setShowUploadCompletedModal(true);
       }
@@ -328,6 +345,17 @@ const Uploader = () => {
     },
   };
 
+  const deleteConfirmModal = (filename: string, onDeleteClick: () => void) => {
+    Modal.confirm({
+      title: 'Warning',
+      icon: <QuestionCircleOutlined />,
+      content: `File ${filename} will be deleted. Are you sure?`,
+      okText: 'Delete',
+      cancelText: 'Cancel',
+      onOk: onDeleteClick,
+    });
+  };
+
   const loaderIcon = (
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
@@ -412,25 +440,37 @@ const Uploader = () => {
             disabled={isLoading}
             defaultExpandAll={true}
             switcherIcon={<DownOutlined className="directory-switcher" />}
-            onSelect={(selectedKeys, info) => {
-              if (info.node.children && info.node.children.length !== 0) {
-                return; // it is a folder
-              }
-
-              /* 
-                TODO: use utils.fileSize(item.size) to add more file info
-              */
-
-              const key: string = `${info.node.key}`;
-              const ff = uploadedEncryptedFiles.find(
-                (f) => f.uuid === key.split('_')[0]
-              );
-              if (ff) {
-                message.loading(`Download and decryption started`);
-                downloadFile(ff);
-              }
-            }}
             treeData={renderTree(uploadedEncryptedFiles)}
+            selectable={false}
+            titleRender={(node) => (
+              <DirectoryTreeLine
+                disabled={isLoading}
+                isLeaf={node.isLeaf}
+                name={node.title.toString()}
+                onDownloadClick={() => {
+                  if (!node.isLeaf) {
+                    return;
+                  }
+                  const key: string = `${node.key}`;
+                  const toDownload = uploadedEncryptedFiles.find(
+                    (f) => f.uuid === key.split('_')[0]
+                  );
+                  if (toDownload) {
+                    message.loading(`Download and decryption started`);
+                    downloadFile(toDownload);
+                  }
+                }}
+                onDeleteClick={() => {
+                  deleteConfirmModal(node.title.toString(), () => {
+                    const key: string = `${node.key}`;
+                    setUploadedEncryptedFiles((prev) =>
+                      prev.filter((f) => f.uuid !== key.split('_')[0])
+                    );
+                    setToRemoveFromSkyDBCount((prev) => prev + 1);
+                  });
+                }}
+              />
+            )}
           />
         </div>
       ) : (
@@ -442,7 +482,6 @@ const Uploader = () => {
       {!isLoading && uploadedEncryptedFiles.length > 0 && (
         <div style={{ textAlign: 'center' }}>
           <Button
-            type="primary"
             icon={<DownloadOutlined />}
             size="large"
             onClick={async () => {
