@@ -1,0 +1,36 @@
+.directory-tree-line {
+  display: flex;
+  justify-content: space-between;
+  height: 24px;
+}
+
+.directory-tree-line__btn-download {
+  margin-right: 5px;
+}
+
+@media (min-width: 480px) {
+  .directory-tree-line__filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: auto;
+  }
+  .directory-tree-line__buttons {
+    visibility: hidden;
+  }
+  .directory-tree-line:hover .directory-tree-line__buttons {
+    visibility: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .directory-tree-line__filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+  }
+  .directory-tree-line__buttons {
+    visibility: visible;
+  }
+}

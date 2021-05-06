@@ -12,7 +12,7 @@ export const MAX_AXIOS_RETRIES = 3;
 // more than MIN_SKYDB_SYNC_FACTOR files to upload.
 export const SKYDB_SYNC_FACTOR = 10;
 export const MIN_SKYDB_SYNC_FACTOR = 5;
-export const SKYDB_SYNC_DEBOUNCE_MILISECONDS = 1000;
+export const SKYDB_SYNC_DEBOUNCE_MILLISECONDS = 1000;
 
 export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.AES_16MB;
 

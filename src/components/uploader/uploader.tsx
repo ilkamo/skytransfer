@@ -36,7 +36,7 @@ import {
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
-  SKYDB_SYNC_DEBOUNCE_MILISECONDS,
+  SKYDB_SYNC_DEBOUNCE_MILLISECONDS,
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -160,7 +160,7 @@ const Uploader = () => {
   useEffect(() => {
     const timeoutID = setTimeout(() => {
       skyDBSyncer();
-    }, SKYDB_SYNC_DEBOUNCE_MILISECONDS);
+    }, SKYDB_SYNC_DEBOUNCE_MILLISECONDS);
 
     return () => {
       clearTimeout(timeoutID);
