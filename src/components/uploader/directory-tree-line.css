@@ -1,11 +1,20 @@
 .directory-tree-line {
   display: flex;
   justify-content: space-between;
-  height: 24px;
+  height: 30px;
 }
 
-.directory-tree-line__btn-download {
+.directory-tree-line__btn {
+  margin-top: 3px;
+}
+
+.directory-tree-line__btn.download {
   margin-right: 5px;
+  
+}
+
+.ant-tree.ant-tree-directory .ant-tree-treenode:hover::before {
+  background-color: #20bf6b40 !important;
 }
 
 @media (min-width: 480px) {

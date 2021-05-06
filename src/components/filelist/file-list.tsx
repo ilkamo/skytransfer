@@ -124,7 +124,6 @@ const FileList = () => {
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
             <Button
-              type="primary"
               icon={<DownloadOutlined />}
               size="large"
               onClick={async () => {

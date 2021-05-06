@@ -17,12 +17,14 @@ import {
   Tree,
   Empty,
   Divider,
+  Modal,
 } from 'antd';
 
 import {
   DownloadOutlined,
   DownOutlined,
   LoadingOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -76,7 +78,10 @@ const Uploader = () => {
   const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
     EncryptedFileReference[]
   >([]);
+
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
+  const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
+
   const [uploading, setUploading] = useState(false);
   const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(
     false
@@ -116,6 +121,7 @@ const Uploader = () => {
 
       message.success('Sync completed');
       setToStoreInSkyDBCount(0);
+      setToRemoveFromSkyDBCount(0);
     } catch (error) {
       setErrorMessage('Could not sync session encrypted files: ' + error);
     }
@@ -137,13 +143,16 @@ const Uploader = () => {
       uploadedEncryptedFiles.length > 0 &&
       stillInProgressFilesCount === 0;
 
+    const fileListEditedSkyDBSync =
+      toRemoveFromSkyDBCount > 0 && stillInProgressFilesCount === 0;
+
     if (stillInProgressFilesCount === 0 && toStoreInSkyDBCount === 0) {
       setUploading(false);
     }
 
     if (
       !skydbSyncInProgress &&
-      (intervalSkyDBSync || uploadCompletedSkyDBSync)
+      (intervalSkyDBSync || uploadCompletedSkyDBSync || fileListEditedSkyDBSync)
     ) {
       await updateFilesInSkyDB();
 
@@ -343,6 +352,17 @@ const Uploader = () => {
     },
   };
 
+  const deleteConfirmModal = (filename: string, onDeleteClick: () => {}) => {
+    Modal.confirm({
+      title: 'Warning',
+      icon: <QuestionCircleOutlined />,
+      content: `File ${filename} will be deleted. Are you sure?`,
+      okText: 'Delete',
+      cancelText: 'Cancel',
+      onOk: onDeleteClick,
+    });
+  };
+
   const loaderIcon = (
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
@@ -447,14 +467,16 @@ const Uploader = () => {
                     downloadFile(ff);
                   }
                 }}
-                onDeleteClick={async () => {
-                  const key: string = `${node.key}`;
-                  setUploadedEncryptedFiles(
-                    uploadedEncryptedFiles.filter(
-                      (f) => f.uuid !== key.split('_')[0]
-                    )
-                  );
-                  setToStoreInSkyDBCount(toStoreInSkyDBCount + 1);
+                onDeleteClick={() => {
+                  deleteConfirmModal(node.title.toString(), async () => {
+                    const key: string = `${node.key}`;
+                    setUploadedEncryptedFiles(
+                      uploadedEncryptedFiles.filter(
+                        (f) => f.uuid !== key.split('_')[0]
+                      )
+                    );
+                    setToRemoveFromSkyDBCount((prev) => prev + 1);
+                  });
                 }}
               />
             )}
@@ -469,7 +491,6 @@ const Uploader = () => {
       {!isLoading && uploadedEncryptedFiles.length > 0 && (
         <div style={{ textAlign: 'center' }}>
           <Button
-            type="primary"
             icon={<DownloadOutlined />}
             size="large"
             onClick={async () => {

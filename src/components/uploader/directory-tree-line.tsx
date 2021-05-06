@@ -27,8 +27,7 @@ export const DirectoryTreeLine = ({
         <div className="directory-tree-line__buttons">
           <Button
             icon={<DownloadOutlined />}
-            className="directory-tree-line__btn-download"
-            type="primary"
+            className="directory-tree-line__btn download"
             onClick={onDownloadClick}
             size="small"
             disabled={disabled}
@@ -36,8 +35,8 @@ export const DirectoryTreeLine = ({
             {isMobile ? '' : 'Download'}
           </Button>
           <Button
+            className="directory-tree-line__btn"
             icon={<DeleteOutlined />}
-            type="primary"
             danger
             onClick={onDeleteClick}
             size="small"
