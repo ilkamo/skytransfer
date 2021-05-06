@@ -20,7 +20,6 @@ export const DirectoryTreeLine = ({
   onDownloadClick,
   onDeleteClick,
 }: DirectoryTreeLineProps) => {
-
   if (isLeaf) {
     return (
       <div className="directory-tree-line">
