@@ -38,7 +38,6 @@ import {
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
-  SKYDB_SYNC_DEBOUNCE_MILLISECONDS,
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -167,13 +166,7 @@ const Uploader = () => {
   });
 
   useEffect(() => {
-    const timeoutID = setTimeout(() => {
-      skyDBSyncer();
-    }, SKYDB_SYNC_DEBOUNCE_MILLISECONDS);
-
-    return () => {
-      clearTimeout(timeoutID);
-    };
+    skyDBSyncer();
   });
 
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -352,7 +345,7 @@ const Uploader = () => {
     },
   };
 
-  const deleteConfirmModal = (filename: string, onDeleteClick: () => {}) => {
+  const deleteConfirmModal = (filename: string, onDeleteClick: () => void) => {
     Modal.confirm({
       title: 'Warning',
       icon: <QuestionCircleOutlined />,
@@ -459,21 +452,19 @@ const Uploader = () => {
                     return;
                   }
                   const key: string = `${node.key}`;
-                  const ff = uploadedEncryptedFiles.find(
+                  const toDownload = uploadedEncryptedFiles.find(
                     (f) => f.uuid === key.split('_')[0]
                   );
-                  if (ff) {
+                  if (toDownload) {
                     message.loading(`Download and decryption started`);
-                    downloadFile(ff);
+                    downloadFile(toDownload);
                   }
                 }}
                 onDeleteClick={() => {
-                  deleteConfirmModal(node.title.toString(), async () => {
+                  deleteConfirmModal(node.title.toString(), () => {
                     const key: string = `${node.key}`;
-                    setUploadedEncryptedFiles(
-                      uploadedEncryptedFiles.filter(
-                        (f) => f.uuid !== key.split('_')[0]
-                      )
+                    setUploadedEncryptedFiles((prev) =>
+                      prev.filter((f) => f.uuid !== key.split('_')[0])
                     );
                     setToRemoveFromSkyDBCount((prev) => prev + 1);
                   });

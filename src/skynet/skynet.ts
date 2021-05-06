@@ -19,10 +19,6 @@ export const storeEncryptedFiles = async (
   encryptedFiles: EncryptedFileReference[]
 ): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
-    if (encryptedFiles.length === 0) {
-      return resolve(false);
-    }
-
     const jsonCrypto = new JsonCrypto(encryptionKey);
     const encryptedFilesAsEncryptedString = jsonCrypto.encrypt(encryptedFiles);
 
