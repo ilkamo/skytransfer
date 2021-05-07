@@ -10,6 +10,7 @@ import { Layout } from 'antd';
 import AppHeader from './components/header/header';
 import Account from './components/public/public';
 import About from './components/about/about';
+import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 
 const { Content, Footer } = Layout;
@@ -52,6 +53,11 @@ const App = () => {
             <Route path="/about">
               <Content>
                 <About />
+              </Content>
+            </Route>
+            <Route path="/support-us">
+              <Content>
+                <SupportUs />
               </Content>
             </Route>
             <Route path="/">
