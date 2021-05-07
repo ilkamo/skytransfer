@@ -12,6 +12,7 @@ import {
   LinkOutlined,
   RedoOutlined,
   EyeOutlined,
+  HeartOutlined,
 } from '@ant-design/icons';
 import SessionManager from '../../session/session-manager';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -100,6 +101,15 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           icon={<CopyOutlined />}
         >
           About
+        </Menu.Item>
+        <Menu.Item
+          key="support-us"
+          onClick={() => {
+            history.push('/support-us');
+          }}
+          icon={<HeartOutlined />}
+        >
+          Support Us
         </Menu.Item>
         <SubMenu
           key="portals"
