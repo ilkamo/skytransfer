@@ -23,7 +23,7 @@ const useConstructor = (callBack = () => {}) => {
 
 let mySky: MySky = null;
 
-const Account = () => {
+const Publish = () => {
   const [userSessions, setUserSessions] = useState<PublicSession[]>([]);
   const [isLogged, setIsLogged] = useState(false);
   const [userID, setUserID] = useState('');
@@ -45,7 +45,7 @@ const Account = () => {
     setIsLoading(true);
     const session: PublicSession = {
       id: uuid(),
-      name: values.sessionName,
+      name: values.contentDescription,
       link: values.sessionLink,
       createdAt: new Date().getTime(),
     };
@@ -65,15 +65,13 @@ const Account = () => {
   return (
     <>
       <Alert
-        message="Warning"
-        description="This is an advanced functionality. Make sure you know what you are doing! Once you publish a SkyTransfer
-      link, any user of Skynet which know your userID will be able to
-      discover and access the files you published. Use with caution. All public sessions are stored in your MySky `skytransfer.hns/publicSessions.json`. More info in the about section."
+        message="Warning - advanced functionality"
+        description="Make sure you know what you are doing! Once you publish your files, any user of Skynet will be able to discover and access them. Use with caution."
         type="warning"
       />
       {isloading ? (
         <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin tip="Loading MySky stuff..." size="large" />
+          <Spin tip="Loading MySky stuff and interactions..." size="large" />
         </div>
       ) : (
         <>
@@ -84,7 +82,7 @@ const Account = () => {
             </div>
           )}
           <Divider className="default-margin" orientation="left">
-            Public actual session link
+            Publish files
           </Divider>
           <Form
             name="basic"
@@ -92,31 +90,29 @@ const Account = () => {
             initialValues={{ sessionLink }}
           >
             <Form.Item
-              name="sessionName"
+              name="contentDescription"
               rules={[
                 {
                   required: true,
-                  message: 'Please add a session name',
+                  message: 'Please add a short content description',
                 },
               ]}
             >
-              <Input placeholder="Session name" />
+              <Input placeholder="Short content description" />
             </Form.Item>
-
             <Form.Item
               name="sessionLink"
               rules={[{ required: true, message: 'Please add a session link' }]}
             >
               <Input disabled readOnly placeholder="SkyTransfer link" />
             </Form.Item>
-
             <Form.Item style={{ textAlign: 'center' }}>
               <Button type="primary" htmlType="submit">
-                Public
+                Publish
               </Button>
             </Form.Item>
           </Form>
-          <Divider orientation="left">Public SkyTransfer sessions</Divider>
+          <Divider orientation="left">Public discoverable files</Divider>
           <List
             loading={isloading}
             bordered
@@ -139,4 +135,4 @@ const Account = () => {
   );
 };
 
-export default Account;
+export default Publish;
