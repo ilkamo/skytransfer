@@ -25,11 +25,11 @@ const SupportUs = () => {
         <SupportUsIcon />
       </p>
       <Divider className="divider-text">
-        You can support and motivate Us
+        Support and motivate Us
       </Divider>
       <p>
         We are constantly shipping new features. We don't want to steal your
-        time but if you really want, you can support Us with a small donation.
+        time but if you really want, you can support Us with a donation.
         It's your way of returning the love we invested in developing
         SkyTransfer. We would appreciate it very much.
       </p>
