@@ -13,3 +13,6 @@ SkyTransfer supports **uploading entire directories**.
 Last but not least, thanks to MySky integration you can **Publish your main directory**. What does it exactly mean? Let's explain it with an example. Imagine SkyTransfer as a box that you can put different files in. This box can be opened by others only if they have the correct key. There is no other way of doing it. By publishing your SkyTransfer, you advertise this box with all its files on the public Skynet. At the same time, you attach the keys to the box so others can open it. Publish a SkyTransfer only when you are really aware of the consequences! Video with an example of publishing main directory can be found [here](https://skytransfer.hns.siasky.net/#/43ad6472811f8b3fe47d0c70445286c33c9a58bbd658cd6c24216025352f1926/3603c6925b263896d65690f5f305a6ed8aba86ca4b57b824507ce92a67d72e67d573d2c932bcc281040be50d070398ed9df23a3f9d8278b9a857678c9a049ad4).
 
 SkyTransfer is still in development. Please report any issues, new ideas or bugs.
+
+### Credits
+Some of the icons we use are from [Flaticon](https://www.flaticon.com/) by [Freepik](https://www.freepik.com).

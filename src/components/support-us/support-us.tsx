@@ -15,7 +15,7 @@ const SupportUs = () => {
       </Divider>
       <p>We want the World to be a better place, in our own small way.</p>
       <p>
-        SkyTransfer is a tool we developed with love for Us, for You, for the
+        SkyTransfer is a tool we developed with love, for Us, for You, for the
         World. We hope you enjoy it and find it useful. Forget how frustrating
         can be, sometimes, sharing files. Reimagine how file sharing experience
         should be.
@@ -24,21 +24,19 @@ const SupportUs = () => {
       <p style={{ textAlign: 'center' }}>
         <SupportUsIcon />
       </p>
-      <Divider className="divider-text">
-        Support and motivate Us
-      </Divider>
+      <Divider className="divider-text">Support and motivate Us</Divider>
       <p>
         We are constantly shipping new features. We don't want to steal your
-        time but if you really want, you can support Us with a donation.
-        It's your way of returning the love we invested in developing
-        SkyTransfer. We would appreciate it very much.
+        time but if you really want, you can support Us with a donation. It's
+        your way of returning the love we invested in developing SkyTransfer. We
+        would appreciate it very much.
       </p>
       <br />
       <Divider>SkyTransfer Siacoin wallet address</Divider>
       <pre style={{ textAlign: 'center', fontWeight: 'bold' }}>
         a34ac5a2aa1d5174b1a9289584ab4cdb5d2f99fa24de4a86d592fb02b2f81b754ff97af0e6e4
       </pre>
-      <Divider/>
+      <Divider />
       <p>
         Thanks for your time. Take care of you.
         <br />
