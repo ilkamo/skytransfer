@@ -56,7 +56,7 @@ const Publish = () => {
       mySky = await mySkyLogin();
     }
 
-    await storeUserSession(mySky, [session]);
+    await storeUserSession(mySky, session);
     setIsLoading(false);
   };
 
