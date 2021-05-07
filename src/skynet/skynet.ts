@@ -107,29 +107,30 @@ export const getUserPublicSessions = async (
 
 export const storeUserSession = async (
   mySky: MySky,
-  newSessions: PublicSession[]
+  newSession: PublicSession
 ) => {
   try {
     let sessions = await getUserPublicSessions(mySky);
-    let shouldUpdate = false;
 
-    newSessions.forEach((n) => {
-      if (
-        sessions.findIndex((s) => s.link === n.link || s.id === n.id) === -1
-      ) {
-        sessions.push(n);
-        shouldUpdate = true;
-      }
-    });
-
-    if (shouldUpdate) {
+    if (
+      sessions.findIndex((s) => s.link === newSession.link || s.id === newSession.id) === -1
+    ) {
+      sessions.push(newSession);
       const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
 
       await contentRecord.recordNewContent({
         skylink: dataLink,
         metadata: {
           action: 'addedPublicSkyTransferSessions',
-          newSessions: newSessions,
+          newSession: newSession,
+        },
+      });
+
+      await contentRecord.recordInteraction({
+        skylink: dataLink,
+        metadata: {
+          action: 'publicSkyTransferSessionsUpdated',
+          newSessions: sessions,
         },
       });
     }
