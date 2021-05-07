@@ -8,7 +8,7 @@ import FileList from './components/filelist/file-list';
 
 import { Layout } from 'antd';
 import AppHeader from './components/header/header';
-import Account from './components/public/public';
+import Publish from './components/publish/publish';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
@@ -45,9 +45,9 @@ const App = () => {
                 <FileList />
               </Content>
             </Route>
-            <Route path="/public">
+            <Route path="/publish">
               <Content>
-                <Account />
+                <Publish />
               </Content>
             </Route>
             <Route path="/about">

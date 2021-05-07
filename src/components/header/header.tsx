@@ -87,11 +87,11 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
         <Menu.Item
           key="publish"
           onClick={() => {
-            history.push('/public');
+            history.push('/publish');
           }}
           icon={<EyeOutlined />}
         >
-          Publish
+          Publish (MySky)
         </Menu.Item>
         <Menu.Item
           key="about-us"
