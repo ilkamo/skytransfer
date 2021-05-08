@@ -55,4 +55,14 @@ export const setPortalWithDomain = (domain: string) => {
     }
 }
 
+export const getMySkyPortal = (): string => {
+  let mySkyPortal = 'siasky.net';
+  
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    mySkyPortal = 'siasky.dev';
+  }
+
+  return `https://${mySkyPortal}`;
+}
+
 export const getPortals = (): readonly Portal[]  => knownPortals;
