@@ -504,7 +504,7 @@ const Uploader = () => {
         header={
           <p>
             Your <strong>SkyTransfer</strong> is ready. Your files have been
-            encrytypted and uploaded on Skynet. Copy the link and share your
+            encrypted and uploaded on Skynet. Copy the link and share your
             files or just continue uploading. When you share a draft, others can
             add files to your SkyTransfer.
           </p>
