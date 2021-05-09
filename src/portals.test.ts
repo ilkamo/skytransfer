@@ -7,7 +7,7 @@ import {
   getEndpointInDefaultPortal,
   getEndpointInCurrentPortal,
   getPortals,
-  getMySkyPortal
+  getMySkyDomain
 } from './portals';
 
 const realLocation = window.location.href;
@@ -24,7 +24,7 @@ describe('Portals', () => {
     test('returns default portal when localstorage empty', () => {
       const result = getCurrentPortal();
       const expected: Portal = {
-        domain: 'skytransfer.hns.siasky.net',
+        domain: 'siasky.net',
         displayName: 'Siasky.net'
       }
 
@@ -50,16 +50,20 @@ describe('Portals', () => {
     test('returns correct values', () => {
       const expected: Portal[] = [
         {
-          domain: 'skytransfer.hns.siasky.net',
+          domain: 'siasky.net',
           displayName: 'Siasky.net'
         },
         {
-          domain: 'skytransfer.hns.skyportal.xyz',
+          domain: 'skyportal.xyz',
           displayName: 'SkyPortal.xyz'
         },
         {
           domain: 'skydrain.net',
           displayName: 'Skydrain.net'
+        },
+        {
+          domain: 'siasky.dev',
+          displayName: 'Siasky.dev'
         },
       ];
       const result = getPortals();
@@ -71,8 +75,8 @@ describe('Portals', () => {
 
   describe('getUploadEndpoint()', () => {
     test('returns endpoint based on current portal', () => {
-      setPortalWithDomain('skytransfer.hns.skyportal.xyz');
-      const expected = 'https://skytransfer.hns.skyportal.xyz/skynet/skyfile';
+      setPortalWithDomain('skyportal.xyz');
+      const expected = 'https://skyportal.xyz/skynet/skyfile';
       const result = getUploadEndpoint();
 
       expect(result).toEqual(expected);
@@ -81,8 +85,8 @@ describe('Portals', () => {
 
   describe('getEndpointInDefaultPortal()', () => {
     test('returns endpoint based on default portal', () => {
-      setPortalWithDomain('skytransfer.hns.skyportal.xyz');
-      const expected = 'https://skytransfer.hns.siasky.net';
+      setPortalWithDomain('skyportal.xyz');
+      const expected = 'https://siasky.net';
       const result = getEndpointInDefaultPortal();
 
       expect(result).toEqual(expected);
@@ -91,32 +95,32 @@ describe('Portals', () => {
 
   describe('getEndpointInCurrentPortal()', () => {
     test('returns endpoint based on default portal', () => {
-      setPortalWithDomain('skytransfer.hns.skyportal.xyz');
-      const expected = 'https://skytransfer.hns.skyportal.xyz';
+      setPortalWithDomain('skyportal.xyz');
+      const expected = 'https://skyportal.xyz';
       const result = getEndpointInCurrentPortal();
 
       expect(result).toEqual(expected);
     });
   });
 
-  describe('getMySkyPortal()', () => {
-    test('returns dev mySky portal', () => {
+  describe('getMySkyDomain()', () => {
+    test('returns dev mySky domain', () => {
       setLocation('http://localhost:3000');
 
-      const expected = 'https://siasky.dev';
-      const result = getMySkyPortal();
+      const expected = 'https://siasky.net';
+      const result = getMySkyDomain();
       expect(result).toEqual(expected);
 
       setLocation(realLocation);
     });
   });
 
-  describe('getMySkyPortal()', () => {
-    test('returns mySky portal', () => {
+  describe('getMySkyDomain()', () => {
+    test('returns mySky domain', () => {
       setLocation('https://siasky.net');
 
-      const expected = 'https://siasky.net';
-      const result = getMySkyPortal();
+      const expected = ''; // https://github.com/SkynetLabs/skynet-js/issues/89
+      const result = getMySkyDomain();
       expect(result).toEqual(expected);
 
       setLocation(realLocation);

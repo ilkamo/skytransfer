@@ -4,7 +4,7 @@ import { MySky, SkynetClient } from 'skynet-js';
 import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
-import { getEndpointInDefaultPortal, getMySkyPortal } from '../portals';
+import { getEndpointInDefaultPortal, getMySkyDomain } from '../portals';
 
 const skynetClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -65,7 +65,7 @@ export const getEncryptedFiles = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
   try {
-    const client = new SkynetClient(getMySkyPortal());
+    const client = new SkynetClient(getMySkyDomain());
     const mySky = await client.loadMySky(dataDomain, { debug: true });
 
     // @ts-ignore
