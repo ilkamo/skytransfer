@@ -256,6 +256,7 @@ const Uploader = () => {
       onUploadProgress: (e) => {
         onProgress({ percent: (e.loaded / e.total) * 100 }, encryptedFile);
       },
+      withCredentials: true,
     };
 
     axiosRetry(axios, {
@@ -504,9 +505,9 @@ const Uploader = () => {
         header={
           <p>
             Your <strong>SkyTransfer</strong> is ready. Your files have been
-            encrypted and uploaded on Skynet. Copy the link and share your
-            files or just continue uploading. When you share a draft, others can
-            add files to your SkyTransfer.
+            encrypted and uploaded on Skynet. Copy the link and share your files
+            or just continue uploading. When you share a draft, others can add
+            files to your SkyTransfer.
           </p>
         }
         shareLinkOnClick={finishUpload}

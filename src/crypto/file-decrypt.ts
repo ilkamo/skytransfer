@@ -78,6 +78,7 @@ export default class AESFileDecrypt implements FileDecrypt {
             );
             onFileDownloadProgress(false, progress);
           },
+          withCredentials: true,
         });
 
         const progress = Math.floor(((i + 1) / totalChunks) * 100);
