@@ -110,8 +110,18 @@ export const storeUserSession = async (
   newSession: PublicSession
 ) => {
   try {
-    let sessions = await getUserPublicSessions(mySky);
+    const linkRegex = /#\/(\w{64})\/(\w{128})/i;
+    const found = newSession.link.match(linkRegex);
+    if (!found || found.length !== 3) {
+      throw new Error("could not get info from session link");
+    }
 
+    const files = await getEncryptedFiles(found[1], found[2]);
+    if (files.length === 0) {
+      throw new Error("nothing to store");
+    }
+
+    let sessions = await getUserPublicSessions(mySky);
     if (
       sessions.findIndex(
         (s) => s.link === newSession.link || s.id === newSession.id
@@ -123,21 +133,25 @@ export const storeUserSession = async (
       await contentRecord.recordNewContent({
         skylink: dataLink,
         metadata: {
-          action: 'addedPublicSkyTransferSessions',
-          newSession: newSession,
+          action: 'SkyTransferPublished',
+          session: newSession,
         },
       });
 
-      await contentRecord.recordInteraction({
-        skylink: dataLink,
-        metadata: {
-          action: 'publicSkyTransferSessionsUpdated',
-          newSessions: sessions,
-        },
-      });
+      for (const file of files) {
+        await contentRecord.recordInteraction({
+          skylink: dataLink,
+          metadata: {
+            action: 'SkyTransferFilePublished',
+            session: newSession,
+            filename: file.fileName,
+          },
+        });
+      }
     }
   } catch (e) {
     console.log('could not storeUserSession:');
     console.error(e);
+    throw e;
   }
 };
