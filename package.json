@@ -27,7 +27,7 @@
     "react-qr-svg": "^2.3.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
-    "skynet-js": "^4.0.5-beta",
+    "skynet-js": "^4.0.6-beta",
     "typescript": "^4.2.4",
     "web-vitals": "^0.2.4"
   },

@@ -10774,10 +10774,10 @@ skynet-js@^4.0.1-beta:
     url-join "^4.0.1"
     url-parse "1.4.7"
 
-skynet-js@^4.0.5-beta:
-  version "4.0.5-beta"
-  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.0.5-beta.tgz#954c18efbfdb7f6ce10fed2675403ad0bb912e17"
-  integrity sha512-m6rNvrCEjAUroIybwRAffOXI/VCHO38JLA10jEBl9WxZuNqIb6hPDpQK7BLw1hcF79Va3hzeGXsVs1ChC3Z/eA==
+skynet-js@^4.0.6-beta:
+  version "4.0.6-beta"
+  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.0.6-beta.tgz#45532a45d989a587f216516e6618cfb6194f4dca"
+  integrity sha512-2dOmdOIwRgISWShyCePU5qJ1PPPN0vqb8WlQhBztQgJeZQwx0AGhZr9HWgboaItwK3iMb4KAjdq4wpoXbs2u+g==
   dependencies:
     axios "^0.21.0"
     base32-encode "^1.1.1"
