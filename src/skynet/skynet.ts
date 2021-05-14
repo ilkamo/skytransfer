@@ -138,12 +138,12 @@ export const storeUserSession = async (
             },
           });
         } catch (error) {
-          console.log("Something wrong with recordInteraction");
+          console.log('Something wrong with recordInteraction');
           console.error(error);
         }
       }
     } catch (error) {
-      throw Error("content record error: " + error.message);
+      throw Error('content record error: ' + error.message);
     }
   }
 };
