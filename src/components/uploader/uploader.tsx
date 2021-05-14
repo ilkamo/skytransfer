@@ -52,7 +52,7 @@ import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
-import { DirectoryTreeLine } from './directory-tree-line';
+import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
