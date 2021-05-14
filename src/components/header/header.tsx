@@ -31,11 +31,13 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
+  const [canPublishSession, setCanPublishSession] = useState(false);
 
   useEffect(() => {
     setCanResumeSession(
       location.pathname !== '/' && SessionManager.canResume()
     );
+    setCanPublishSession(SessionManager.canResume());
   }, [location]);
 
   // https://reactjs.org/docs/hooks-faq.html#is-there-something-like-forceupdate
@@ -89,6 +91,7 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           onClick={() => {
             history.push('/publish');
           }}
+          disabled={!canPublishSession}
           icon={<EyeOutlined />}
         >
           Publish (MySky)
