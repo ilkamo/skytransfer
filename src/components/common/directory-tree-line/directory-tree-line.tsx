@@ -10,7 +10,7 @@ type DirectoryTreeLineProps = {
   isLeaf: boolean;
   name: string;
   onDownloadClick: () => void;
-  onDeleteClick: () => void;
+  onDeleteClick?: () => void;
 };
 
 export const DirectoryTreeLine = ({
@@ -34,16 +34,18 @@ export const DirectoryTreeLine = ({
           >
             {isMobile ? '' : 'Download'}
           </Button>
-          <Button
-            className="directory-tree-line__btn"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={onDeleteClick}
-            size="small"
-            disabled={disabled}
-          >
-            {isMobile ? '' : 'Delete'}
-          </Button>
+          {onDeleteClick && (
+            <Button
+              className="directory-tree-line__btn"
+              icon={<DeleteOutlined />}
+              danger
+              onClick={onDeleteClick}
+              size="small"
+              disabled={disabled}
+            >
+              {isMobile ? '' : 'Delete'}
+            </Button>
+          )}
         </div>
       </div>
     );
