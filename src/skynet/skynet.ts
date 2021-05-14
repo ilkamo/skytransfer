@@ -122,15 +122,15 @@ export const storeUserSession = async (
     }
 
     let sessions = await getUserPublicSessions(mySky);
-    if (
-      sessions.findIndex(
-        (s) => s.link === newSession.link || s.id === newSession.id
-      ) === -1
-    ) {
+    // if (
+    //   sessions.findIndex(
+    //     (s) => s.link === newSession.link || s.id === newSession.id
+    //   ) === -1
+    // ) {
       sessions.push(newSession);
       const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
 
-      await contentRecord.recordNewContent({
+      await contentRecord.recordInteraction({
         skylink: dataLink,
         metadata: {
           action: 'SkyTransferPublished',
@@ -139,16 +139,21 @@ export const storeUserSession = async (
       });
 
       for (const file of files) {
-        await contentRecord.recordInteraction({
-          skylink: dataLink,
-          metadata: {
-            action: 'SkyTransferFilePublished',
-            session: newSession,
-            filename: file.fileName,
-          },
-        });
+        try {
+          const response = await contentRecord.recordNewContent({
+            skylink: dataLink,
+            metadata: {
+              action: 'SkyTransferFilePublished',
+              session: newSession,
+              filename: file.fileName,
+            },
+          });
+          console.log(response);
+        } catch (error) {
+          console.error(error);
+        }
       }
-    }
+    // }
   } catch (e) {
     console.log('could not storeUserSession:');
     console.error(e);
