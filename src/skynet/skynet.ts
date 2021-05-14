@@ -113,12 +113,12 @@ export const storeUserSession = async (
     const linkRegex = /#\/(\w{64})\/(\w{128})/i;
     const found = newSession.link.match(linkRegex);
     if (!found || found.length !== 3) {
-      throw new Error("could not get info from session link");
+      throw new Error('could not get info from session link');
     }
 
     const files = await getEncryptedFiles(found[1], found[2]);
     if (files.length === 0) {
-      throw new Error("nothing to store");
+      throw new Error('nothing to store');
     }
 
     let sessions = await getUserPublicSessions(mySky);
