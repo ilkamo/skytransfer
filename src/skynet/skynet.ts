@@ -64,26 +64,20 @@ export const getEncryptedFiles = async (
 };
 
 export const mySkyLogin = async (): Promise<MySky> => {
-  try {
-    const client = new SkynetClient(getMySkyDomain());
-    const mySky = await client.loadMySky(dataDomain, { debug: true });
+  const client = new SkynetClient(getMySkyDomain());
+  const mySky = await client.loadMySky(dataDomain, { debug: true });
 
-    // @ts-ignore
-    await mySky.loadDacs(contentRecord);
+  // @ts-ignore
+  await mySky.loadDacs(contentRecord);
 
-    const loggedIn = await mySky.checkLogin();
-    if (!loggedIn) {
-      if (!(await mySky.requestLoginAccess())) {
-        throw Error('could not login');
-      }
+  const loggedIn = await mySky.checkLogin();
+  if (!loggedIn) {
+    if (!(await mySky.requestLoginAccess())) {
+      throw Error('could not login');
     }
-
-    return mySky;
-  } catch (e) {
-    console.log('mySkyLogin error: ');
-    console.error(e);
-    throw e;
   }
+
+  return mySky;
 };
 
 export const getUserPublicSessions = async (
@@ -91,15 +85,10 @@ export const getUserPublicSessions = async (
 ): Promise<PublicSession[]> => {
   let sessions: PublicSession[] = [];
 
-  try {
-    const { data } = await mySky.getJSON(sessionsPath);
+  const { data } = await mySky.getJSON(sessionsPath);
 
-    if (data && 'sessions' in data) {
-      sessions = data.sessions as PublicSession[];
-    }
-  } catch (e) {
-    console.log('could not getUserSessions');
-    console.error(e);
+  if (data && 'sessions' in data) {
+    sessions = data.sessions as PublicSession[];
   }
 
   return sessions;
@@ -109,28 +98,28 @@ export const storeUserSession = async (
   mySky: MySky,
   newSession: PublicSession
 ) => {
-  try {
-    const linkRegex = /#\/(\w{64})\/(\w{128})/i;
-    const found = newSession.link.match(linkRegex);
-    if (!found || found.length !== 3) {
-      throw new Error('could not get info from session link');
-    }
+  const linkRegex = /#\/(\w{64})\/(\w{128})/i;
+  const found = newSession.link.match(linkRegex);
+  if (!found || found.length !== 3) {
+    throw new Error('could not get info from session link');
+  }
 
-    const files = await getEncryptedFiles(found[1], found[2]);
-    if (files.length === 0) {
-      throw new Error('nothing to store');
-    }
+  const files = await getEncryptedFiles(found[1], found[2]);
+  if (files.length === 0) {
+    throw new Error('nothing to store');
+  }
 
-    let sessions = await getUserPublicSessions(mySky);
-    // if (
-    //   sessions.findIndex(
-    //     (s) => s.link === newSession.link || s.id === newSession.id
-    //   ) === -1
-    // ) {
-      sessions.push(newSession);
-      const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
+  let sessions = await getUserPublicSessions(mySky);
+  if (
+    sessions.findIndex(
+      (s) => s.link === newSession.link || s.id === newSession.id
+    ) === -1
+  ) {
+    sessions.push(newSession);
+    const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
 
-      await contentRecord.recordInteraction({
+    try {
+      await contentRecord.recordNewContent({
         skylink: dataLink,
         metadata: {
           action: 'SkyTransferPublished',
@@ -140,7 +129,7 @@ export const storeUserSession = async (
 
       for (const file of files) {
         try {
-          const response = await contentRecord.recordNewContent({
+          await contentRecord.recordInteraction({
             skylink: dataLink,
             metadata: {
               action: 'SkyTransferFilePublished',
@@ -148,15 +137,13 @@ export const storeUserSession = async (
               filename: file.fileName,
             },
           });
-          console.log(response);
         } catch (error) {
+          console.log("Something wrong with recordInteraction");
           console.error(error);
         }
       }
-    // }
-  } catch (e) {
-    console.log('could not storeUserSession:');
-    console.error(e);
-    throw e;
+    } catch (error) {
+      throw Error("content record error: " + error.message);
+    }
   }
 };

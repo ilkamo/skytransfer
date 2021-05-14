@@ -8,7 +8,7 @@ import {
 import { Form, Input, Button, Divider, Alert, Spin } from 'antd';
 import { PublicSession } from '../../models/session';
 
-import { List } from 'antd';
+import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { MySky } from 'skynet-js';
@@ -36,12 +36,13 @@ const Publish = () => {
       setIsLogged(true);
       setUserSessions(await getUserPublicSessions(mySky));
     } catch (error) {
+      message.error(error.message);
       setIsLogged(false);
     }
     setIsLoading(false);
   });
 
-  const onFinish = async (values: any) => {
+  const onSubmit = async (values: any) => {
     setIsLoading(true);
     const session: PublicSession = {
       id: uuid(),
@@ -52,11 +53,16 @@ const Publish = () => {
 
     setUserSessions((p) => [...p, session]);
 
-    if (mySky === null) {
-      mySky = await mySkyLogin();
+    try {
+      if (mySky === null) {
+        mySky = await mySkyLogin();
+      }
+
+      await storeUserSession(mySky, session);
+    } catch (error) {
+      message.error(error.message);
     }
 
-    await storeUserSession(mySky, session);
     setIsLoading(false);
   };
 
@@ -86,7 +92,7 @@ const Publish = () => {
           </Divider>
           <Form
             name="basic"
-            onFinish={onFinish}
+            onFinish={onSubmit}
             initialValues={{ sessionLink }}
           >
             <Form.Item
