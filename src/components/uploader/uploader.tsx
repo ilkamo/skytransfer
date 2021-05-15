@@ -334,7 +334,11 @@ const Uploader = () => {
 
           message.success(`${info.file.name} file uploaded successfully.`);
 
-          setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
+          setUploadedEncryptedFiles((prev) => [
+            // overwrite if there is an old file with the same relativePath
+            ...prev.filter((f) => f.relativePath !== tempFile.relativePath),
+            tempFile,
+          ]);
           setToStoreInSkyDBCount((prev) => prev + 1);
           uploadCount--;
           setFileListToUpload((prev) =>
