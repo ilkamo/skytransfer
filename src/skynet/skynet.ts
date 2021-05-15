@@ -120,7 +120,7 @@ export const storeUserSession = async (
 
     try {
       await contentRecord.recordNewContent({
-        skylink: dataLink,
+        skylink: newSession.link,
         metadata: {
           action: 'SkyTransferPublished',
           session: newSession,
