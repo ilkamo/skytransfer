@@ -116,11 +116,14 @@ export const storeUserSession = async (
     ) === -1
   ) {
     sessions.push(newSession);
+
     const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
+    const sessionsDataLink = dataLink;
 
     try {
+      const { dataLink } = await mySky.setJSON(`skytransfer.hns/${newSession.id}.json`, { newSession })
       await contentRecord.recordNewContent({
-        skylink: newSession.link,
+        skylink: dataLink,
         metadata: {
           action: 'SkyTransferPublished',
           session: newSession,
@@ -130,7 +133,7 @@ export const storeUserSession = async (
       for (const file of files) {
         try {
           await contentRecord.recordInteraction({
-            skylink: dataLink,
+            skylink: sessionsDataLink,
             metadata: {
               action: 'SkyTransferFilePublished',
               session: newSession,
