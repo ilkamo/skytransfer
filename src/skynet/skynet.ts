@@ -121,12 +121,13 @@ export const storeUserSession = async (
     const sessionsDataLink = dataLink;
 
     try {
-      const {
-        dataLink,
-      } = await mySky.setJSON(`skytransfer.hns/${newSession.id}.json`, {
-        newSession,
-      });
-      
+      const { dataLink } = await mySky.setJSON(
+        `skytransfer.hns/${newSession.id}.json`,
+        {
+          newSession,
+        }
+      );
+
       await contentRecord.recordNewContent({
         skylink: dataLink,
         metadata: {

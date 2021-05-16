@@ -1,7 +1,29 @@
+
+/* overriding antd css */
+.ant-tree.ant-tree-directory .ant-tree-treenode:hover::before {
+  background-color: #20bf6b40 !important;
+}
+
+/* overriding antd css */
+.ant-tree-treenode .ant-tree-node-content-wrapper {
+  overflow-x: hidden;
+}
+
 .directory-tree-line {
   display: flex;
-  justify-content: space-between;
-  height: 30px;
+  flex-direction: row;
+  justify-content:space-between;
+}
+
+.directory-tree-line__nodename {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: auto;
+}
+
+.directory-tree-line__buttons {
+  flex: none;
 }
 
 .directory-tree-line__btn {
@@ -12,19 +34,7 @@
   margin-right: 5px;
 }
 
-.directory-tree-line__nodename {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100px;
-}
-
-
-.ant-tree.ant-tree-directory .ant-tree-treenode:hover::before {
-  background-color: #20bf6b40 !important;
-}
-
-@media (min-width: 480px) {
+@media (min-width: 1025px) {
   .directory-tree-line__buttons {
     visibility: hidden;
   }
@@ -33,8 +43,12 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1025px) {
   .directory-tree-line__buttons {
     visibility: visible;
+  }
+
+  .directory-tree-line__btn--download {
+    margin-left: 5px;
   }
 }
