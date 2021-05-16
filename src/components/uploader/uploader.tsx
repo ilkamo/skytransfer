@@ -52,7 +52,7 @@ import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
-import { DirectoryTreeLine } from './directory-tree-line';
+import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -256,6 +256,7 @@ const Uploader = () => {
       onUploadProgress: (e) => {
         onProgress({ percent: (e.loaded / e.total) * 100 }, encryptedFile);
       },
+      withCredentials: true,
     };
 
     axiosRetry(axios, {
@@ -333,7 +334,11 @@ const Uploader = () => {
 
           message.success(`${info.file.name} file uploaded successfully.`);
 
-          setUploadedEncryptedFiles((prev) => [...prev, tempFile]);
+          setUploadedEncryptedFiles((prev) => [
+            // overwrite if there is an old file with the same relativePath
+            ...prev.filter((f) => f.relativePath !== tempFile.relativePath),
+            tempFile,
+          ]);
           setToStoreInSkyDBCount((prev) => prev + 1);
           uploadCount--;
           setFileListToUpload((prev) =>

@@ -13,7 +13,11 @@ import { getEncryptedFiles } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
 
+import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
+
 const { DownloadActivityBar } = ActivityBars;
+
+const { DirectoryTree } = Tree;
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -98,28 +102,35 @@ const FileList = () => {
               decryptProgress={decryptProgress}
             />
             <Divider />
-            <Tree
+            <DirectoryTree
+              multiple
+              showIcon={false}
+              showLine
               className="file-tree default-margin"
-              showLine={true}
               defaultExpandAll={true}
-              switcherIcon={<DownOutlined />}
-              onSelect={(selectedKeys, info) => {
-                if (info.node.children && info.node.children.length !== 0) {
-                  return; // folder
-                }
-
-                //{utils.fileSize(item.size)
-
-                const key: string = `${info.node.key}`;
-                const ff = loadedFiles.find(
-                  (f) => f.uuid === key.split('_')[0]
-                );
-                if (ff) {
-                  message.loading(`Download and decryption started`);
-                  downloadFile(ff);
-                }
-              }}
+              switcherIcon={<DownOutlined className="directory-switcher" />}
               treeData={renderTree(loadedFiles)}
+              selectable={false}
+              titleRender={(node) => (
+                <DirectoryTreeLine
+                  disabled={false}
+                  isLeaf={node.isLeaf}
+                  name={node.title.toString()}
+                  onDownloadClick={() => {
+                    if (!node.isLeaf) {
+                      return;
+                    }
+                    const key: string = `${node.key}`;
+                    const toDownload = loadedFiles.find(
+                      (f) => f.uuid === key.split('_')[0]
+                    );
+                    if (toDownload) {
+                      message.loading(`Download and decryption started`);
+                      downloadFile(toDownload);
+                    }
+                  }}
+                />
+              )}
             />
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
