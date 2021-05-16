@@ -28,6 +28,7 @@
 
 .directory-tree-line__btn {
   margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 .directory-tree-line__btn--download {
