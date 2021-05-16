@@ -16,3 +16,14 @@ SkyTransfer is still in development. Please report any issues, new ideas or bugs
 
 ### Credits
 Some of the icons we use are from [Flaticon](https://www.flaticon.com/) by [Freepik](https://www.freepik.com).
+
+---
+### Support Us
+We are constantly shipping new features. We don't want to steal your time but if you really want, you can support Us with a donation. It's your way of returning the love we invested in developing SkyTransfer. We would appreciate it very much.
+
+#### Siacoin wallet address
+    a34ac5a2aa1d5174b1a9289584ab4cdb5d2f99fa24de4a86d592fb02b2f81b754ff97af0e6e4
+    
+#### Buy Us a coffee
+
+<a href="https://www.buymeacoffee.com/skytransfer" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
