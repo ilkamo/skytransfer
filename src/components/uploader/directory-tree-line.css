@@ -16,7 +16,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: auto;
+  max-width: 100px;
 }
 
 
@@ -30,7 +30,6 @@
   }
   .directory-tree-line:hover .directory-tree-line__buttons {
     visibility: visible;
-    float: none;
   }
 }
 
