@@ -1,7 +1,7 @@
 import { Button } from 'antd';
 import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 
-import { isMobile } from 'react-device-detect';
+import { isDesktop } from 'react-device-detect';
 
 import './directory-tree-line.css';
 
@@ -23,16 +23,16 @@ export const DirectoryTreeLine = ({
   if (isLeaf) {
     return (
       <div className="directory-tree-line">
-        <span className="directory-tree-line__filename">{name}</span>
+        <span className="directory-tree-line__nodename">{name}</span>
         <div className="directory-tree-line__buttons">
           <Button
             icon={<DownloadOutlined />}
-            className="directory-tree-line__btn download"
+            className="directory-tree-line__btn directory-tree-line__btn--download"
             onClick={onDownloadClick}
             size="small"
             disabled={disabled}
           >
-            {isMobile ? '' : 'Download'}
+            {isDesktop ? 'Download' : ''}
           </Button>
           {onDeleteClick && (
             <Button
@@ -43,7 +43,7 @@ export const DirectoryTreeLine = ({
               size="small"
               disabled={disabled}
             >
-              {isMobile ? '' : 'Delete'}
+              {isDesktop ? 'Delete' : ''}
             </Button>
           )}
         </div>
@@ -51,5 +51,5 @@ export const DirectoryTreeLine = ({
     );
   }
 
-  return <span>{name}</span>;
+  return <span className="directory-tree-line__nodename">{name}</span>;
 };

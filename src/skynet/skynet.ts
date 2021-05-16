@@ -127,7 +127,6 @@ export const storeUserSession = async (
           newSession,
         }
       );
-      
       await contentRecord.recordNewContent({
         skylink: dataLink,
         metadata: {
