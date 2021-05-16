@@ -33,7 +33,13 @@ const SupportUs = () => {
       </p>
       <Divider>Buy Us a coffee</Divider>
       <p style={{ textAlign: 'center' }}>
-      <a href="https://www.buymeacoffee.com/skytransfer" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style={{width: 217, height: 60}} /></a>
+        <a href="https://www.buymeacoffee.com/skytransfer" target="_blank" rel="noreferrer">
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me A Coffee"
+            style={{ width: 217, height: 60 }}
+          />
+        </a>
       </p>
       <br />
       <Divider>Siacoin wallet address</Divider>
