@@ -31,8 +31,22 @@ const SupportUs = () => {
         your way of returning the love we invested in developing SkyTransfer. We
         would appreciate it very much.
       </p>
+      <Divider>Buy Us a coffee</Divider>
+      <p style={{ textAlign: 'center' }}>
+        <a
+          href="https://www.buymeacoffee.com/skytransfer"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            alt="Buy Me A Coffee"
+            style={{ width: 217, height: 60 }}
+          />
+        </a>
+      </p>
       <br />
-      <Divider>SkyTransfer Siacoin wallet address</Divider>
+      <Divider>Siacoin wallet address</Divider>
       <pre style={{ textAlign: 'center', fontWeight: 'bold' }}>
         a34ac5a2aa1d5174b1a9289584ab4cdb5d2f99fa24de4a86d592fb02b2f81b754ff97af0e6e4
       </pre>
