@@ -13,6 +13,13 @@ import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import FibonacciWorker from 'worker-loader!./fibonacci.worker';
+// Import the worker type directly.
+import { FibonacciWorkerType } from './fibonacci.worker';
+import { wrap } from 'comlink';
+
 const { Content, Footer } = Layout;
 
 export interface State {
@@ -28,6 +35,17 @@ const ShareModalHeader = (
 );
 
 const App = () => {
+  (async () => {
+    try {
+      const worker = new FibonacciWorker();
+      const fibonacci = wrap<FibonacciWorkerType>(worker);
+      const result = await fibonacci(10);
+      console.log(result);
+    } catch (e) {
+      // Deal with the fact the chain failed
+    }
+  })();
+
   const [state, setState] = useState<State>({ shareModalVisible: false });
 
   return (
