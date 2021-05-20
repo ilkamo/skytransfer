@@ -1592,15 +1592,6 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@skynetlabs/content-record-library@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@skynetlabs/content-record-library/-/content-record-library-0.5.0.tgz#c2be904dd5b4c548d76ceffac5b06cb294aa7ce1"
-  integrity sha512-+yNM75FHFFCrbfhw45yMG+VH05LElI78npju4jwcnr8zGQKkaE+jCCsD4UOH9C7yZN0cLUV9Mc3hfg48wagXcg==
-  dependencies:
-    post-me "^0.4.5"
-    skynet-js "^4.0.5-beta"
-    skynet-mysky-utils "^0.1.2"
-
 "@surma/rollup-plugin-off-main-thread@^1.1.1":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@surma/rollup-plugin-off-main-thread/-/rollup-plugin-off-main-thread-1.4.2.tgz#e6786b6af5799f82f7ab3a82e53f6182d2b91a58"
@@ -5205,6 +5196,15 @@ fb-watchman@^2.0.0:
   integrity sha512-DkPJKQeY6kKwmuMretBhr7G6Vodr7bFwDYTXIkfG1gjvNpaxBTQV3PbXg6bR1c1UP4jPOX0jHUbbHANL9vRjVg==
   dependencies:
     bser "2.1.1"
+
+feed-dac-library@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/feed-dac-library/-/feed-dac-library-0.2.2.tgz#9f3b0721537c658d4133b244af8495a64b449c3b"
+  integrity sha512-kPRSNML0uIJy8uB61VbXoUsdRIEDQwbel3Jrxukr5MmGkrf+M80rQ7gG1HqYtfNfuogfXFpOPA6ZcPieRPeqyw==
+  dependencies:
+    post-me "^0.4.5"
+    skynet-js "^4.0.3-beta"
+    skynet-mysky-utils "^0.1.2"
 
 figgy-pudding@^3.5.1:
   version "3.5.2"
@@ -10753,11 +10753,12 @@ sjcl@^1.0.8:
   resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.8.tgz#f2ec8d7dc1f0f21b069b8914a41a8f236b0e252a"
   integrity sha512-LzIjEQ0S0DpIgnxMEayM1rq9aGwGRG4OnZhCdjx7glTaJtf4zRfpg87ImfjSJjoW9vKpagd82McDOwbRT5kQKQ==
 
-skynet-js@^4.0.5-beta:
-  version "4.0.5-beta"
-  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.0.5-beta.tgz#954c18efbfdb7f6ce10fed2675403ad0bb912e17"
-  integrity sha512-m6rNvrCEjAUroIybwRAffOXI/VCHO38JLA10jEBl9WxZuNqIb6hPDpQK7BLw1hcF79Va3hzeGXsVs1ChC3Z/eA==
+skynet-js@^4.0.3-beta:
+  version "4.0.3-beta"
+  resolved "https://registry.yarnpkg.com/skynet-js/-/skynet-js-4.0.3-beta.tgz#04b386646d01fe95e88a8b9fd37238bc46c00c15"
+  integrity sha512-ZEvPgHE04ttIU+xT/66PI8jd3o3sM4fke8ZWgllkI4krRUQIgjOV4WKJ2z2Y76mO+qybug94W1BHpDD/L8v2Rw==
   dependencies:
+    "@babel/runtime" "^7.11.2"
     axios "^0.21.0"
     base32-encode "^1.1.1"
     base64-js "^1.3.1"
@@ -10768,7 +10769,7 @@ skynet-js@^4.0.5-beta:
     post-me "^0.4.5"
     randombytes "^2.1.0"
     sjcl "^1.0.8"
-    skynet-mysky-utils "^0.2.2"
+    skynet-mysky-utils "^0.2.0"
     tweetnacl "^1.0.3"
     url-join "^4.0.1"
     url-parse "1.4.7"
@@ -10797,6 +10798,13 @@ skynet-mysky-utils@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/skynet-mysky-utils/-/skynet-mysky-utils-0.1.2.tgz#1ca5e9cf69a71ac67dd805c90371fd71f622adc1"
   integrity sha512-ehPGwIIMldrG6S4ynkvElcqMeSrT85ignto1z/Nx3yFcHiiNDRLq5y6ZGXdSSNw2XfVSi8e66wjbL0qlNNCZog==
+  dependencies:
+    post-me "^0.4.5"
+
+skynet-mysky-utils@^0.2.0:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/skynet-mysky-utils/-/skynet-mysky-utils-0.2.3.tgz#5007cf8f7599b665ccf016003b37a4ed0fb19abf"
+  integrity sha512-wRrAASn4haux2fu+2pJLv+uV/TGbBecXT1jaqD3/IQgqbEwZUpDNJJrYnYAfp/0cY5Xmuc2ZX90NNr34neAcWg==
   dependencies:
     post-me "^0.4.5"
 
