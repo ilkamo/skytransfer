@@ -121,7 +121,7 @@ export const storeUserSession = async (
       await feedDAC.createPost({
         link: newSession.link,
         linkTitle: newSession.name,
-        text: `I published a new content on Skytransfer: ${newSession.name}`,
+        text: `I published a new content on SkyTransfer: ${newSession.name}`,
       });
     } catch (error) {
       throw Error('content record error: ' + error.message);
