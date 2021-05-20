@@ -4,7 +4,7 @@ import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
 import { getEndpointInDefaultPortal, getMySkyDomain } from '../portals';
-import { FeedDAC } from "feed-dac-library";
+import { FeedDAC } from 'feed-dac-library';
 
 const skynetClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -118,10 +118,10 @@ export const storeUserSession = async (
     sessions.push(newSession);
 
     try {
-      const res = await feedDAC.createPost({
+      await feedDAC.createPost({
         link: newSession.link,
         linkTitle: newSession.name,
-        text: `I published a new content on Skytransfer: ${newSession.name}`
+        text: `I published a new content on Skytransfer: ${newSession.name}`,
       });
     } catch (error) {
       throw Error('content record error: ' + error.message);
