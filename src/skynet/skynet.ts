@@ -118,6 +118,8 @@ export const storeUserSession = async (
     sessions.push(newSession);
 
     try {
+      await mySky.setJSON(sessionsPath, { sessions });
+
       await feedDAC.createPost({
         link: newSession.link,
         linkTitle: newSession.name,
