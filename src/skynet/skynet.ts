@@ -65,7 +65,7 @@ export const getEncryptedFiles = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
   const client = new SkynetClient(getMySkyDomain());
-  const mySky = await client.loadMySky(dataDomain, { debug: true });
+  const mySky = await client.loadMySky(dataDomain);
 
   // @ts-ignore
   await mySky.loadDacs(feedDAC);
