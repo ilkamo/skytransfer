@@ -1,17 +1,17 @@
-import { ContentRecordDAC } from '@skynetlabs/content-record-library';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
 import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
 import { getEndpointInDefaultPortal, getMySkyDomain } from '../portals';
+import { FeedDAC } from 'feed-dac-library';
 
 const skynetClient = new SkynetClient(getEndpointInDefaultPortal());
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';
 
-const contentRecord = new ContentRecordDAC();
+const feedDAC = new FeedDAC();
 
 export const storeEncryptedFiles = async (
   privateKey: string,
@@ -68,7 +68,7 @@ export const mySkyLogin = async (): Promise<MySky> => {
   const mySky = await client.loadMySky(dataDomain, { debug: true });
 
   // @ts-ignore
-  await mySky.loadDacs(contentRecord);
+  await mySky.loadDacs(feedDAC);
 
   const loggedIn = await mySky.checkLogin();
   if (!loggedIn) {
@@ -117,39 +117,12 @@ export const storeUserSession = async (
   ) {
     sessions.push(newSession);
 
-    const { dataLink } = await mySky.setJSON(sessionsPath, { sessions });
-    const sessionsDataLink = dataLink;
-
     try {
-      const { dataLink } = await mySky.setJSON(
-        `skytransfer.hns/${newSession.id}.json`,
-        {
-          newSession,
-        }
-      );
-      await contentRecord.recordNewContent({
-        skylink: dataLink,
-        metadata: {
-          action: 'SkyTransferPublished',
-          session: newSession,
-        },
+      await feedDAC.createPost({
+        link: newSession.link,
+        linkTitle: newSession.name,
+        text: `I published a new content on SkyTransfer: ${newSession.name}`,
       });
-
-      for (const file of files) {
-        try {
-          await contentRecord.recordInteraction({
-            skylink: sessionsDataLink,
-            metadata: {
-              action: 'SkyTransferFilePublished',
-              session: newSession,
-              filename: file.fileName,
-            },
-          });
-        } catch (error) {
-          console.log('Something wrong with recordInteraction');
-          console.error(error);
-        }
-      }
     } catch (error) {
       throw Error('content record error: ' + error.message);
     }
