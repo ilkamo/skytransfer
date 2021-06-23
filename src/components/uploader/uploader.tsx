@@ -34,7 +34,6 @@ import AESFileEncrypt from '../../crypto/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import {
   DEFAULT_ENCRYPTION_TYPE,
-  MAX_AXIOS_RETRIES,
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
   SKYDB_SYNC_FACTOR,
@@ -42,16 +41,16 @@ import {
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
-
 import SessionManager from '../../session/session-manager';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-import { getEncryptedFiles, storeEncryptedFiles } from '../../skynet/skynet';
+import {
+  getEncryptedFiles,
+  storeEncryptedFiles,
+  uploadFile,
+} from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
-import { getEndpointInDefaultPortal, getUploadEndpoint } from '../../portals';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 
 const { DirectoryTree } = Tree;
@@ -203,14 +202,23 @@ const Uploader = () => {
       deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
 
-    const file: File = await decrypt.decrypt(
-      (completed, eProgress) => {
-        setDecryptProgress(eProgress);
-      },
-      (completed, dProgress) => {
-        setDownloadProgress(dProgress);
-      }
-    );
+    let file: File;
+    try {
+      file = await decrypt.decrypt(
+        (completed, eProgress) => {
+          setDecryptProgress(eProgress);
+        },
+        (completed, dProgress) => {
+          setDownloadProgress(dProgress);
+        }
+      );
+    } catch (error) {
+      message.error(error.message);
+    }
+
+    if (!file) {
+      return;
+    }
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -244,49 +252,21 @@ const Uploader = () => {
     });
   };
 
-  const uploadFile = async (options) => {
+  const queueAndUploadFile = async (options) => {
     const { onSuccess, onError, file, onProgress } = options;
     const encryptedFile = await queueParallelEncryption(file);
-
-    const formData = new FormData();
-    formData.append('file', encryptedFile);
-
-    const config = {
-      headers: { 'content-type': 'multipart/form-data' },
-      onUploadProgress: (e) => {
-        onProgress({ percent: (e.loaded / e.total) * 100 }, encryptedFile);
-      },
-      withCredentials: true,
-    };
-
-    axiosRetry(axios, {
-      retries: MAX_AXIOS_RETRIES,
-      retryCondition: (_e) => true, // retry no matter what
-    });
-
-    axios
-      .post(getUploadEndpoint(), formData, config)
-      .then((res) => {
-        onSuccess({
-          data: res.data,
-          encryptedFileSize: encryptedFile.size,
-        });
-      })
-      .catch((err) => {
-        onError(err);
-      });
+    await uploadFile(encryptedFile, onProgress, onSuccess, onError);
   };
 
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: getEndpointInDefaultPortal(),
     fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {
       showRemoveIcon: true,
     },
-    customRequest: uploadFile,
+    customRequest: queueAndUploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
       setShowUploadCompletedModal(false);

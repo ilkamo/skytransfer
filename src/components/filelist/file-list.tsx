@@ -70,14 +70,23 @@ const FileList = () => {
 
   const downloadFile = async (encryptedFile: EncryptedFileReference) => {
     const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
-    const file: File = await decrypt.decrypt(
-      (completed, eProgress) => {
-        setDecryptProgress(eProgress);
-      },
-      (completed, dProgress) => {
-        setDownloadProgress(dProgress);
-      }
-    );
+    let file: File;
+    try {
+      file = await decrypt.decrypt(
+        (completed, eProgress) => {
+          setDecryptProgress(eProgress);
+        },
+        (completed, dProgress) => {
+          setDownloadProgress(dProgress);
+        }
+      );
+    } catch (error) {
+      message.error(error.message);
+    }
+
+    if (!file) {
+      return;
+    }
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);

@@ -1,17 +1,83 @@
+import {
+  getEndpointInCurrentPortal,
+  getEndpointInDefaultPortal,
+} from './../portals';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME } from '../config';
+import { ENCRYPTED_FILES_SKYDB_KEY_NAME, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
-import { getEndpointInDefaultPortal, getMySkyDomain } from '../portals';
+import { getMySkyDomain } from '../portals';
 import { FeedDAC } from 'feed-dac-library';
+import axiosRetry from 'axios-retry';
+import axios from 'axios';
 
-const skynetClient = new SkynetClient(getEndpointInDefaultPortal());
+const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
+
+let endpointInCurrentPortal = getEndpointInCurrentPortal();
+let skynetFileClient = new SkynetClient(getEndpointInCurrentPortal());
+
+const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
+  if (endpointInCurrentPortal !== getEndpointInCurrentPortal()) {
+    endpointInCurrentPortal = getEndpointInCurrentPortal();
+    skynetFileClient = new SkynetClient(endpointInCurrentPortal);
+  }
+
+  return skynetFileClient;
+};
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';
 
 const feedDAC = new FeedDAC();
+
+export const uploadFile = async (
+  encryptedFile: File,
+  onProgress,
+  onSuccess,
+  onError
+) => {
+  try {
+    const fileSkylink = await getSkynetFileClientBasedOnPortal().uploadFile(
+      encryptedFile,
+      {
+        onUploadProgress: (p) => {
+          onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
+        },
+      }
+    );
+    onSuccess({
+      data: fileSkylink,
+      encryptedFileSize: encryptedFile.size,
+    });
+  } catch (e) {
+    onError(e);
+  }
+};
+
+export const downloadFile = async (
+  skylink: string,
+  onProgress,
+  bytesRange?: string
+): Promise<any> => {
+  const url = await getSkynetFileClientBasedOnPortal().getSkylinkUrl(skylink);
+
+  axiosRetry(axios, {
+    retries: MAX_AXIOS_RETRIES,
+    retryCondition: (_e) => true, // retry no matter what
+  });
+
+  return axios({
+    method: 'get',
+    url: url,
+    headers: {
+      Range: bytesRange,
+    },
+    responseType: 'text',
+    onDownloadProgress: onProgress,
+    withCredentials: true,
+  });
+};
 
 export const storeEncryptedFiles = async (
   privateKey: string,
@@ -23,7 +89,7 @@ export const storeEncryptedFiles = async (
     const encryptedFilesAsEncryptedString = jsonCrypto.encrypt(encryptedFiles);
 
     try {
-      await skynetClient.db.setJSON(
+      await skynetSkyDBClient.db.setJSON(
         privateKey,
         ENCRYPTED_FILES_SKYDB_KEY_NAME,
         {
@@ -46,7 +112,7 @@ export const getEncryptedFiles = async (
     let files: EncryptedFileReference[] = [];
 
     try {
-      const { data } = await skynetClient.db.getJSON(
+      const { data } = await skynetSkyDBClient.db.getJSON(
         publicKey,
         ENCRYPTED_FILES_SKYDB_KEY_NAME
       );
