@@ -55,12 +55,7 @@ export const downloadFile = async (
       Range: bytesRange,
     },
     responseType: 'text',
-    onDownloadProgress: (progressEvent) => {
-      const progress = Math.round(
-        (progressEvent.loaded / progressEvent.total) * 100
-      );
-      onProgress(false, progress);
-    },
+    onDownloadProgress: onProgress,
     withCredentials: true,
   });
 };
