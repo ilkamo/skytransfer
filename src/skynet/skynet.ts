@@ -25,7 +25,7 @@ export const uploadFile = async (
     const fileSkylink = await skynetClient.uploadFile(encryptedFile, {
       onUploadProgress: (p) => {
         onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
-      }
+      },
     });
     onSuccess({
       data: fileSkylink,
@@ -39,11 +39,9 @@ export const uploadFile = async (
 export const downloadFile = async (
   skylink: string,
   onProgress,
-  bytesRange?:string,
+  bytesRange?: string
 ): Promise<any> => {
-  const url = await skynetClient.getSkylinkUrl(
-    skylink
-  );
+  const url = await skynetClient.getSkylinkUrl(skylink);
 
   axiosRetry(axios, {
     retries: MAX_AXIOS_RETRIES,

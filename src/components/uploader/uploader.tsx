@@ -44,7 +44,11 @@ import { ActivityBars } from './activity-bar';
 import SessionManager from '../../session/session-manager';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-import { getEncryptedFiles, storeEncryptedFiles, uploadFile } from '../../skynet/skynet';
+import {
+  getEncryptedFiles,
+  storeEncryptedFiles,
+  uploadFile,
+} from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { getEndpointInDefaultPortal } from '../../portals';

@@ -54,12 +54,16 @@ export default class AESFileDecrypt implements FileDecrypt {
       const bytesRange = `bytes=${rangeStart}-${rangeEnd}`;
 
       try {
-        const response = await downloadFile(this.encryptedFile.skylink, (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded / progressEvent.total) * 100
-          );
-          onFileDownloadProgress(false, progress);
-        }, bytesRange);
+        const response = await downloadFile(
+          this.encryptedFile.skylink,
+          (progressEvent) => {
+            const progress = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
+            onFileDownloadProgress(false, progress);
+          },
+          bytesRange
+        );
 
         const progress = Math.floor(((i + 1) / totalChunks) * 100);
         onDecryptProgress(false, progress);
