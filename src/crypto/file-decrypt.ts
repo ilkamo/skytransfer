@@ -73,7 +73,9 @@ export default class AESFileDecrypt implements FileDecrypt {
         this.parts.push(chunkPart);
       } catch (error) {
         onFileDownloadProgress(true, 0);
-        throw new Error(`could not download the file because of: ${error.message}`);
+        throw new Error(
+          `could not download the file because of: ${error.message}`
+        );
       }
     }
 

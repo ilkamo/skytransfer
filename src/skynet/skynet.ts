@@ -1,4 +1,7 @@
-import { getEndpointInCurrentPortal, getEndpointInDefaultPortal } from './../portals';
+import {
+  getEndpointInCurrentPortal,
+  getEndpointInDefaultPortal,
+} from './../portals';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
 import { ENCRYPTED_FILES_SKYDB_KEY_NAME, MAX_AXIOS_RETRIES } from '../config';
@@ -21,7 +24,7 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
   }
 
   return skynetFileClient;
-}
+};
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';
@@ -35,11 +38,14 @@ export const uploadFile = async (
   onError
 ) => {
   try {
-    const fileSkylink = await getSkynetFileClientBasedOnPortal().uploadFile(encryptedFile, {
-      onUploadProgress: (p) => {
-        onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
-      },
-    });
+    const fileSkylink = await getSkynetFileClientBasedOnPortal().uploadFile(
+      encryptedFile,
+      {
+        onUploadProgress: (p) => {
+          onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
+        },
+      }
+    );
     onSuccess({
       data: fileSkylink,
       encryptedFileSize: encryptedFile.size,
