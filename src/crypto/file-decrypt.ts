@@ -72,8 +72,8 @@ export default class AESFileDecrypt implements FileDecrypt {
         const chunkPart = await this.decryptBlob(data);
         this.parts.push(chunkPart);
       } catch (error) {
-        console.error(error);
         onFileDownloadProgress(true, 0);
+        throw new Error(`could not download the file because of: ${error.message}`);
       }
     }
 

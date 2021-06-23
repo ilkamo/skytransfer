@@ -51,7 +51,6 @@ import {
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
-import { getEndpointInDefaultPortal } from '../../portals';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 
 const { DirectoryTree } = Tree;
@@ -203,14 +202,23 @@ const Uploader = () => {
       deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
 
-    const file: File = await decrypt.decrypt(
-      (completed, eProgress) => {
-        setDecryptProgress(eProgress);
-      },
-      (completed, dProgress) => {
-        setDownloadProgress(dProgress);
-      }
-    );
+    let file: File;
+    try {
+      file = await decrypt.decrypt(
+        (completed, eProgress) => {
+          setDecryptProgress(eProgress);
+        },
+        (completed, dProgress) => {
+          setDownloadProgress(dProgress);
+        }
+      );
+    } catch (error) {
+      message.error(error.message);
+    }
+
+    if (!file) {
+      return;
+    }
 
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveBlob(file, encryptedFile.fileName);
@@ -253,7 +261,6 @@ const Uploader = () => {
   const draggerConfig = {
     name: 'file',
     multiple: true,
-    action: getEndpointInDefaultPortal(),
     fileList: fileListToUpload,
     directory: !isMobile,
     showUploadList: {
