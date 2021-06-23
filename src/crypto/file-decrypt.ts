@@ -3,10 +3,8 @@ import CryptoJS from 'crypto-js';
 import { EncryptedFileReference } from '../models/encryption';
 import { FileDecrypt } from './crypto';
 import { getEndpointInCurrentPortal } from '../portals';
-import { MAX_AXIOS_RETRIES } from '../config';
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
 import { ChunkResolver } from './chunk-resolver';
+import { downloadFile } from '../skynet/skynet';
 
 export default class AESFileDecrypt implements FileDecrypt {
   private encryptedFile: EncryptedFileReference;
@@ -37,15 +35,6 @@ export default class AESFileDecrypt implements FileDecrypt {
       percentage: number
     ) => void = () => {}
   ): Promise<File> {
-    const url = await this.skynetClient.getSkylinkUrl(
-      this.encryptedFile.skylink
-    );
-
-    axiosRetry(axios, {
-      retries: MAX_AXIOS_RETRIES,
-      retryCondition: (_e) => true, // retry no matter what
-    });
-
     const totalChunks = Math.ceil(
       this.encryptedFile.encryptedSize / this.decryptChunkSize
     );
@@ -65,21 +54,12 @@ export default class AESFileDecrypt implements FileDecrypt {
       const bytesRange = `bytes=${rangeStart}-${rangeEnd}`;
 
       try {
-        const response = await axios({
-          method: 'get',
-          url: url,
-          headers: {
-            Range: bytesRange,
-          },
-          responseType: 'text',
-          onDownloadProgress: (progressEvent) => {
-            const progress = Math.round(
-              (progressEvent.loaded / progressEvent.total) * 100
-            );
-            onFileDownloadProgress(false, progress);
-          },
-          withCredentials: true,
-        });
+        const response = await downloadFile(this.encryptedFile.skylink, (progressEvent) => {
+          const progress = Math.round(
+            (progressEvent.loaded / progressEvent.total) * 100
+          );
+          onFileDownloadProgress(false, progress);
+        }, bytesRange);
 
         const progress = Math.floor(((i + 1) / totalChunks) * 100);
         onDecryptProgress(false, progress);
