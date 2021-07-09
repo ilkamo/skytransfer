@@ -15,4 +15,5 @@ export interface EncryptedFileReference {
   relativePath: string;
   size: number;
   encryptedSize: number;
+  updatedAt?: number;
 }

@@ -310,6 +310,7 @@ const Uploader = () => {
             relativePath: relativePath,
             size: info.file.size,
             encryptedSize: info.file.response.encryptedFileSize,
+            updatedAt: Date.now(),
           };
 
           message.success(`${info.file.name} file uploaded successfully.`);
@@ -344,6 +345,10 @@ const Uploader = () => {
   const loaderIcon = (
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
+
+  const getFileBy = (key: string): EncryptedFileReference => {
+    return uploadedEncryptedFiles.find((f) => f.uuid === key.split('_')[0]);
+  };
 
   const isLoading = uploading || loading;
   return (
@@ -427,35 +432,37 @@ const Uploader = () => {
             switcherIcon={<DownOutlined className="directory-switcher" />}
             treeData={renderTree(uploadedEncryptedFiles)}
             selectable={false}
-            titleRender={(node) => (
-              <DirectoryTreeLine
-                disabled={isLoading}
-                isLeaf={node.isLeaf}
-                name={node.title.toString()}
-                onDownloadClick={() => {
-                  if (!node.isLeaf) {
-                    return;
-                  }
-                  const key: string = `${node.key}`;
-                  const toDownload = uploadedEncryptedFiles.find(
-                    (f) => f.uuid === key.split('_')[0]
-                  );
-                  if (toDownload) {
-                    message.loading(`Download and decryption started`);
-                    downloadFile(toDownload);
-                  }
-                }}
-                onDeleteClick={() => {
-                  deleteConfirmModal(node.title.toString(), () => {
-                    const key: string = `${node.key}`;
-                    setUploadedEncryptedFiles((prev) =>
-                      prev.filter((f) => f.uuid !== key.split('_')[0])
-                    );
-                    setToRemoveFromSkyDBCount((prev) => prev + 1);
-                  });
-                }}
-              />
-            )}
+            titleRender={(node) => {
+              const key: string = `${node.key}`;
+              const encryptedFileReference = getFileBy(key);
+              return encryptedFileReference ? (
+                <DirectoryTreeLine
+                  disabled={isLoading}
+                  isLeaf={node.isLeaf}
+                  name={node.title.toString()}
+                  updatedAt={encryptedFileReference.updatedAt}
+                  onDownloadClick={() => {
+                    if (!node.isLeaf) {
+                      return;
+                    }
+                    if (encryptedFileReference) {
+                      message.loading(`Download and decryption started`);
+                      downloadFile(encryptedFileReference);
+                    }
+                  }}
+                  onDeleteClick={() => {
+                    deleteConfirmModal(node.title.toString(), () => {
+                      setUploadedEncryptedFiles((prev) =>
+                        prev.filter((f) => f.uuid !== key.split('_')[0])
+                      );
+                      setToRemoveFromSkyDBCount((prev) => prev + 1);
+                    });
+                  }}
+                />
+              ) : (
+                ''
+              );
+            }}
           />
         </div>
       ) : (
