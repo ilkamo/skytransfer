@@ -1,4 +1,4 @@
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import { isDesktop } from 'react-device-detect';
@@ -9,6 +9,7 @@ type DirectoryTreeLineProps = {
   disabled: boolean;
   isLeaf: boolean;
   name: string;
+  updatedAt: number;
   onDownloadClick: () => void;
   onDeleteClick?: () => void;
 };
@@ -17,13 +18,26 @@ export const DirectoryTreeLine = ({
   disabled,
   isLeaf,
   name,
+  updatedAt,
   onDownloadClick,
   onDeleteClick,
 }: DirectoryTreeLineProps) => {
   if (isLeaf) {
+    let updatedAtDate: Date;
+    if (updatedAt) {
+      updatedAtDate = new Date(updatedAt);
+    }
     return (
       <div className="directory-tree-line">
-        <span className="directory-tree-line__nodename">{name}</span>
+        <Tooltip
+          title={
+            updatedAtDate
+              ? `Last update: ${updatedAtDate.toLocaleDateString()} at ${updatedAtDate.toLocaleTimeString()}`
+              : ''
+          }
+        >
+          <span className="directory-tree-line__nodename">{name}</span>
+        </Tooltip>
         <div className="directory-tree-line__buttons">
           <Button
             icon={<DownloadOutlined />}

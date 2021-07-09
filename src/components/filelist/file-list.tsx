@@ -100,6 +100,10 @@ const FileList = () => {
     }
   };
 
+  const getFileBy = (key: string): EncryptedFileReference => {
+    return loadedFiles.find((f) => f.uuid === key.split('_')[0]);
+  };
+
   return (
     <>
       <Divider orientation="left">Shared files</Divider>
@@ -120,26 +124,29 @@ const FileList = () => {
               switcherIcon={<DownOutlined className="directory-switcher" />}
               treeData={renderTree(loadedFiles)}
               selectable={false}
-              titleRender={(node) => (
-                <DirectoryTreeLine
-                  disabled={false}
-                  isLeaf={node.isLeaf}
-                  name={node.title.toString()}
-                  onDownloadClick={() => {
-                    if (!node.isLeaf) {
-                      return;
-                    }
-                    const key: string = `${node.key}`;
-                    const toDownload = loadedFiles.find(
-                      (f) => f.uuid === key.split('_')[0]
-                    );
-                    if (toDownload) {
-                      message.loading(`Download and decryption started`);
-                      downloadFile(toDownload);
-                    }
-                  }}
-                />
-              )}
+              titleRender={(node) => {
+                const key: string = `${node.key}`;
+                const encryptedFileReference = getFileBy(key);
+                return encryptedFileReference ? (
+                  <DirectoryTreeLine
+                    disabled={false}
+                    isLeaf={node.isLeaf}
+                    name={node.title.toString()}
+                    updatedAt={encryptedFileReference.updatedAt}
+                    onDownloadClick={() => {
+                      if (!node.isLeaf) {
+                        return;
+                      }
+                      if (encryptedFileReference) {
+                        message.loading(`Download and decryption started`);
+                        downloadFile(encryptedFileReference);
+                      }
+                    }}
+                  />
+                ) : (
+                  ''
+                );
+              }}
             />
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
