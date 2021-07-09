@@ -435,7 +435,7 @@ const Uploader = () => {
             titleRender={(node) => {
               const key: string = `${node.key}`;
               const encryptedFileReference = getFileBy(key);
-              return ( encryptedFileReference ?
+              return encryptedFileReference ? (
                 <DirectoryTreeLine
                   disabled={isLoading}
                   isLeaf={node.isLeaf}
@@ -458,7 +458,9 @@ const Uploader = () => {
                       setToRemoveFromSkyDBCount((prev) => prev + 1);
                     });
                   }}
-                /> : ''
+                />
+              ) : (
+                ''
               );
             }}
           />
