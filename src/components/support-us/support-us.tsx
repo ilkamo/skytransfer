@@ -36,12 +36,13 @@ const SupportUs = () => {
         SkyTransfer is an open source project and it is part of{' '}
         <a
           target="_blank"
-          href="https://gitcoin.co/grants/2998/skytransfer-free-open-source-decentralized-and-enc"
+          href="https://gitcoin.co/grants/2998/skytransfer-free-open-source-decentralized-and-enc" rel="noreferrer"
         >
           Gitcoin Grants
         </a>{' '}
-        to raise funds for the future development. Gitcoin's fund matching pool relies on the number of
-        donors a project has, so every gwei or dai counts!
+        to raise funds for the future development. Gitcoin's fund matching pool
+        relies on the number of donors a project has, so every gwei or dai
+        counts!
       </p>
       <Divider>Buy Us a coffee</Divider>
       <p style={{ textAlign: 'center' }}>
