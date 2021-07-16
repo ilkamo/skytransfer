@@ -52,6 +52,7 @@ import {
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
+import LibSodiumEncrypt from '../../crypto/penumbra/file-encrypt';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -240,7 +241,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(
+      const fe = new LibSodiumEncrypt(
         file,
         deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
       );
