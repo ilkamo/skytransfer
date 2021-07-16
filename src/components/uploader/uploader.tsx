@@ -30,7 +30,7 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../../crypto/file-encrypt';
+import PenumbraEncrypt from '../../crypto/penumbra/file-encrypt';
 import AESFileDecrypt from '../../crypto/file-decrypt';
 import {
   DEFAULT_ENCRYPTION_TYPE,
@@ -240,7 +240,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(
+      const fe = new PenumbraEncrypt(
         file,
         deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
       );

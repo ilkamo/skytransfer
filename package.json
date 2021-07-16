@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "@transcend-io/penumbra": "^5.0.5",
     "@types/uuid": "^8.3.0",
     "antd": "^4.16.6",
     "axios": "^0.21.1",
