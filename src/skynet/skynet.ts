@@ -8,7 +8,7 @@ import { ENCRYPTED_FILES_SKYDB_KEY_NAME, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { EncryptedFileReference } from '../models/encryption';
 import { getMySkyDomain } from '../portals';
-import { FeedDAC } from 'feed-dac-library';
+// import { FeedDAC } from 'feed-dac-library';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
 
@@ -29,7 +29,7 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';
 
-const feedDAC = new FeedDAC();
+// const feedDAC = new FeedDAC();
 
 export const uploadFile = async (
   encryptedFile: File,
@@ -186,11 +186,11 @@ export const storeUserSession = async (
     try {
       await mySky.setJSON(sessionsPath, { sessions });
 
-      await feedDAC.createPost({
-        link: newSession.link,
-        linkTitle: newSession.name,
-        text: `I published a new content on SkyTransfer: ${newSession.name}`,
-      });
+      // await feedDAC.createPost({
+      //   link: newSession.link,
+      //   linkTitle: newSession.name,
+      //   text: `I published a new content on SkyTransfer: ${newSession.name}`,
+      // });
     } catch (error) {
       throw Error('content record error: ' + error.message);
     }
