@@ -20,7 +20,6 @@ import SessionManager from '../../session/session-manager';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ChangePortalIcon } from '../common/icons';
-import { HeaderNotification } from '../common/notification';
 
 const { Header } = Layout;
 const { SubMenu } = Menu;
@@ -70,92 +69,76 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
   };
 
   return (
-    <>
-      <HeaderNotification
-        content={
-          <>
-            Support SkyTransfer on{' '}
-            <a
-              target="_blank"
-              href="https://gitcoin.co/grants/2998/skytransfer-free-open-source-decentralized-and-enc" rel="noreferrer"
-            >
-              Gitcoin Grants
-            </a>
-            !
-          </>
-        }
-      />
-      <Header>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[getCurrentPortal().domain]}
+    <Header>
+      <Menu
+        theme="dark"
+        mode="horizontal"
+        selectedKeys={[getCurrentPortal().domain]}
+      >
+        <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
+          Share
+        </Menu.Item>
+        <Menu.Item
+          key="resume-draft"
+          onClick={() => {
+            history.push('/');
+          }}
+          disabled={!canResumeSession}
+          icon={<RedoOutlined />}
         >
-          <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
-            Share
-          </Menu.Item>
-          <Menu.Item
-            key="resume-draft"
-            onClick={() => {
+          Resume draft
+        </Menu.Item>
+        <Menu.Item
+          key="new-draft"
+          onClick={() => {
+            newDraftConfirmModal(() => {
+              SessionManager.destroySession();
               history.push('/');
-            }}
-            disabled={!canResumeSession}
-            icon={<RedoOutlined />}
-          >
-            Resume draft
-          </Menu.Item>
-          <Menu.Item
-            key="new-draft"
-            onClick={() => {
-              newDraftConfirmModal(() => {
-                SessionManager.destroySession();
-                history.push('/');
-                window.location.reload();
-              });
-            }}
-            icon={<DeleteOutlined />}
-          >
-            New draft
-          </Menu.Item>
-          <Menu.Item
-            key="publish"
-            onClick={() => {
-              history.push('/publish');
-            }}
-            disabled={!canPublishSession}
-            icon={<EyeOutlined />}
-          >
-            Publish (MySky)
-          </Menu.Item>
-          <Menu.Item
-            key="about-us"
-            onClick={() => {
-              history.push('/about');
-            }}
-            icon={<CopyOutlined />}
-          >
-            About
-          </Menu.Item>
-          <Menu.Item
-            key="support-us"
-            onClick={() => {
-              history.push('/support-us');
-            }}
-            icon={<HeartOutlined />}
-          >
-            Support Us
-          </Menu.Item>
-          <SubMenu
-            key="portals"
-            style={{ float: 'right' }}
-            title="Change Portal"
-            icon={<ChangePortalIcon />}
-          >
-            {portals}
-          </SubMenu>
-        </Menu>
-      </Header>
-    </>
+              window.location.reload();
+            });
+          }}
+          icon={<DeleteOutlined />}
+        >
+          New draft
+        </Menu.Item>
+        <Menu.Item
+          key="publish"
+          onClick={() => {
+            history.push('/publish');
+          }}
+          disabled={!canPublishSession}
+          icon={<EyeOutlined />}
+        >
+          Publish (MySky)
+        </Menu.Item>
+        <Menu.Item
+          key="about-us"
+          onClick={() => {
+            history.push('/about');
+          }}
+          icon={<CopyOutlined />}
+        >
+          About
+        </Menu.Item>
+        <Menu.Item
+          key="support-us"
+          onClick={() => {
+            history.push('/support-us');
+          }}
+          icon={<HeartOutlined />}
+        >
+          Support Us
+        </Menu.Item>
+        <SubMenu
+          key="portals"
+          style={{ float: 'right' }}
+          title="Change Portal"
+          icon={<ChangePortalIcon />}
+        >
+          {portals}
+        </SubMenu>
+      </Menu>
+    </Header>
   );
 };
 
