@@ -112,15 +112,13 @@ describe('Portals', () => {
     });
   });
 
-  describe('getMySkyDomain()', () => {
-    test('returns mySky domain', () => {
-      setLocation('https://siasky.net');
+  test('returns mySky domain', () => {
+    setLocation('https://siasky.net');
 
-      const expected = ''; // https://github.com/SkynetLabs/skynet-js/issues/89
-      const result = getMySkyDomain();
-      expect(result).toEqual(expected);
+    const expected = ''; // https://github.com/SkynetLabs/skynet-js/issues/89
+    const result = getMySkyDomain();
+    expect(result).toEqual(expected);
 
-      setLocation(realLocation);
-    });
+    setLocation(realLocation);
   });
 });
