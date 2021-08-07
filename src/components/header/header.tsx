@@ -77,7 +77,8 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
             Support SkyTransfer on{' '}
             <a
               target="_blank"
-              href="https://gitcoin.co/grants/2998/skytransfer-free-open-source-decentralized-and-enc" rel="noreferrer"
+              href="https://gitcoin.co/grants/2998/skytransfer-free-open-source-decentralized-and-enc"
+              rel="noreferrer"
             >
               Gitcoin Grants
             </a>

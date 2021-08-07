@@ -7,7 +7,7 @@ import {
   getEndpointInDefaultPortal,
   getEndpointInCurrentPortal,
   getPortals,
-  getMySkyDomain
+  getMySkyDomain,
 } from './portals';
 
 const realLocation = window.location.href;
@@ -17,7 +17,7 @@ const setLocation = (location: string) => {
   delete window.location;
   // @ts-ignore
   window.location = new URL(location);
-}
+};
 
 describe('Portals', () => {
   describe('getCurrentPortal()', () => {
@@ -25,9 +25,8 @@ describe('Portals', () => {
       const result = getCurrentPortal();
       const expected: Portal = {
         domain: 'siasky.net',
-        displayName: 'Siasky.net'
-      }
-
+        displayName: 'Siasky.net',
+      };
 
       expect(result).toEqual(expected);
     });
@@ -36,11 +35,10 @@ describe('Portals', () => {
       setPortalWithDomain('skydrain.net');
       const expected: Portal = {
         domain: 'skydrain.net',
-        displayName: 'Skydrain.net'
-      }
+        displayName: 'Skydrain.net',
+      };
 
       const result = getCurrentPortal();
-
 
       expect(result).toEqual(expected);
     });
@@ -51,23 +49,22 @@ describe('Portals', () => {
       const expected: Portal[] = [
         {
           domain: 'siasky.net',
-          displayName: 'Siasky.net'
+          displayName: 'Siasky.net',
         },
         {
           domain: 'skyportal.xyz',
-          displayName: 'SkyPortal.xyz'
+          displayName: 'SkyPortal.xyz',
         },
         {
           domain: 'skydrain.net',
-          displayName: 'Skydrain.net'
+          displayName: 'Skydrain.net',
         },
         {
           domain: 'siasky.dev',
-          displayName: 'Siasky.dev'
+          displayName: 'Siasky.dev',
         },
       ];
       const result = getPortals();
-
 
       expect(result).toEqual(expected);
     });

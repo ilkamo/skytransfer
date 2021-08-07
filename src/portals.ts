@@ -6,19 +6,19 @@ export interface Portal {
 const knownPortals: readonly Portal[] = [
   {
     domain: 'siasky.net', // https://github.com/SkynetLabs/skynet-js/issues/89
-    displayName: 'Siasky.net'
+    displayName: 'Siasky.net',
   },
   {
     domain: 'skyportal.xyz',
-    displayName: 'SkyPortal.xyz'
+    displayName: 'SkyPortal.xyz',
   },
   {
     domain: 'skydrain.net',
-    displayName: 'Skydrain.net'
+    displayName: 'Skydrain.net',
   },
   {
     domain: 'siasky.dev',
-    displayName: 'Siasky.dev'
+    displayName: 'Siasky.dev',
   },
 ];
 
@@ -33,7 +33,7 @@ export const getCurrentPortal = (): Portal => {
 
   for (let portal of knownPortals) {
     if (portal.domain === portalDomain) {
-      return portal
+      return portal;
     }
   }
 
@@ -42,30 +42,33 @@ export const getCurrentPortal = (): Portal => {
 
 export const getUploadEndpoint = (): string => {
   return `https://${getCurrentPortal().domain}/skynet/skyfile`;
-}
+};
 
 export const getEndpointInCurrentPortal = (): string => {
   return `https://${getCurrentPortal().domain}`;
-}
+};
 
 export const getEndpointInDefaultPortal = (): string => {
   return `https://${getDefaultPortal().domain}`;
-}
+};
 
 export const setPortalWithDomain = (domain: string) => {
-  const portal = knownPortals.find(x => x.domain === domain);
+  const portal = knownPortals.find((x) => x.domain === domain);
   if (portal !== undefined) {
     localStorage.setItem(LOCAL_STORAGE_KEY, portal.domain);
   }
-}
+};
 
 export const getMySkyDomain = (): string => {
   let mySkyPortal = '';
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  if (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) {
     mySkyPortal = `https://${getDefaultPortal().domain}`;
   }
 
   return mySkyPortal;
-}
+};
 
 export const getPortals = (): readonly Portal[] => knownPortals;
