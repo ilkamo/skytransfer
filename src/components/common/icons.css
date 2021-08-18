@@ -7,3 +7,8 @@
   width: 150px;
   height: 150px;
 }
+
+.homescreen svg {
+  width: 256px;
+  height: 28px;
+}

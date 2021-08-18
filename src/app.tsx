@@ -12,6 +12,7 @@ import Publish from './components/publish/publish';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
+import { HomescreenIcon } from './components/common/icons';
 
 const { Content, Footer } = Layout;
 
@@ -98,7 +99,15 @@ const App = () => {
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
           </a>
-          .
+          <div style={{ padding: '10px 0' }}>
+            <a
+              target="_blank"
+              href="https://homeapp.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
+              rel="noreferrer"
+            >
+              <HomescreenIcon />
+            </a>
+          </div>
         </Footer>
       </Layout>
     </Router>
