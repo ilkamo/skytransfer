@@ -1,3 +1,5 @@
+![Deploy to Skynet Badge](https://github.com/skynetlabs/skynet-webportal/actions/workflows/deploy-website.yml/badge.svg)
+
 # [SkyTransfer](http://skytransfer.hns.siasky.net/)
 
 ![skytransfer-logo](https://siasky.net/MAAORin8Q10kmdSN_BfmCmC2oOZ6wQmeobC2TSScKgAmiA)
