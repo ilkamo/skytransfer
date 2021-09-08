@@ -98,11 +98,11 @@ const App = () => {
           . Powered by{' '}
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
-          </a>
+          </a>.
           <div style={{ padding: '10px 0' }}>
             <a
               target="_blank"
-              href="https://homeapp.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
+              href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
               rel="noreferrer"
             >
               <HomescreenIcon />
