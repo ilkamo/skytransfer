@@ -11,24 +11,24 @@ import Icon from '@ant-design/icons';
 export const ChangePortalIcon = () => {
   const component = () => <ChangePortalSVG />;
   return <Icon component={component} />;
-}
+};
 
 export const SupportUsIcon = () => {
   const component = () => <SupportUsSVG />;
   return <Icon className="support" component={component} />;
-}
+};
 
 export const SmileIcon = () => {
   const component = () => <SmileSVG />;
   return <Icon className="friends" component={component} />;
-}
+};
 
 export const HomescreenIcon = () => {
   const component = () => <HomescreenSVG />;
   return <Icon className="homescreen" component={component} />;
-}
+};
 
 export const SkyTransferLogo = () => {
   const component = () => <SkyTransferSVG />;
   return <Icon className="skytransfer-logo" component={component} />;
-}
+};
