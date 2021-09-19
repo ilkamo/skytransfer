@@ -14,7 +14,6 @@ import {
   Buckets,
   DecryptedBucket,
 } from '../models/files/bucket';
-import { UserProfileDAC } from '@skynethub/userprofile-library';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -33,8 +32,6 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 const dataDomain = 'skytransfer.hns';
 const hiddenBucketsPath = 'skytransfer.hns/hiddenBuckets.json';
 // const hiddenBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
-
-const userProfileRecord = new UserProfileDAC();
 
 export const uploadFile = async (
   encryptedFile: File,
@@ -131,13 +128,9 @@ export const getDecryptedBucket = async (
   });
 };
 
-export const mySkyLogin = async (): Promise<any> => {
+export const mySkyLogin = async (): Promise<MySky> => {
   const client = new SkynetClient(getMySkyDomain());
   const mySky = await client.loadMySky(dataDomain, { debug: true });
-
-  // load DACs
-  // @ts-ignore
-  await mySky.loadDacs(userProfileRecord);
 
   const loggedIn = await mySky.checkLogin();
   if (!loggedIn) {
@@ -145,8 +138,6 @@ export const mySkyLogin = async (): Promise<any> => {
       throw Error('could not login');
     }
   }
-
-  debugger; // TODO: remove me!
 
   return mySky;
 };

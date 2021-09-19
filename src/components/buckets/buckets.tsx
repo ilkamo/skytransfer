@@ -10,11 +10,11 @@ import { Form, Input, Button, Divider, Spin } from 'antd';
 import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
+import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
-import {
-  BucketInfo,
-  Buckets as HiddenBuckets,
-} from '../../models/files/bucket';
+import { BucketInfo, Buckets as HiddenBuckets } from '../../models/files/bucket';
+
+import { UserProfileDAC } from '@skynethub/userprofile-library';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -23,7 +23,8 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
-let mySky: any = null;
+let mySky: MySky = null;
+const userProfileRecord = new UserProfileDAC();
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
@@ -38,9 +39,12 @@ const Buckets = () => {
       setUserID(await mySky.userID());
 
       // @ts-ignore
-      let userProfile = await mySky.getProfile(userID);
-      console.log(userProfile);
+      await mySky.loadDacs(userProfileRecord);
 
+      // @ts-ignore
+      let userProfile = await userProfileRecord.getProfile(userID);
+      console.log(userProfile);
+      
       debugger;
 
       setIsLogged(true);
