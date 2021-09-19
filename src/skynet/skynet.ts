@@ -30,8 +30,8 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 };
 
 const dataDomain = 'skytransfer.hns';
-const hiddenBucketsPath = 'skytransfer.hns/hiddenBuckets.json';
-// const hiddenBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
+const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
+// const privateBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
 
 export const uploadFile = async (
   encryptedFile: File,
@@ -145,7 +145,7 @@ export const mySkyLogin = async (): Promise<MySky> => {
 export async function getUserHiddenBuckets(mySky: MySky): Promise<Buckets> {
   let buckets: Buckets = {};
 
-  const { data } = await mySky.getJSONEncrypted(hiddenBucketsPath);
+  const { data } = await mySky.getJSONEncrypted(privateBucketsPath);
 
   if (data && 'buckets' in data) {
     buckets = data.buckets as Buckets;
@@ -166,7 +166,7 @@ export async function storeUserHiddenBucket(
 
   buckets[newBucket.uuid] = newBucket;
   try {
-    await mySky.setJSONEncrypted(hiddenBucketsPath, { buckets });
+    await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
   } catch (error) {
     throw Error('content record error: ' + error.message);
   }

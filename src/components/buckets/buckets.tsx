@@ -45,7 +45,9 @@ const Buckets = () => {
       await mySky.loadDacs(userProfileRecord);
 
       // @ts-ignore
-      let userProfile = await userProfileRecord.getProfile(await mySky.userID());
+      let userProfile = await userProfileRecord.getProfile(
+        await mySky.userID()
+      );
       console.log(userProfile);
 
       setIsLogged(true);
@@ -65,8 +67,8 @@ const Buckets = () => {
 
     const tempBucket: BucketInfo = {
       uuid: tempBucketID,
-      name: values.name,
-      description: values.description,
+      name: values.bucketName,
+      description: values.bucketDescription,
       created: Date.now(),
       key: SessionManager.sessionPrivateKey,
     };
