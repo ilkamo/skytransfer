@@ -13,7 +13,7 @@ module.exports = {
 		extensions: ['.tsx', '.ts', '.js'],
 		fallback: { crypto: require.resolve('crypto-js') },
 	},
-	devServer: { contentBase: path.join(__dirname, 'src') },
+	devServer: { static: path.join(__dirname, 'src') },
 	module: {
 		rules: [
 			{
