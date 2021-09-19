@@ -1,20 +1,20 @@
 import { useRef, useState } from 'react';
 import {
-  getUserPublicSessions,
+  getUserHiddenBuckets,
   mySkyLogin,
-  storeUserSession,
+  storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
 import { Form, Input, Button, Divider, Alert, Spin } from 'antd';
-import { PublicSession } from '../../models/session';
 
 import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
+import { BucketInfo, Buckets } from '../../models/files/bucket';
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -23,18 +23,25 @@ const useConstructor = (callBack = () => {}) => {
 
 let mySky: MySky = null;
 
-const Publish = () => {
-  const [userSessions, setUserSessions] = useState<PublicSession[]>([]);
+const Buckets = () => {
+  const [userHiddenBuckets, setUserHiddenBuckets] = useState<Buckets>({});
   const [isLogged, setIsLogged] = useState(false);
   const [userID, setUserID] = useState('');
   const [isloading, setIsLoading] = useState(true);
+  // const [profileName, setProfileName] = useState('');
 
   useConstructor(async () => {
     try {
       mySky = await mySkyLogin();
       setUserID(await mySky.userID());
+
+      // @ts-ignore
+      let userProfile = await mySky.getProfile(userID);
+      debugger;
+
       setIsLogged(true);
-      setUserSessions(await getUserPublicSessions(mySky));
+      setUserHiddenBuckets(await getUserHiddenBuckets(mySky));
+      debugger;
     } catch (error) {
       message.error(error.message);
       setIsLogged(false);
@@ -44,21 +51,27 @@ const Publish = () => {
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
-    const session: PublicSession = {
-      id: uuid(),
-      name: values.contentDescription,
-      link: values.sessionLink,
-      createdAt: new Date().getTime(),
+    const tempBucketID = uuid(); // TODO: use the real uuid
+
+    const tempBucket: BucketInfo = {
+      uuid: tempBucketID,
+        name: values.name,
+        description: values.description,
+        created: Date.now(),
+        key: SessionManager.sessionPrivateKey,
     };
 
-    setUserSessions((p) => [...p, session]);
+    setUserHiddenBuckets((p) => {
+      p[tempBucket.uuid] = tempBucket;
+      return p;
+    });
 
     try {
       if (mySky === null) {
         mySky = await mySkyLogin();
       }
 
-      await storeUserSession(mySky, session);
+      await storeUserHiddenBucket(mySky, tempBucket);
     } catch (error) {
       message.error(error.message);
     }
@@ -66,18 +79,11 @@ const Publish = () => {
     setIsLoading(false);
   };
 
-  const sessionLink = SessionManager.readOnlyLink;
-
   return (
     <>
-      <Alert
-        message="Warning - advanced functionality"
-        description="Make sure you know what you are doing! Once you publish your files, any user of Skynet will be able to discover and access them. Use with caution."
-        type="warning"
-      />
       {isloading ? (
         <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin tip="Loading MySky stuff and interactions..." size="large" />
+          <Spin tip="Loading MySky stuff..." size="large" />
         </div>
       ) : (
         <>
@@ -88,50 +94,50 @@ const Publish = () => {
             </div>
           )}
           <Divider className="default-margin" orientation="left">
-            Publish files
+            Create a new private bucket
           </Divider>
           <Form
             name="basic"
             onFinish={onSubmit}
-            initialValues={{ sessionLink }}
           >
             <Form.Item
-              name="contentDescription"
+              name="bucketName"
               rules={[
                 {
                   required: true,
-                  message: 'Please add a short content description',
+                  message: 'Please add the bucket name',
                 },
               ]}
             >
-              <Input placeholder="Short content description" />
+              <Input placeholder="Bucket name" />
             </Form.Item>
             <Form.Item
-              name="sessionLink"
-              rules={[{ required: true, message: 'Please add a session link' }]}
+              name="bucketDescription"
+              rules={[{ required: true, message: 'Please add a short bucket description' }]}
             >
-              <Input disabled readOnly placeholder="SkyTransfer link" />
+              <Input placeholder="Bucket description" />
             </Form.Item>
             <Form.Item style={{ textAlign: 'center' }}>
               <Button type="primary" htmlType="submit">
-                Publish
+                Save bucket
               </Button>
             </Form.Item>
           </Form>
-          <Divider orientation="left">Public discoverable files</Divider>
+          <Divider orientation="left">Your private buckets</Divider>
           <List
             loading={isloading}
             bordered
-            dataSource={userSessions}
+            dataSource={Object.values(userHiddenBuckets)}
             renderItem={(item) => (
               <List.Item
                 actions={[
-                  <a href={item.link} key={`${item.id}`}>
+                  <a href={item.name} key={`${item.uuid}`}>
                     open
                   </a>,
                 ]}
               >
                 <List.Item.Meta title={item.name} />
+                <List.Item.Meta description={item.description} />
               </List.Item>
             )}
           />
@@ -141,4 +147,4 @@ const Publish = () => {
   );
 };
 
-export default Publish;
+export default Buckets;

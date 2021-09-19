@@ -12,8 +12,16 @@ export interface Bucket {
   getEncryptedFile(relativePath: string): EncryptedFile;
 }
 
-export interface BucketsKeys {
-  [bucketID: string]: string; // privateKey
+export interface BucketInfo {
+  uuid: string;
+  name: string;
+  description: string;
+  created: number;
+  key: string;
+}
+
+export interface Buckets {
+  [bucketID: string]: BucketInfo;
 }
 
 export class DecryptedBucket implements Bucket {

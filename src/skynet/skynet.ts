@@ -9,7 +9,8 @@ import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
-import { Bucket, DecryptedBucket } from '../models/files/bucket';
+import { Bucket, BucketInfo, Buckets, DecryptedBucket } from '../models/files/bucket';
+import { UserProfileDAC } from "@skynethub/userprofile-library";
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -26,7 +27,10 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 };
 
 const dataDomain = 'skytransfer.hns';
-const sessionsPath = 'skytransfer.hns/publicSessions.json';
+const hiddenBucketsPath = 'skytransfer.hns/hiddenBuckets.json';
+const hiddenBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
+
+const userProfileRecord = new UserProfileDAC();
 
 export const uploadFile = async (
   encryptedFile: File,
@@ -125,7 +129,11 @@ export const getDecryptedBucket = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
   const client = new SkynetClient(getMySkyDomain());
-  const mySky = await client.loadMySky(dataDomain);
+  const mySky = await client.loadMySky(dataDomain, { dev: true, debug: true });
+
+  // load DACs
+  // @ts-ignore
+  await mySky.loadDacs(userProfileRecord);
 
   const loggedIn = await mySky.checkLogin();
   if (!loggedIn) {
@@ -137,47 +145,29 @@ export const mySkyLogin = async (): Promise<MySky> => {
   return mySky;
 };
 
-export const getUserPublicSessions = async (
-  mySky: MySky
-): Promise<PublicSession[]> => {
-  let sessions: PublicSession[] = [];
+export async function getUserHiddenBuckets(mySky: MySky): Promise<Buckets> {
+  let buckets: Buckets = {};
 
-  const { data } = await mySky.getJSON(sessionsPath);
+  const { data } = await mySky.getJSONEncrypted(hiddenBucketsPath);
 
-  if (data && 'sessions' in data) {
-    sessions = data.sessions as PublicSession[];
+  if (data && 'buckets' in data) {
+    buckets = data.buckets as Buckets;
   }
 
-  return sessions;
-};
+  return buckets;
+}
 
-export const storeUserSession = async (
-  mySky: MySky,
-  newSession: PublicSession
-) => {
-  const linkRegex = /#\/(\w{64})\/(\w{128})/i;
-  const found = newSession.link.match(linkRegex);
-  if (!found || found.length !== 3) {
-    throw new Error('could not get info from session link');
+export async function storeUserHiddenBucket(mySky: MySky, newBucket: BucketInfo) {
+  let buckets = await getUserHiddenBuckets(mySky);
+
+  if (newBucket.uuid in buckets) {
+    throw Error('bucket already exists');
   }
 
-  const bucket = await getDecryptedBucket(found[1], found[2]);
-  if (Object.keys(bucket.files).length === 0) {
-    throw new Error('nothing to store');
+  buckets[newBucket.uuid] = newBucket;
+  try {
+    await mySky.setJSONEncrypted(hiddenBucketsPath, { buckets });
+  } catch (error) {
+    throw Error('content record error: ' + error.message);
   }
-
-  let sessions = await getUserPublicSessions(mySky);
-  if (
-    sessions.findIndex(
-      (s) => s.link === newSession.link || s.id === newSession.id
-    ) === -1
-  ) {
-    sessions.push(newSession);
-
-    try {
-      await mySky.setJSON(sessionsPath, { sessions });
-    } catch (error) {
-      throw Error('content record error: ' + error.message);
-    }
-  }
-};
+}
