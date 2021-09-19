@@ -12,7 +12,10 @@ import { List, message } from 'antd';
 import { v4 as uuid } from 'uuid';
 import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
-import { BucketInfo, Buckets as HiddenBuckets } from '../../models/files/bucket';
+import {
+  BucketInfo,
+  Buckets as HiddenBuckets,
+} from '../../models/files/bucket';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
@@ -38,7 +41,7 @@ const Buckets = () => {
       // @ts-ignore
       let userProfile = await mySky.getProfile(userID);
       console.log(userProfile);
-      
+
       debugger;
 
       setIsLogged(true);

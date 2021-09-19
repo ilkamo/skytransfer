@@ -133,7 +133,7 @@ export const getDecryptedBucket = async (
 
 export const mySkyLogin = async (): Promise<MySky> => {
   const client = new SkynetClient(getMySkyDomain());
-  const mySky = await client.loadMySky(dataDomain, { dev: true, debug: true });
+  const mySky = await client.loadMySky(dataDomain, { debug: true });
 
   // load DACs
   // @ts-ignore
