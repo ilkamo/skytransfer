@@ -22,7 +22,6 @@ export function renderTree(paths: EncryptedFiles): FileNode[] {
 
       return r[name];
     }, level);
-
   }
 
   calculateLeaf(result);

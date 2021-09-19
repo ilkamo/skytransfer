@@ -19,7 +19,11 @@ export default class AESFileDecrypt implements FileDecrypt {
   constructor(encryptedFile: EncryptedFile) {
     this.encryptedFile = encryptedFile;
     this.encryptionKey = encryptedFile.file.key;
-    this.chunkResolver = new ChunkResolver(EncryptionType[encryptedFile.file.encryptionType as keyof typeof EncryptionType]);
+    this.chunkResolver = new ChunkResolver(
+      EncryptionType[
+        encryptedFile.file.encryptionType as keyof typeof EncryptionType
+      ]
+    );
   }
 
   get decryptChunkSize(): number {

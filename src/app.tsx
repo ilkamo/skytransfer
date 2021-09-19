@@ -98,7 +98,8 @@ const App = () => {
           . Powered by{' '}
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
-          </a>.
+          </a>
+          .
           <div style={{ padding: '10px 0' }}>
             <a
               target="_blank"

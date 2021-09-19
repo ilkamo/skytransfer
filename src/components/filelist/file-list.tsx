@@ -32,7 +32,9 @@ const FileList = () => {
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
-  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>(new DecryptedBucket());
+  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>(
+    new DecryptedBucket()
+  );
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {

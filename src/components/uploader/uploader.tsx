@@ -62,7 +62,7 @@ const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -78,7 +78,9 @@ let skydbSyncInProgress = false;
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>(new DecryptedBucket());
+  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>(
+    new DecryptedBucket()
+  );
 
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
@@ -232,7 +234,10 @@ const Uploader = () => {
     }
   };
 
-  const queueParallelEncryption = (file: File, fileKey: string): Promise<File> => {
+  const queueParallelEncryption = (
+    file: File,
+    fileKey: string
+  ): Promise<File> => {
     return new Promise(async (resolve) => {
       while (uploadCount > MAX_PARALLEL_UPLOAD) {
         await sleep(1000);
@@ -240,10 +245,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(
-        file,
-        fileKey
-      );
+      const fe = new AESFileEncrypt(file, fileKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);
@@ -311,11 +313,11 @@ const Uploader = () => {
             encryptionType: EncryptionType[DEFAULT_ENCRYPTION_TYPE],
             url: info.file.response.data.skylink,
             key: info.file.response.fileKey,
-            hash: "", // TODO: add hash
+            hash: '', // TODO: add hash
             ts: Date.now(),
             encryptedSize: info.file.response.encryptedFileSize,
             relativePath: relativePath,
-          }
+          };
 
           if (decryptedBucket.encryptedFileExists(relativePath)) {
             setDecryptedBucket((p) => {
@@ -338,12 +340,12 @@ const Uploader = () => {
               mimeType: info.file.type,
               history: [tempFileData],
               version: 0,
-            }
+            };
 
             setDecryptedBucket((p) => {
               p.files[relativePath] = encryptedFile;
               return p;
-            })
+            });
           }
 
           message.success(`${info.file.name} file uploaded successfully.`);
@@ -486,7 +488,10 @@ const Uploader = () => {
                     deleteConfirmModal(node.title.toString(), () => {
                       setDecryptedBucket((p) => {
                         for (let path in decryptedBucket.files) {
-                          if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
+                          if (
+                            decryptedBucket.files[path].uuid ===
+                            key.split('_')[0]
+                          ) {
                             delete decryptedBucket.files[path];
                           }
                         }

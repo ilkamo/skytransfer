@@ -50,7 +50,7 @@ export const uploadFile = async (
     onSuccess({
       data: fileSkylink,
       encryptedFileSize: encryptedFile.size,
-      fileKey: fileKey
+      fileKey: fileKey,
     });
   } catch (e) {
     onError(e);
@@ -91,13 +91,9 @@ export const encryptAndStoreBucket = async (
     const encryptedBucket = jsonCrypto.encrypt(bucket);
 
     try {
-      await skynetSkyDBClient.db.setJSON(
-        privateKey,
-        SKYTRANSFER_BUCKET,
-        {
-          data: encryptedBucket,
-        }
-      );
+      await skynetSkyDBClient.db.setJSON(privateKey, SKYTRANSFER_BUCKET, {
+        data: encryptedBucket,
+      });
       return resolve(true);
     } catch (error) {
       return reject(error);
