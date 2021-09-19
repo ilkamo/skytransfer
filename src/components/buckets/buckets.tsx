@@ -10,7 +10,7 @@ import { Form, Input, Button, Divider, Spin } from 'antd';
 import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
-import { MySky } from 'skynet-js';
+import { genKeyPairAndSeed, MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
 import {
   BucketInfo,
@@ -20,7 +20,7 @@ import {
 import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -53,7 +53,6 @@ const Buckets = () => {
 
       setIsLogged(true);
       const hiddenBuckets = await getUserHiddenBuckets(mySky);
-      debugger; // TODO: remove me
       setUserHiddenBuckets(hiddenBuckets);
     } catch (error) {
       message.error(error.message);
@@ -64,14 +63,14 @@ const Buckets = () => {
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
-    const tempBucketID = uuid(); // TODO: use the real uuid
+    const tempBucketID = uuid();
 
     const tempBucket: BucketInfo = {
       uuid: tempBucketID,
       name: values.bucketName,
       description: values.bucketDescription,
       created: Date.now(),
-      key: SessionManager.sessionPrivateKey,
+      key: genKeyPairAndSeed().privateKey,
     };
 
     setUserHiddenBuckets((p) => {
@@ -147,7 +146,12 @@ const Buckets = () => {
               <List.Item
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
-                  <a href={`https://${window.location.hostname}/#/${item.key}/${deriveEncryptionKeyFromKey(item.key)}`} key={`${item.uuid}`}>
+                  <a
+                    href={`https://${window.location.hostname}/#/${
+                      item.key
+                    }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    key={`${item.uuid}`}
+                  >
                     open
                   </a>,
                 ]}
