@@ -18,8 +18,9 @@ import {
 } from '../../models/files/bucket';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
+import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -145,13 +146,12 @@ const Buckets = () => {
             renderItem={(item) => (
               <List.Item
                 actions={[
-                  <a href={item.name} key={`${item.uuid}`}>
+                  // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
+                  <a href={`https://${window.location.hostname}/#/${item.key}/${deriveEncryptionKeyFromKey(item.key)}`} key={`${item.uuid}`}>
                     open
                   </a>,
                 ]}
               >
-                <b>{item.name}</b>
-                <b>{item.description}</b>
                 <List.Item.Meta title={item.name} />
                 <List.Item.Meta description={item.description} />
               </List.Item>
