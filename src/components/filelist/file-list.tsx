@@ -90,17 +90,13 @@ const FileList = () => {
     if (!file) {
       return;
     }
-
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(file, encryptedFile.name);
-    } else {
-      var elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(file);
-      elem.download = file.name;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
+    
+    var elem = window.document.createElement('a');
+    elem.href = window.URL.createObjectURL(file);
+    elem.download = file.name;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
   };
 
   const getFileBy = (key: string): EncryptedFile => {
