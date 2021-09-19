@@ -86,9 +86,8 @@ const Uploader = () => {
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
 
   const [uploading, setUploading] = useState(false);
-  const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(
-    false
-  );
+  const [showUploadCompletedModal, setShowUploadCompletedModal] =
+    useState(false);
   const [loading, setLoading] = useState(true);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);

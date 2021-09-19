@@ -4,7 +4,7 @@
   "scripts": {
     "start": "webpack serve",
     "build": "webpack",
-    "test": "react-scripts test",
+    "test": "SKIP_PREFLIGHT_CHECK=true react-scripts test",
     "eject": "react-scripts eject",
     "fmt": "prettier  --config .prettierrc.json --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src/**/*.ts{,x} --fix",
