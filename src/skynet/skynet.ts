@@ -2,15 +2,19 @@ import {
   getEndpointInCurrentPortal,
   getEndpointInDefaultPortal,
 } from './../portals';
-import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
 import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
-import { Bucket, BucketInfo, Buckets, DecryptedBucket } from '../models/files/bucket';
-import { UserProfileDAC } from "@skynethub/userprofile-library";
+import {
+  Bucket,
+  BucketInfo,
+  Buckets,
+  DecryptedBucket,
+} from '../models/files/bucket';
+import { UserProfileDAC } from '@skynethub/userprofile-library';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -28,7 +32,7 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 
 const dataDomain = 'skytransfer.hns';
 const hiddenBucketsPath = 'skytransfer.hns/hiddenBuckets.json';
-const hiddenBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
+// const hiddenBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
 
 const userProfileRecord = new UserProfileDAC();
 
@@ -157,7 +161,10 @@ export async function getUserHiddenBuckets(mySky: MySky): Promise<Buckets> {
   return buckets;
 }
 
-export async function storeUserHiddenBucket(mySky: MySky, newBucket: BucketInfo) {
+export async function storeUserHiddenBucket(
+  mySky: MySky,
+  newBucket: BucketInfo
+) {
   let buckets = await getUserHiddenBuckets(mySky);
 
   if (newBucket.uuid in buckets) {

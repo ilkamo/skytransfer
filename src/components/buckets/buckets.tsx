@@ -5,16 +5,16 @@ import {
   storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider, Alert, Spin } from 'antd';
+import { Form, Input, Button, Divider, Spin } from 'antd';
 
 import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
-import { BucketInfo, Buckets } from '../../models/files/bucket';
+import { BucketInfo, Buckets as HiddenBuckets } from '../../models/files/bucket';
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -24,7 +24,7 @@ const useConstructor = (callBack = () => { }) => {
 let mySky: MySky = null;
 
 const Buckets = () => {
-  const [userHiddenBuckets, setUserHiddenBuckets] = useState<Buckets>({});
+  const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
   const [isLogged, setIsLogged] = useState(false);
   const [userID, setUserID] = useState('');
   const [isloading, setIsLoading] = useState(true);
@@ -37,6 +37,8 @@ const Buckets = () => {
 
       // @ts-ignore
       let userProfile = await mySky.getProfile(userID);
+      console.log(userProfile);
+      
       debugger;
 
       setIsLogged(true);
@@ -55,10 +57,10 @@ const Buckets = () => {
 
     const tempBucket: BucketInfo = {
       uuid: tempBucketID,
-        name: values.name,
-        description: values.description,
-        created: Date.now(),
-        key: SessionManager.sessionPrivateKey,
+      name: values.name,
+      description: values.description,
+      created: Date.now(),
+      key: SessionManager.sessionPrivateKey,
     };
 
     setUserHiddenBuckets((p) => {
@@ -96,10 +98,7 @@ const Buckets = () => {
           <Divider className="default-margin" orientation="left">
             Create a new private bucket
           </Divider>
-          <Form
-            name="basic"
-            onFinish={onSubmit}
-          >
+          <Form name="basic" onFinish={onSubmit}>
             <Form.Item
               name="bucketName"
               rules={[
@@ -113,7 +112,12 @@ const Buckets = () => {
             </Form.Item>
             <Form.Item
               name="bucketDescription"
-              rules={[{ required: true, message: 'Please add a short bucket description' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please add a short bucket description',
+                },
+              ]}
             >
               <Input placeholder="Bucket description" />
             </Form.Item>
