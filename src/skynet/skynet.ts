@@ -131,7 +131,7 @@ export const getDecryptedBucket = async (
   });
 };
 
-export const mySkyLogin = async (): Promise<MySky> => {
+export const mySkyLogin = async (): Promise<any> => {
   const client = new SkynetClient(getMySkyDomain());
   const mySky = await client.loadMySky(dataDomain, { debug: true });
 
@@ -145,6 +145,8 @@ export const mySkyLogin = async (): Promise<MySky> => {
       throw Error('could not login');
     }
   }
+
+  debugger; // TODO: remove me!
 
   return mySky;
 };

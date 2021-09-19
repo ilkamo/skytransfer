@@ -10,7 +10,6 @@ import { Form, Input, Button, Divider, Spin } from 'antd';
 import { List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
-import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
 import {
   BucketInfo,
@@ -24,7 +23,7 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
-let mySky: MySky = null;
+let mySky: any = null;
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
