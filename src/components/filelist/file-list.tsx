@@ -90,7 +90,7 @@ const FileList = () => {
     if (!file) {
       return;
     }
-    
+
     var elem = window.document.createElement('a');
     elem.href = window.URL.createObjectURL(file);
     elem.download = file.name;

@@ -62,7 +62,7 @@ const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
