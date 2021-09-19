@@ -12,7 +12,10 @@ import { List, message } from 'antd';
 import { v4 as uuid } from 'uuid';
 import { MySky } from 'skynet-js';
 import SessionManager from '../../session/session-manager';
-import { BucketInfo, Buckets as HiddenBuckets } from '../../models/files/bucket';
+import {
+  BucketInfo,
+  Buckets as HiddenBuckets,
+} from '../../models/files/bucket';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
 
@@ -42,14 +45,13 @@ const Buckets = () => {
       await mySky.loadDacs(userProfileRecord);
 
       // @ts-ignore
-      let userProfile = await userProfileRecord.getProfile(userID);
+      let userProfile = await userProfileRecord.getProfile(await mySky.userID());
       console.log(userProfile);
-      
-      debugger;
 
       setIsLogged(true);
-      setUserHiddenBuckets(await getUserHiddenBuckets(mySky));
-      debugger;
+      const hiddenBuckets = await getUserHiddenBuckets(mySky);
+      debugger; // TODO: remove me
+      setUserHiddenBuckets(hiddenBuckets);
     } catch (error) {
       message.error(error.message);
       setIsLogged(false);
@@ -146,6 +148,8 @@ const Buckets = () => {
                   </a>,
                 ]}
               >
+                <b>{item.name}</b>
+                <b>{item.description}</b>
                 <List.Item.Meta title={item.name} />
                 <List.Item.Meta description={item.description} />
               </List.Item>
