@@ -1,4 +1,4 @@
-import { SkyTransferLogo } from '../common/logos';
+import { SkyTransferLogo } from '../common/icons';
 import './about.css';
 
 const About = () => {

@@ -7,7 +7,6 @@ import { MySky, SkynetClient } from 'skynet-js';
 import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
-import { FeedDAC } from 'feed-dac-library';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
 import { Bucket, DecryptedBucket } from '../models/files/bucket';
@@ -28,8 +27,6 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 
 const dataDomain = 'skytransfer.hns';
 const sessionsPath = 'skytransfer.hns/publicSessions.json';
-
-const feedDAC = new FeedDAC();
 
 export const uploadFile = async (
   encryptedFile: File,
@@ -130,9 +127,6 @@ export const mySkyLogin = async (): Promise<MySky> => {
   const client = new SkynetClient(getMySkyDomain());
   const mySky = await client.loadMySky(dataDomain);
 
-  // @ts-ignore
-  await mySky.loadDacs(feedDAC);
-
   const loggedIn = await mySky.checkLogin();
   if (!loggedIn) {
     if (!(await mySky.requestLoginAccess())) {
@@ -182,12 +176,6 @@ export const storeUserSession = async (
 
     try {
       await mySky.setJSON(sessionsPath, { sessions });
-
-      await feedDAC.createPost({
-        link: newSession.link,
-        linkTitle: newSession.name,
-        text: `I published a new content on SkyTransfer: ${newSession.name}`,
-      });
     } catch (error) {
       throw Error('content record error: ' + error.message);
     }
