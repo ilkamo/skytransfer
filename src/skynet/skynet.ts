@@ -4,13 +4,13 @@ import {
 } from './../portals';
 import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME, MAX_AXIOS_RETRIES } from '../config';
+import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
-import { EncryptedFileReference } from '../models/encryption';
 import { getMySkyDomain } from '../portals';
 import { FeedDAC } from 'feed-dac-library';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
+import { Bucket, DecryptedBucket } from '../models/files/bucket';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -33,6 +33,7 @@ const feedDAC = new FeedDAC();
 
 export const uploadFile = async (
   encryptedFile: File,
+  fileKey: string,
   onProgress,
   onSuccess,
   onError
@@ -49,6 +50,7 @@ export const uploadFile = async (
     onSuccess({
       data: fileSkylink,
       encryptedFileSize: encryptedFile.size,
+      fileKey: fileKey
     });
   } catch (e) {
     onError(e);
@@ -79,21 +81,21 @@ export const downloadFile = async (
   });
 };
 
-export const storeEncryptedFiles = async (
+export const encryptAndStoreBucket = async (
   privateKey: string,
   encryptionKey: string,
-  encryptedFiles: EncryptedFileReference[]
+  bucket: Bucket
 ): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
     const jsonCrypto = new JsonCrypto(encryptionKey);
-    const encryptedFilesAsEncryptedString = jsonCrypto.encrypt(encryptedFiles);
+    const encryptedBucket = jsonCrypto.encrypt(bucket);
 
     try {
       await skynetSkyDBClient.db.setJSON(
         privateKey,
-        ENCRYPTED_FILES_SKYDB_KEY_NAME,
+        SKYTRANSFER_BUCKET,
         {
-          data: encryptedFilesAsEncryptedString,
+          data: encryptedBucket,
         }
       );
       return resolve(true);
@@ -103,26 +105,25 @@ export const storeEncryptedFiles = async (
   });
 };
 
-export const getEncryptedFiles = async (
+export const getDecryptedBucket = async (
   publicKey: string,
   encryptionKey: string
-): Promise<EncryptedFileReference[]> => {
+): Promise<Bucket> => {
   return new Promise(async (resolve, reject) => {
     const jsonCrypto = new JsonCrypto(encryptionKey);
-    let files: EncryptedFileReference[] = [];
+    let bucket: Bucket;
 
     try {
       const { data } = await skynetSkyDBClient.db.getJSON(
         publicKey,
-        ENCRYPTED_FILES_SKYDB_KEY_NAME
+        SKYTRANSFER_BUCKET
       );
 
       if (data && data.data && typeof data.data === 'string') {
-        const decryptedEncryptedFiles = jsonCrypto.decrypt(data.data);
-        files = decryptedEncryptedFiles as EncryptedFileReference[];
+        bucket = jsonCrypto.decrypt(data.data) as DecryptedBucket;
       }
 
-      return resolve(files);
+      return resolve(bucket);
     } catch (error) {
       return reject(error);
     }
@@ -170,8 +171,8 @@ export const storeUserSession = async (
     throw new Error('could not get info from session link');
   }
 
-  const files = await getEncryptedFiles(found[1], found[2]);
-  if (files.length === 0) {
+  const bucket = await getDecryptedBucket(found[1], found[2]);
+  if (Object.keys(bucket.files).length === 0) {
     throw new Error('nothing to store');
   }
 

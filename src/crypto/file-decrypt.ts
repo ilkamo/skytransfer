@@ -1,13 +1,14 @@
 import { SkynetClient } from 'skynet-js';
 import CryptoJS from 'crypto-js';
-import { EncryptedFileReference } from '../models/encryption';
+import { EncryptionType } from '../models/encryption';
 import { FileDecrypt } from './crypto';
 import { getEndpointInCurrentPortal } from '../portals';
 import { ChunkResolver } from './chunk-resolver';
 import { downloadFile } from '../skynet/skynet';
+import { EncryptedFile } from '../models/files/encrypted-file';
 
 export default class AESFileDecrypt implements FileDecrypt {
-  private encryptedFile: EncryptedFileReference;
+  private encryptedFile: EncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
 
@@ -15,10 +16,10 @@ export default class AESFileDecrypt implements FileDecrypt {
 
   parts: BlobPart[] = [];
 
-  constructor(encryptedFile: EncryptedFileReference, encryptionKey: string) {
+  constructor(encryptedFile: EncryptedFile) {
     this.encryptedFile = encryptedFile;
-    this.encryptionKey = encryptionKey;
-    this.chunkResolver = new ChunkResolver(encryptedFile.encryptionType);
+    this.encryptionKey = encryptedFile.file.key;
+    this.chunkResolver = new ChunkResolver(EncryptionType[encryptedFile.file.encryptionType as keyof typeof EncryptionType]);
   }
 
   get decryptChunkSize(): number {
@@ -36,7 +37,7 @@ export default class AESFileDecrypt implements FileDecrypt {
     ) => void = () => {}
   ): Promise<File> {
     const totalChunks = Math.ceil(
-      this.encryptedFile.encryptedSize / this.decryptChunkSize
+      this.encryptedFile.file.encryptedSize / this.decryptChunkSize
     );
 
     let rangeStart,
@@ -46,7 +47,7 @@ export default class AESFileDecrypt implements FileDecrypt {
       rangeStart = i * this.decryptChunkSize;
 
       if (i === totalChunks - 1) {
-        rangeEnd = this.encryptedFile.encryptedSize;
+        rangeEnd = this.encryptedFile.file.encryptedSize;
       } else {
         rangeEnd = (i + 1) * this.decryptChunkSize;
       }
@@ -55,7 +56,7 @@ export default class AESFileDecrypt implements FileDecrypt {
 
       try {
         const response = await downloadFile(
-          this.encryptedFile.skylink,
+          this.encryptedFile.file.url,
           (progressEvent) => {
             const progress = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
@@ -81,7 +82,7 @@ export default class AESFileDecrypt implements FileDecrypt {
 
     onDecryptProgress(true, 100);
 
-    return new File(this.parts, this.encryptedFile.fileName, {
+    return new File(this.parts, this.encryptedFile.name, {
       type: this.encryptedFile.mimeType,
     });
   }
