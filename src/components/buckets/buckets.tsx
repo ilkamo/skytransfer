@@ -16,8 +16,6 @@ import {
   BucketInfo,
   Buckets as HiddenBuckets,
 } from '../../models/files/bucket';
-
-import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 const useConstructor = (callBack = () => {}) => {
@@ -27,8 +25,9 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 };
 
+import { User } from '../../features/user/user';
+
 let mySky: MySky = null;
-const userProfileRecord = new UserProfileDAC();
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
@@ -38,27 +37,15 @@ const Buckets = () => {
   // const [profileName, setProfileName] = useState('');
 
   useConstructor(async () => {
-    try {
-      mySky = await mySkyLogin();
-      setUserID(await mySky.userID());
-
-      // @ts-ignore
-      await mySky.loadDacs(userProfileRecord);
-
-      // @ts-ignore
-      let userProfile = await userProfileRecord.getProfile(
-        await mySky.userID()
-      );
-      console.log(userProfile);
-
-      setIsLogged(true);
-      const hiddenBuckets = await getUserHiddenBuckets(mySky);
-      setUserHiddenBuckets(hiddenBuckets);
-    } catch (error) {
-      message.error(error.message);
-      setIsLogged(false);
-    }
-    setIsLoading(false);
+    // try {
+    //   setIsLogged(true);
+    //   const hiddenBuckets = await getUserHiddenBuckets(mySky);
+    //   setUserHiddenBuckets(hiddenBuckets);
+    // } catch (error) {
+    //   message.error(error.message);
+    //   setIsLogged(false);
+    // }
+    // setIsLoading(false);
   });
 
   const onSubmit = async (values: any) => {
@@ -93,6 +80,7 @@ const Buckets = () => {
 
   return (
     <>
+      <User></User>
       {isloading ? (
         <div className="default-margin" style={{ textAlign: 'center' }}>
           <Spin tip="Loading MySky stuff..." size="large" />

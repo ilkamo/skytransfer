@@ -22,11 +22,11 @@ module.exports = {
                     fullySpecified: false,
                 },
             },
-            {
-                test: /\.(js|mjs|jsx|ts|tsx)$/,
-                loader: "source-map-loader",
-                enforce: "pre",
-            },
+            // {
+            //     test: /\.(js|mjs|jsx|ts|tsx)$/,
+            //     loader: "source-map-loader",
+            //     enforce: "pre",
+            // },
 			{
 				test: /\.(js|jsx)$/,
 				exclude: /node_modules/,
