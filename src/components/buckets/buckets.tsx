@@ -18,14 +18,14 @@ import {
 } from '../../models/files/bucket';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
+import { User } from '../../features/user/user';
+
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
   hasBeenCalled.current = true;
 };
-
-import { User } from '../../features/user/user';
 
 let mySky: MySky = null;
 
