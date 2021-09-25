@@ -1,65 +1,61 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  getMySky,
   getUserHiddenBuckets,
-  mySkyLogin,
   storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider, Spin } from 'antd';
-
-import { List, message } from 'antd';
+import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
+import { Drawer, Typography, Modal } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
-import SessionManager from '../../session/session-manager';
 import {
   BucketInfo,
   Buckets as HiddenBuckets,
 } from '../../models/files/bucket';
-
-import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-};
+import { User } from '../../features/user/user';
 
-let mySky: MySky = null;
-const userProfileRecord = new UserProfileDAC();
+import { selectUser, login } from '../../features/user/user-slice';
+import { useDispatch, useSelector } from 'react-redux';
+import { UserStatus } from '../../models/user';
+
+import {
+  LoginOutlined,
+  InboxOutlined,
+  ProfileOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
+
+const { Title } = Typography;
+
+const modalSpinner = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
-  const [isLogged, setIsLogged] = useState(false);
-  const [userID, setUserID] = useState('');
   const [isloading, setIsLoading] = useState(true);
-  // const [profileName, setProfileName] = useState('');
+  const [newBucketModalVisible, setNewBucketModalVisible] = useState(false);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
 
-  useConstructor(async () => {
+  const init = async () => {
     try {
-      mySky = await mySkyLogin();
-      setUserID(await mySky.userID());
-
-      // @ts-ignore
-      await mySky.loadDacs(userProfileRecord);
-
-      // @ts-ignore
-      let userProfile = await userProfileRecord.getProfile(
-        await mySky.userID()
-      );
-      console.log(userProfile);
-
-      setIsLogged(true);
+      const mySky: MySky = await getMySky();
       const hiddenBuckets = await getUserHiddenBuckets(mySky);
       setUserHiddenBuckets(hiddenBuckets);
     } catch (error) {
       message.error(error.message);
-      setIsLogged(false);
     }
     setIsLoading(false);
-  });
+  };
+
+  useEffect(() => {
+    if (user.status === UserStatus.Logged) {
+      init();
+    }
+  }, [user]);
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
@@ -79,64 +75,82 @@ const Buckets = () => {
     });
 
     try {
-      if (mySky === null) {
-        mySky = await mySkyLogin();
-      }
-
+      const mySky: MySky = await getMySky();
       await storeUserHiddenBucket(mySky, tempBucket);
     } catch (error) {
       message.error(error.message);
     }
 
     setIsLoading(false);
+    setNewBucketModalVisible(false);
+  };
+
+  const [visible, setVisible] = useState(false);
+  const showDrawer = () => {
+    setVisible(true);
+  };
+  const onClose = () => {
+    setVisible(false);
   };
 
   return (
     <>
-      {isloading ? (
-        <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin tip="Loading MySky stuff..." size="large" />
+      {user.status === UserStatus.NotLogged ? (
+        <div
+          className="default-margin"
+          style={{ fontSize: 16, textAlign: 'center' }}
+        >
+          <p>You are not logged. Login and access your buckets.</p>
+          <Button
+            onClick={() => dispatch(login())}
+            type="primary"
+            icon={<LoginOutlined />}
+            size="large"
+          >
+            Sign in with MySky
+          </Button>
         </div>
       ) : (
         <>
-          {userID && isLogged && (
-            <div className="default-margin">
-              <Divider orientation="left">MySky userID</Divider>
-              <Input readOnly defaultValue={userID} />
-            </div>
-          )}
-          <Divider className="default-margin" orientation="left">
-            Create a new private bucket
-          </Divider>
-          <Form name="basic" onFinish={onSubmit}>
-            <Form.Item
-              name="bucketName"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please add the bucket name',
-                },
-              ]}
+          <Drawer
+            title="User profile"
+            placement="right"
+            onClose={onClose}
+            visible={visible}
+          >
+            <User></User>
+          </Drawer>
+          <Title level={3}>Your Buckets</Title>
+          <Divider className="default-margin" orientation="right"></Divider>
+          <div style={{ fontSize: 16 }}>
+            <p>
+              Welcome to the buckets section. Here you can access previously
+              created buckets.
+            </p>
+            <p>
+              You can also create a new bucket which will be stored in your
+              account.
+            </p>
+          </div>
+          <div className="default-margin" style={{ textAlign: 'center' }}>
+            <Button
+              style={{ marginRight: 10 }}
+              icon={<ProfileOutlined />}
+              size="large"
+              type="primary"
+              onClick={showDrawer}
             >
-              <Input placeholder="Bucket name" />
-            </Form.Item>
-            <Form.Item
-              name="bucketDescription"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please add a short bucket description',
-                },
-              ]}
+              Manage account
+            </Button>
+            <Button
+              icon={<InboxOutlined />}
+              size="large"
+              type="primary"
+              onClick={() => setNewBucketModalVisible(true)}
             >
-              <Input placeholder="Bucket description" />
-            </Form.Item>
-            <Form.Item style={{ textAlign: 'center' }}>
-              <Button type="primary" htmlType="submit">
-                Save bucket
-              </Button>
-            </Form.Item>
-          </Form>
+              Create bucket
+            </Button>
+          </div>
           <Divider orientation="left">Your private buckets</Divider>
           <List
             loading={isloading}
@@ -161,6 +175,44 @@ const Buckets = () => {
               </List.Item>
             )}
           />
+
+          <Modal
+            title="Vertically centered modal dialog"
+            centered
+            visible={newBucketModalVisible}
+            onCancel={() => setNewBucketModalVisible(false)}
+            okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
+          >
+            <Form name="create-bucket" onFinish={onSubmit}>
+              <Form.Item
+                name="bucketName"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please add the bucket name',
+                  },
+                ]}
+              >
+                <Input placeholder="Bucket name" />
+              </Form.Item>
+              <Form.Item
+                name="bucketDescription"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please add a short bucket description',
+                  },
+                ]}
+              >
+                <Input.TextArea placeholder="Bucket description" />
+              </Form.Item>
+            </Form>
+            {isloading && (
+              <div className="default-margin" style={{ textAlign: 'center' }}>
+                <Spin indicator={modalSpinner} tip="Creating the bucket..." />
+              </div>
+            )}
+          </Modal>
         </>
       )}
     </>
