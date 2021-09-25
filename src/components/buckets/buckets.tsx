@@ -95,7 +95,7 @@ const Buckets = () => {
 
   return (
     <>
-      {user.status !== UserStatus.NotLogged ? (
+      {user.status === UserStatus.NotLogged ? (
         <div
           className="default-margin"
           style={{ fontSize: 16, textAlign: 'center' }}
@@ -128,7 +128,8 @@ const Buckets = () => {
               created buckets.
             </p>
             <p>
-              You can also create a new bucket which will be stored in your account.
+              You can also create a new bucket which will be stored in your
+              account.
             </p>
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
