@@ -31,20 +31,19 @@ export function User() {
   });
 
   return (
-    <div>
+    <div className="default-margin" style={{ textAlign: 'center' }}>
       {user.status === UserStatus.Logged ? (
         <Card
           style={{ width: 300 }}
           actions={[
-            <SettingOutlined key="setting" />,
-            <EditOutlined key="edit" title="edit" />,
-            <EllipsisOutlined key="ellipsis" />,
+            <a href='https://skyprofile.hns.siasky.net/' target='_blank'>
+              Edit profile <EditOutlined key="edit"/>
+            </a>,
           ]}
         >
           <Meta
             avatar={<Avatar src={user.data.avatar} />}
             title={user.data.username}
-            description="This is the description"
           />
         </Card>
       ) : (

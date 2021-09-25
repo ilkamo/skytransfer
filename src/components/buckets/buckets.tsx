@@ -5,9 +5,7 @@ import {
   storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider, Spin } from 'antd';
-
-import { List, message } from 'antd';
+import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
@@ -74,9 +72,7 @@ const Buckets = () => {
 
   return (
     <>
-      <div className="default-margin" style={{ textAlign: 'center' }}>
-        <User></User>
-      </div>
+      <User></User>
       {user.status === UserStatus.NotLogged ? (
         <div className="default-margin" style={{ textAlign: 'center' }}>
           <Spin tip="Please login..." size="large" />
