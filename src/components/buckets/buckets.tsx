@@ -26,9 +26,12 @@ import {
   LoginOutlined,
   InboxOutlined,
   ProfileOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
 
 const { Title } = Typography;
+
+const modalSpinner = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
@@ -79,6 +82,7 @@ const Buckets = () => {
     }
 
     setIsLoading(false);
+    setNewBucketModalVisible(false);
   };
 
   const [visible, setVisible] = useState(false);
@@ -157,9 +161,8 @@ const Buckets = () => {
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
-                    href={`https://${window.location.hostname}/#/${
-                      item.key
-                    }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    href={`https://${window.location.hostname}/#/${item.key
+                      }/${deriveEncryptionKeyFromKey(item.key)}`}
                     key={`${item.uuid}`}
                   >
                     open
@@ -176,7 +179,6 @@ const Buckets = () => {
             title="Vertically centered modal dialog"
             centered
             visible={newBucketModalVisible}
-            onOk={() => setNewBucketModalVisible(false)}
             onCancel={() => setNewBucketModalVisible(false)}
             okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
           >
@@ -204,6 +206,11 @@ const Buckets = () => {
                 <Input.TextArea placeholder="Bucket description" />
               </Form.Item>
             </Form>
+            {isloading && (
+              <div className="default-margin" style={{ textAlign: 'center' }}>
+                <Spin indicator={modalSpinner} tip="Creating the bucket..." />
+              </div>
+            )}
           </Modal>
         </>
       )}
