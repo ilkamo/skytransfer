@@ -450,7 +450,7 @@ const Uploader = () => {
               Sync in progress...
             </div>
           )}
-          <Divider>Uploaded files</Divider>
+          <Divider>{decryptedBucket.name}</Divider>
           <DirectoryTree
             multiple
             showIcon={false}

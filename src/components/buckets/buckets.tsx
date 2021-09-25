@@ -5,7 +5,16 @@ import {
   storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Divider,
+  Spin,
+  List,
+  message,
+  Avatar,
+} from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { v4 as uuid } from 'uuid';
@@ -28,6 +37,7 @@ import {
   ProfileOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
+import { QRCode } from 'react-qr-svg';
 
 const { Title } = Typography;
 
@@ -91,6 +101,12 @@ const Buckets = () => {
   };
   const onClose = () => {
     setVisible(false);
+  };
+
+  const resolveBucketLink = (b: BucketInfo) => {
+    return `https://${window.location.hostname}/#/${
+      b.key
+    }/${deriveEncryptionKeyFromKey(b.key)}`;
   };
 
   return (
@@ -162,17 +178,23 @@ const Buckets = () => {
                 actions={[
                   <a href="#">edit</a>,
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
-                  <a
-                    href={`https://${window.location.hostname}/#/${
-                      item.key
-                    }/${deriveEncryptionKeyFromKey(item.key)}`}
-                    key={`${item.uuid}`}
-                  >
+                  <a href={resolveBucketLink(item)} key={`${item.uuid}`}>
                     open
-                  </a>
+                  </a>,
                 ]}
               >
-                <List.Item.Meta title={item.name} description={item.description} />
+                <List.Item.Meta
+                  avatar={
+                    <QRCode
+                      bgColor="#FFFFFF"
+                      fgColor="#000000"
+                      level="L"
+                      value={resolveBucketLink(item)}
+                    />
+                  }
+                  title={item.name}
+                  description={item.description}
+                />
               </List.Item>
             )}
           />
