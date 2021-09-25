@@ -95,7 +95,7 @@ const Buckets = () => {
 
   return (
     <>
-      {user.status === UserStatus.NotLogged ? (
+      {user.status !== UserStatus.NotLogged ? (
         <div
           className="default-margin"
           style={{ fontSize: 16, textAlign: 'center' }}
@@ -128,8 +128,7 @@ const Buckets = () => {
               created buckets.
             </p>
             <p>
-              You can also create a new bucket which will be stored in{' '}
-              <a onClick={showDrawer}>your account</a>.
+              You can also create a new bucket which will be stored in your account.
             </p>
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
@@ -161,8 +160,9 @@ const Buckets = () => {
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
-                    href={`https://${window.location.hostname}/#/${item.key
-                      }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    href={`https://${window.location.hostname}/#/${
+                      item.key
+                    }/${deriveEncryptionKeyFromKey(item.key)}`}
                     key={`${item.uuid}`}
                   >
                     open
