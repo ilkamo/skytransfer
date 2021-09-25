@@ -2,15 +2,18 @@ import {
   getEndpointInCurrentPortal,
   getEndpointInDefaultPortal,
 } from './../portals';
-import { PublicSession } from './../models/session';
 import { MySky, SkynetClient } from 'skynet-js';
-import { ENCRYPTED_FILES_SKYDB_KEY_NAME, MAX_AXIOS_RETRIES } from '../config';
+import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
 import { JsonCrypto } from '../crypto/json';
-import { EncryptedFileReference } from '../models/encryption';
 import { getMySkyDomain } from '../portals';
-import { FeedDAC } from 'feed-dac-library';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
+import {
+  Bucket,
+  BucketInfo,
+  Buckets,
+  DecryptedBucket,
+} from '../models/files/bucket';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -27,12 +30,12 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 };
 
 const dataDomain = 'skytransfer.hns';
-const sessionsPath = 'skytransfer.hns/publicSessions.json';
-
-const feedDAC = new FeedDAC();
+const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
+// const privateBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
 
 export const uploadFile = async (
   encryptedFile: File,
+  fileKey: string,
   onProgress,
   onSuccess,
   onError
@@ -49,6 +52,7 @@ export const uploadFile = async (
     onSuccess({
       data: fileSkylink,
       encryptedFileSize: encryptedFile.size,
+      fileKey: fileKey,
     });
   } catch (e) {
     onError(e);
@@ -79,23 +83,19 @@ export const downloadFile = async (
   });
 };
 
-export const storeEncryptedFiles = async (
+export const encryptAndStoreBucket = async (
   privateKey: string,
   encryptionKey: string,
-  encryptedFiles: EncryptedFileReference[]
+  bucket: Bucket
 ): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
     const jsonCrypto = new JsonCrypto(encryptionKey);
-    const encryptedFilesAsEncryptedString = jsonCrypto.encrypt(encryptedFiles);
+    const encryptedBucket = jsonCrypto.encrypt(bucket);
 
     try {
-      await skynetSkyDBClient.db.setJSON(
-        privateKey,
-        ENCRYPTED_FILES_SKYDB_KEY_NAME,
-        {
-          data: encryptedFilesAsEncryptedString,
-        }
-      );
+      await skynetSkyDBClient.db.setJSON(privateKey, SKYTRANSFER_BUCKET, {
+        data: encryptedBucket,
+      });
       return resolve(true);
     } catch (error) {
       return reject(error);
@@ -103,96 +103,68 @@ export const storeEncryptedFiles = async (
   });
 };
 
-export const getEncryptedFiles = async (
+export const getDecryptedBucket = async (
   publicKey: string,
   encryptionKey: string
-): Promise<EncryptedFileReference[]> => {
+): Promise<Bucket> => {
   return new Promise(async (resolve, reject) => {
     const jsonCrypto = new JsonCrypto(encryptionKey);
-    let files: EncryptedFileReference[] = [];
+    let bucket: Bucket;
 
     try {
       const { data } = await skynetSkyDBClient.db.getJSON(
         publicKey,
-        ENCRYPTED_FILES_SKYDB_KEY_NAME
+        SKYTRANSFER_BUCKET
       );
 
       if (data && data.data && typeof data.data === 'string') {
-        const decryptedEncryptedFiles = jsonCrypto.decrypt(data.data);
-        files = decryptedEncryptedFiles as EncryptedFileReference[];
+        bucket = jsonCrypto.decrypt(data.data) as DecryptedBucket;
       }
 
-      return resolve(files);
+      return resolve(bucket);
     } catch (error) {
       return reject(error);
     }
   });
 };
 
-export const mySkyLogin = async (): Promise<MySky> => {
+let mySkyInstance: MySky = null;
+
+export const getMySky = async (): Promise<MySky> => {
+  if (mySkyInstance) {
+    return mySkyInstance;
+  }
+
   const client = new SkynetClient(getMySkyDomain());
-  const mySky = await client.loadMySky(dataDomain);
-
-  // @ts-ignore
-  await mySky.loadDacs(feedDAC);
-
-  const loggedIn = await mySky.checkLogin();
-  if (!loggedIn) {
-    if (!(await mySky.requestLoginAccess())) {
-      throw Error('could not login');
-    }
-  }
-
-  return mySky;
+  return await client.loadMySky(dataDomain, { debug: true });
 };
 
-export const getUserPublicSessions = async (
-  mySky: MySky
-): Promise<PublicSession[]> => {
-  let sessions: PublicSession[] = [];
+export async function getUserHiddenBuckets(mySky: MySky): Promise<Buckets> {
+  let buckets: Buckets = {};
 
-  const { data } = await mySky.getJSON(sessionsPath);
+  const { data } = await mySky.getJSONEncrypted(privateBucketsPath);
 
-  if (data && 'sessions' in data) {
-    sessions = data.sessions as PublicSession[];
+  if (data && 'buckets' in data) {
+    buckets = data.buckets as Buckets;
   }
 
-  return sessions;
-};
+  return buckets;
+}
 
-export const storeUserSession = async (
+export async function storeUserHiddenBucket(
   mySky: MySky,
-  newSession: PublicSession
-) => {
-  const linkRegex = /#\/(\w{64})\/(\w{128})/i;
-  const found = newSession.link.match(linkRegex);
-  if (!found || found.length !== 3) {
-    throw new Error('could not get info from session link');
+  newBucket: BucketInfo
+) {
+  let buckets = await getUserHiddenBuckets(mySky);
+
+  if (newBucket.uuid in buckets) {
+    throw Error('bucket already exists');
   }
 
-  const files = await getEncryptedFiles(found[1], found[2]);
-  if (files.length === 0) {
-    throw new Error('nothing to store');
+  buckets[newBucket.uuid] = newBucket;
+  try {
+    await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
+  } catch (error) {
+    throw Error('content record error: ' + error.message);
   }
-
-  let sessions = await getUserPublicSessions(mySky);
-  if (
-    sessions.findIndex(
-      (s) => s.link === newSession.link || s.id === newSession.id
-    ) === -1
-  ) {
-    sessions.push(newSession);
-
-    try {
-      await mySky.setJSON(sessionsPath, { sessions });
-
-      await feedDAC.createPost({
-        link: newSession.link,
-        linkTitle: newSession.name,
-        text: `I published a new content on SkyTransfer: ${newSession.name}`,
-      });
-    } catch (error) {
-      throw Error('content record error: ' + error.message);
-    }
-  }
-};
+}

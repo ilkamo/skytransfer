@@ -8,7 +8,7 @@ import FileList from './components/filelist/file-list';
 
 import { Layout } from 'antd';
 import AppHeader from './components/header/header';
-import Publish from './components/publish/publish';
+import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
@@ -46,9 +46,9 @@ const App = () => {
                 <FileList />
               </Content>
             </Route>
-            <Route path="/publish">
+            <Route path="/buckets">
               <Content>
-                <Publish />
+                <Buckets />
               </Content>
             </Route>
             <Route path="/about">
@@ -98,7 +98,8 @@ const App = () => {
           . Powered by{' '}
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
-          </a>.
+          </a>
+          .
           <div style={{ padding: '10px 0' }}>
             <a
               target="_blank"

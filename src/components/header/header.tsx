@@ -102,14 +102,14 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           New draft
         </Menu.Item>
         <Menu.Item
-          key="publish"
+          key="buckets"
           onClick={() => {
-            history.push('/publish');
+            history.push('/buckets');
           }}
           disabled={!canPublishSession}
           icon={<EyeOutlined />}
         >
-          Publish (MySky)
+          Buckets
         </Menu.Item>
         <Menu.Item
           key="about-us"
