@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { SkynetClient } from 'skynet-js';
+import { MySky } from 'skynet-js';
 import { getMySkyDomain } from '../../portals';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { User, UserState, UserStatus } from '../../models/user';
+import { getMySky } from '../../skynet/skynet';
 
-const dataDomain = 'skytransfer.hns';
+const dataDomain = window.location.hostname === 'localhost' ? 'localhost' : 'skytransfer.hns';
 const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
 
 const userProfileRecord = new UserProfileDAC();
@@ -19,9 +20,6 @@ export const userSlice = createSlice({
   name: 'user',
   initialState: initialState,
   reducers: {
-    login: (state) => {
-      // TODO
-    },
     logout: (state) => {
       // TODO
     },
@@ -32,47 +30,60 @@ export const userSlice = createSlice({
   },
 });
 
-export const { login, logout, userLoaded } = userSlice.actions;
+export const { logout, userLoaded } = userSlice.actions;
 
 export default userSlice.reducer;
 
-export const initLogin = () => {
+const performLogin = async (dispatch, mySky: MySky) => {
+  // @ts-ignore
+  await mySky.loadDacs(userProfileRecord);
+
+  // @ts-ignore
+  const userProfile = await userProfileRecord.getProfile(
+    await mySky.userID()
+  );
+
+  const tempUser: User = {
+    username: userProfile.username,
+    avatar: null,
+  };
+
+  if (userProfile.avatar && userProfile.avatar.length > 0) {
+    tempUser['avatar'] = userProfile.avatar[0].url.replace('sia://', getMySkyDomain()+'/')
+  }
+
+  dispatch(userLoaded(tempUser));
+}
+
+export const checkLogin = () => {
   // the inside "thunk function"
   return async (dispatch, getState) => {
     try {
-      const client = new SkynetClient(getMySkyDomain());
-      const mySky = await client.loadMySky(dataDomain, { debug: true });
-
+      const mySky = await getMySky();
       const loggedIn = await mySky.checkLogin();
       if (!loggedIn) {
-        if (!(await mySky.requestLoginAccess())) {
-          throw Error('could not login');
-        }
+        return;
       }
 
-      // setUserID(await mySky.userID());
-
-      // @ts-ignore
-      await mySky.loadDacs(userProfileRecord);
-
-      // @ts-ignore
-      const userProfile = await userProfileRecord.getProfile(
-        await mySky.userID()
-      );
-
-      const tempUser: User = {
-        username: userProfile.username,
-        avatar: userProfile.avatar[0].url,
-      };
-
-      dispatch(userLoaded(tempUser));
+      await performLogin(dispatch, mySky);
     } catch (err) {
-      const tempUser: User = {
-        username: 'test',
-        avatar: 'test',
-      };
+      console.error(err);
+    }
+  };
+};
 
-      dispatch(userLoaded(tempUser));
+export const login = () => {
+  // the inside "thunk function"
+  return async (dispatch, getState) => {
+    try {
+      const mySky = await getMySky();
+      if (!(await mySky.requestLoginAccess())) {
+        throw Error('could not login');
+      }
+
+      await performLogin(dispatch, mySky);
+    } catch (err) {
+      console.error(err);
     }
   };
 };

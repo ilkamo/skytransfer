@@ -128,18 +128,15 @@ export const getDecryptedBucket = async (
   });
 };
 
-export const mySkyLogin = async (): Promise<MySky> => {
-  const client = new SkynetClient(getMySkyDomain());
-  const mySky = await client.loadMySky(dataDomain, { debug: true });
+let mySkyInstance: MySky = null;
 
-  const loggedIn = await mySky.checkLogin();
-  if (!loggedIn) {
-    if (!(await mySky.requestLoginAccess())) {
-      throw Error('could not login');
-    }
+export const getMySky = async (): Promise<MySky> => {
+  if (mySkyInstance) {
+    return mySkyInstance;
   }
 
-  return mySky;
+  const client = new SkynetClient(getMySkyDomain());
+  return await client.loadMySky(dataDomain, { debug: true });
 };
 
 export async function getUserHiddenBuckets(mySky: MySky): Promise<Buckets> {

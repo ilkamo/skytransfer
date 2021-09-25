@@ -1,10 +1,17 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
-import { initLogin, selectUser } from './user-slice';
+import { Card, Avatar } from 'antd';
+import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
+const { Meta } = Card;
 
-const useConstructor = (callBack = () => {}) => {
+import { Button } from 'antd';
+import { LoginOutlined } from '@ant-design/icons';
+
+import { checkLogin, login, selectUser } from './user-slice';
+
+const useConstructor = (callBack = () => { }) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -16,15 +23,33 @@ export function User() {
   const dispatch = useDispatch();
 
   useConstructor(async () => {
-    dispatch(initLogin());
+    dispatch(checkLogin());
   });
 
   return (
     <div>
       {user.status == UserStatus.Logged ? (
-        <b>{user.data.username}</b>
+        <Card
+          style={{ width: 300 }}
+          actions={[
+            <SettingOutlined key="setting" />,
+            <EditOutlined key="edit" />,
+            <EllipsisOutlined key="ellipsis" />,
+          ]}
+        >
+          <Meta
+            avatar={<Avatar src={user.data.avatar} />}
+            title={user.data.username}
+            description="This is the description"
+          />
+        </Card>
       ) : (
-        <b>Not logged</b>
+        <div>
+          <p>You are not logged. Login and access to your buckets.</p>
+          <Button onClick={dispatch(login)} type="primary" icon={<LoginOutlined />} size="large">
+            Sign in with MySky
+          </Button>
+        </div>
       )}
     </div>
   );
