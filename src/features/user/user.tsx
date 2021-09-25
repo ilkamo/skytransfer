@@ -3,15 +3,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
 import { Card, Avatar } from 'antd';
-import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
-const { Meta } = Card;
+import {
+  EditOutlined,
+  EllipsisOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 
 import { Button } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 
 import { checkLogin, login, selectUser } from './user-slice';
+const { Meta } = Card;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -28,7 +32,7 @@ export function User() {
 
   return (
     <div>
-      {user.status == UserStatus.Logged ? (
+      {user.status === UserStatus.Logged ? (
         <Card
           style={{ width: 300 }}
           actions={[
@@ -46,7 +50,12 @@ export function User() {
       ) : (
         <div>
           <p>You are not logged. Login and access to your buckets.</p>
-          <Button onClick={dispatch(login)} type="primary" icon={<LoginOutlined />} size="large">
+          <Button
+            onClick={dispatch(login)}
+            type="primary"
+            icon={<LoginOutlined />}
+            size="large"
+          >
             Sign in with MySky
           </Button>
         </div>

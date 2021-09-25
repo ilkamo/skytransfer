@@ -83,7 +83,6 @@ const Buckets = () => {
         </div>
       ) : (
         <>
-
           <Divider className="default-margin" orientation="left">
             Create a new private bucket
           </Divider>
@@ -126,8 +125,9 @@ const Buckets = () => {
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
-                    href={`https://${window.location.hostname}/#/${item.key
-                      }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    href={`https://${window.location.hostname}/#/${
+                      item.key
+                    }/${deriveEncryptionKeyFromKey(item.key)}`}
                     key={`${item.uuid}`}
                   >
                     open
