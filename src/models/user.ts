@@ -1,6 +1,7 @@
 export interface User {
   username: string;
   avatar: string;
+  description: string;
 }
 
 export enum UserStatus {

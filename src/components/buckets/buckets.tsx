@@ -6,6 +6,9 @@ import {
 } from '../../skynet/skynet';
 
 import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
+import { Drawer, Typography, Modal } from 'antd';
+
+const { Title } = Typography;
 
 import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
@@ -17,14 +20,18 @@ import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 import { User } from '../../features/user/user';
 
-import { selectUser } from '../../features/user/user-slice';
-import { useSelector } from 'react-redux';
+import { selectUser, login } from '../../features/user/user-slice';
+import { useDispatch, useSelector } from 'react-redux';
 import { UserStatus } from '../../models/user';
+
+import { LoginOutlined, InboxOutlined, ProfileOutlined } from '@ant-design/icons';
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
   const [isloading, setIsLoading] = useState(true);
+  const [newBucketModalVisible, setNewBucketModalVisible] = useState(false);
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
 
   const init = async () => {
     try {
@@ -70,47 +77,57 @@ const Buckets = () => {
     setIsLoading(false);
   };
 
+  const [visible, setVisible] = useState(false);
+  const showDrawer = () => {
+    setVisible(true);
+  };
+  const onClose = () => {
+    setVisible(false);
+  };
+
   return (
     <>
-      <User></User>
       {user.status === UserStatus.NotLogged ? (
-        <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin tip="Please login..." size="large" />
+        <div className="default-margin" style={{ fontSize: 16, textAlign: 'center' }}>
+          <p>You are not logged. Login and access your buckets.</p>
+          <Button
+            onClick={() => dispatch(login())}
+            type="primary"
+            icon={<LoginOutlined />}
+            size="large"
+          >
+            Sign in with MySky
+          </Button>
         </div>
       ) : (
         <>
-          <Divider className="default-margin" orientation="left">
-            Create a new private bucket
-          </Divider>
-          <Form name="basic" onFinish={onSubmit}>
-            <Form.Item
-              name="bucketName"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please add the bucket name',
-                },
-              ]}
+          <Drawer title="User profile" placement="right" onClose={onClose} visible={visible}>
+            <User></User>
+          </Drawer>
+          <Title level={3}>Your Buckets</Title>
+          <Divider className="default-margin" orientation="right"></Divider>
+          <div style={{ fontSize: 16 }}>
+            <p>Welcome to the buckets section. Here you can access previously created buckets.</p>
+            <p>You can also create a new bucket which will be stored in <a onClick={showDrawer}>your account</a>.</p>
+          </div>
+          <div className="default-margin" style={{ textAlign: 'center' }}>
+            <Button style={{ marginRight: 10 }}
+              icon={<ProfileOutlined />}
+              size="large"
+              type="primary"
+              onClick={showDrawer}
             >
-              <Input placeholder="Bucket name" />
-            </Form.Item>
-            <Form.Item
-              name="bucketDescription"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please add a short bucket description',
-                },
-              ]}
+              Manage account
+            </Button>
+            <Button
+              icon={<InboxOutlined />}
+              size="large"
+              type="primary"
+              onClick={() => setNewBucketModalVisible(true)}
             >
-              <Input placeholder="Bucket description" />
-            </Form.Item>
-            <Form.Item style={{ textAlign: 'center' }}>
-              <Button type="primary" htmlType="submit">
-                Save bucket
-              </Button>
-            </Form.Item>
-          </Form>
+              Create bucket
+            </Button>
+          </div>
           <Divider orientation="left">Your private buckets</Divider>
           <List
             loading={isloading}
@@ -121,9 +138,8 @@ const Buckets = () => {
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
-                    href={`https://${window.location.hostname}/#/${
-                      item.key
-                    }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    href={`https://${window.location.hostname}/#/${item.key
+                      }/${deriveEncryptionKeyFromKey(item.key)}`}
                     key={`${item.uuid}`}
                   >
                     open
@@ -135,6 +151,40 @@ const Buckets = () => {
               </List.Item>
             )}
           />
+
+          <Modal
+            title="Vertically centered modal dialog"
+            centered
+            visible={newBucketModalVisible}
+            onOk={() => setNewBucketModalVisible(false)}
+            onCancel={() => setNewBucketModalVisible(false)}
+            okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
+          >
+            <Form name="create-bucket" onFinish={onSubmit}>
+              <Form.Item
+                name="bucketName"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please add the bucket name',
+                  },
+                ]}
+              >
+                <Input placeholder="Bucket name" />
+              </Form.Item>
+              <Form.Item
+                name="bucketDescription"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please add a short bucket description',
+                  },
+                ]}
+              >
+                <Input.TextArea placeholder="Bucket description" />
+              </Form.Item>
+            </Form>
+          </Modal>
         </>
       )}
     </>

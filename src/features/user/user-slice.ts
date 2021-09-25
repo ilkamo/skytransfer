@@ -42,11 +42,12 @@ const performLogin = async (dispatch, mySky: MySky) => {
 
   const tempUser: User = {
     username: userProfile.username,
+    description: userProfile.description,
     avatar: null,
   };
 
   if (userProfile.avatar && userProfile.avatar.length > 0) {
-    const avatarPrefix = getCurrentPortal()+'/';
+    const avatarPrefix = `${getCurrentPortal()}/`;
     tempUser['avatar'] = userProfile.avatar[0].url.replace('sia://', avatarPrefix);
   }
 
