@@ -3,11 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
 import { Card, Avatar } from 'antd';
-import {
-  EditOutlined,
-  EllipsisOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { EditOutlined } from '@ant-design/icons';
 
 import { Button } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
@@ -36,8 +32,8 @@ export function User() {
         <Card
           style={{ width: 300 }}
           actions={[
-            <a href='https://skyprofile.hns.siasky.net/' target='_blank'>
-              Edit profile <EditOutlined key="edit"/>
+            <a href="https://skyprofile.hns.siasky.net/" target="_blank" rel="noreferrer">
+              Edit profile <EditOutlined key="edit" />
             </a>,
           ]}
         >
