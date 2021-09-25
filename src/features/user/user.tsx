@@ -8,7 +8,7 @@ import { EditOutlined } from '@ant-design/icons';
 import { checkLogin, selectUser } from './user-slice';
 const { Meta } = Card;
 
-const useConstructor = (callBack = () => { }) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -54,10 +54,7 @@ export function User() {
             </a>,
           ]}
         >
-          <Meta
-            avatar={<Avatar />}
-            title='Anonimous'
-          />
+          <Meta avatar={<Avatar />} title="Anonimous" />
         </Card>
       )}
     </>

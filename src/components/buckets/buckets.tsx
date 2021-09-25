@@ -8,8 +8,6 @@ import {
 import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
-const { Title } = Typography;
-
 import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
 import {
@@ -24,7 +22,13 @@ import { selectUser, login } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
-import { LoginOutlined, InboxOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  LoginOutlined,
+  InboxOutlined,
+  ProfileOutlined,
+} from '@ant-design/icons';
+
+const { Title } = Typography;
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
@@ -88,7 +92,10 @@ const Buckets = () => {
   return (
     <>
       {user.status === UserStatus.NotLogged ? (
-        <div className="default-margin" style={{ fontSize: 16, textAlign: 'center' }}>
+        <div
+          className="default-margin"
+          style={{ fontSize: 16, textAlign: 'center' }}
+        >
           <p>You are not logged. Login and access your buckets.</p>
           <Button
             onClick={() => dispatch(login())}
@@ -101,17 +108,29 @@ const Buckets = () => {
         </div>
       ) : (
         <>
-          <Drawer title="User profile" placement="right" onClose={onClose} visible={visible}>
+          <Drawer
+            title="User profile"
+            placement="right"
+            onClose={onClose}
+            visible={visible}
+          >
             <User></User>
           </Drawer>
           <Title level={3}>Your Buckets</Title>
           <Divider className="default-margin" orientation="right"></Divider>
           <div style={{ fontSize: 16 }}>
-            <p>Welcome to the buckets section. Here you can access previously created buckets.</p>
-            <p>You can also create a new bucket which will be stored in <a onClick={showDrawer}>your account</a>.</p>
+            <p>
+              Welcome to the buckets section. Here you can access previously
+              created buckets.
+            </p>
+            <p>
+              You can also create a new bucket which will be stored in{' '}
+              <a onClick={showDrawer}>your account</a>.
+            </p>
           </div>
           <div className="default-margin" style={{ textAlign: 'center' }}>
-            <Button style={{ marginRight: 10 }}
+            <Button
+              style={{ marginRight: 10 }}
               icon={<ProfileOutlined />}
               size="large"
               type="primary"
@@ -138,8 +157,9 @@ const Buckets = () => {
                 actions={[
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
-                    href={`https://${window.location.hostname}/#/${item.key
-                      }/${deriveEncryptionKeyFromKey(item.key)}`}
+                    href={`https://${window.location.hostname}/#/${
+                      item.key
+                    }/${deriveEncryptionKeyFromKey(item.key)}`}
                     key={`${item.uuid}`}
                   >
                     open
