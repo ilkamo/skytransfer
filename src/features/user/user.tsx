@@ -51,7 +51,7 @@ export function User() {
         <div>
           <p>You are not logged. Login and access to your buckets.</p>
           <Button
-            onClick={dispatch(login)}
+            onClick={() => dispatch(login())}
             type="primary"
             icon={<LoginOutlined />}
             size="large"
