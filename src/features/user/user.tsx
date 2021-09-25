@@ -37,7 +37,7 @@ export function User() {
           style={{ width: 300 }}
           actions={[
             <SettingOutlined key="setting" />,
-            <EditOutlined key="edit" />,
+            <EditOutlined key="edit" title="edit" />,
             <EllipsisOutlined key="ellipsis" />,
           ]}
         >
