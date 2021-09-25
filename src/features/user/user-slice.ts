@@ -1,13 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { MySky } from 'skynet-js';
-import { getMySkyDomain } from '../../portals';
+import { getCurrentPortal } from '../../portals';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { User, UserState, UserStatus } from '../../models/user';
 import { getMySky } from '../../skynet/skynet';
-
-const dataDomain = window.location.hostname === 'localhost' ? 'localhost' : 'skytransfer.hns';
-const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
 
 const userProfileRecord = new UserProfileDAC();
 
@@ -49,7 +46,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   };
 
   if (userProfile.avatar && userProfile.avatar.length > 0) {
-    tempUser['avatar'] = userProfile.avatar[0].url.replace('sia://', getMySkyDomain()+'/')
+    tempUser['avatar'] = userProfile.avatar[0].url.replace('sia://', getCurrentPortal()+'/')
   }
 
   dispatch(userLoaded(tempUser));
