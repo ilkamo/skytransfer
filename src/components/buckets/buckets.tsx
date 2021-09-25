@@ -155,10 +155,12 @@ const Buckets = () => {
           <List
             loading={isloading}
             bordered
+            itemLayout="horizontal"
             dataSource={Object.values(userHiddenBuckets)}
             renderItem={(item) => (
               <List.Item
                 actions={[
+                  <a href="#">edit</a>,
                   // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
                   <a
                     href={`https://${window.location.hostname}/#/${
@@ -167,11 +169,10 @@ const Buckets = () => {
                     key={`${item.uuid}`}
                   >
                     open
-                  </a>,
+                  </a>
                 ]}
               >
-                <List.Item.Meta title={item.name} />
-                <List.Item.Meta description={item.description} />
+                <List.Item.Meta title={item.name} description={item.description} />
               </List.Item>
             )}
           />

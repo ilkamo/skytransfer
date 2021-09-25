@@ -17,16 +17,16 @@ module.exports = {
 	module: {
 		rules: [
 			{
-                test: /\.m?js/,
-                resolve: {
-                    fullySpecified: false,
-                },
-            },
-            // {
-            //     test: /\.(js|mjs|jsx|ts|tsx)$/,
-            //     loader: "source-map-loader",
-            //     enforce: "pre",
-            // },
+				test: /\.m?js/,
+				resolve: {
+					fullySpecified: false,
+				},
+			},
+			{
+				test: /\.(js|mjs|jsx|ts|tsx)$/,
+				loader: "source-map-loader",
+				enforce: "pre",
+			},
 			{
 				test: /\.(js|jsx)$/,
 				exclude: /node_modules/,
@@ -58,7 +58,7 @@ module.exports = {
 						}
 					}
 				]
-			}
+			},
 		],
 	},
 	plugins: [
