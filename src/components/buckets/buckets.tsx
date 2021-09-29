@@ -1,25 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
+  encryptAndStoreBucket,
   getMySky,
   getUserHiddenBuckets,
   storeUserHiddenBucket,
 } from '../../skynet/skynet';
 
-import {
-  Form,
-  Input,
-  Button,
-  Divider,
-  Spin,
-  List,
-  message,
-  Avatar,
-} from 'antd';
+import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
 import {
+  Bucket,
   BucketInfo,
   Buckets as HiddenBuckets,
 } from '../../models/files/bucket';
@@ -37,7 +30,6 @@ import {
   ProfileOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
-import { QRCode } from 'react-qr-svg';
 
 const { Title } = Typography;
 
@@ -71,22 +63,40 @@ const Buckets = () => {
     setIsLoading(true);
     const tempBucketID = uuid();
 
-    const tempBucket: BucketInfo = {
+    const bucketPrivateKey = genKeyPairAndSeed().privateKey;
+    const bucketEncryptionKey = deriveEncryptionKeyFromKey(bucketPrivateKey);
+
+    const tempBucketInfo: BucketInfo = {
       uuid: tempBucketID,
       name: values.bucketName,
       description: values.bucketDescription,
       created: Date.now(),
-      key: genKeyPairAndSeed().privateKey,
+      privateKey: bucketPrivateKey,
+      encryptionKey: bucketEncryptionKey,
+    };
+
+    const tempBucket: Bucket = {
+      uuid: tempBucketID,
+      name: values.bucketName,
+      description: values.bucketDescription,
+      files: {},
+      created: Date.now(),
+      modified: Date.now(),
     };
 
     setUserHiddenBuckets((p) => {
-      p[tempBucket.uuid] = tempBucket;
+      p[tempBucketInfo.uuid] = tempBucketInfo;
       return p;
     });
 
     try {
       const mySky: MySky = await getMySky();
-      await storeUserHiddenBucket(mySky, tempBucket);
+      await encryptAndStoreBucket(
+        bucketPrivateKey,
+        bucketEncryptionKey,
+        tempBucket
+      );
+      await storeUserHiddenBucket(mySky, tempBucketInfo);
     } catch (error) {
       message.error(error.message);
     }
@@ -104,9 +114,7 @@ const Buckets = () => {
   };
 
   const resolveBucketLink = (b: BucketInfo) => {
-    return `https://${window.location.hostname}/#/${
-      b.key
-    }/${deriveEncryptionKeyFromKey(b.key)}`;
+    return `https://${window.location.hostname}/#/${b.privateKey}/${b.encryptionKey}`;
   };
 
   return (
@@ -184,14 +192,6 @@ const Buckets = () => {
                 ]}
               >
                 <List.Item.Meta
-                  avatar={
-                    <QRCode
-                      bgColor="#FFFFFF"
-                      fgColor="#000000"
-                      level="L"
-                      value={resolveBucketLink(item)}
-                    />
-                  }
                   title={item.name}
                   description={item.description}
                 />

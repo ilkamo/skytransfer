@@ -78,9 +78,7 @@ let skydbSyncInProgress = false;
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>(
-    new DecryptedBucket()
-  );
+  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>();
 
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
@@ -102,11 +100,19 @@ const Uploader = () => {
       deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
     if (!bucket) {
+      setDecryptedBucket(new DecryptedBucket({
+        uuid: uuid(),
+        name: 'test',
+        description: '',
+        files: {},
+        created: Date.now(),
+        modified: Date.now(),
+      }));
       setLoading(false);
       return;
     }
 
-    setDecryptedBucket(Object.assign(new DecryptedBucket(), bucket));
+    setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };
 
@@ -339,6 +345,7 @@ const Uploader = () => {
 
             setDecryptedBucket((p) => {
               p.files[relativePath] = encryptedFile;
+              p.modified = Date.now();
               return p;
             });
           }
@@ -378,6 +385,9 @@ const Uploader = () => {
       }
     }
   };
+
+  const bucketHasFiles =
+    decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
 
   const isLoading = uploading || loading;
   return (
@@ -438,7 +448,7 @@ const Uploader = () => {
         ]}
       />
 
-      {Object.keys(decryptedBucket.files).length > 0 ? (
+      {bucketHasFiles ? (
         <div className="file-list default-margin">
           <DownloadActivityBar
             decryptProgress={decryptProgress}
@@ -508,7 +518,7 @@ const Uploader = () => {
         </Empty>
       )}
 
-      {!isLoading && Object.keys(decryptedBucket.files).length > 0 && (
+      {!isLoading && bucketHasFiles && (
         <div style={{ textAlign: 'center' }}>
           <Button
             icon={<DownloadOutlined />}

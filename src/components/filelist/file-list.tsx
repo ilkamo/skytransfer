@@ -32,9 +32,7 @@ const FileList = () => {
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
 
-  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>(
-    new DecryptedBucket()
-  );
+  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>();
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
@@ -48,7 +46,7 @@ const FileList = () => {
       return;
     }
 
-    setDecryptedBucket(Object.assign(new DecryptedBucket(), bucket));
+    setDecryptedBucket(new DecryptedBucket(bucket));
     setlLoading(false);
   });
 
@@ -109,10 +107,12 @@ const FileList = () => {
     throw Error('could not find the file');
   };
 
+  const bucketHasFiles = decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
+
   return (
     <>
       <Divider orientation="left">Shared files</Divider>
-      {Object.keys(decryptedBucket.files).length > 0 ? (
+      {bucketHasFiles ? (
         <>
           <div className="file-list">
             <DownloadActivityBar
