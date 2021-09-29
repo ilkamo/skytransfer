@@ -100,14 +100,16 @@ const Uploader = () => {
       deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
     );
     if (!bucket) {
-      setDecryptedBucket(new DecryptedBucket({
-        uuid: uuid(),
-        name: 'test',
-        description: '',
-        files: {},
-        created: Date.now(),
-        modified: Date.now(),
-      }));
+      setDecryptedBucket(
+        new DecryptedBucket({
+          uuid: uuid(),
+          name: 'test',
+          description: '',
+          files: {},
+          created: Date.now(),
+          modified: Date.now(),
+        })
+      );
       setLoading(false);
       return;
     }

@@ -107,7 +107,8 @@ const FileList = () => {
     throw Error('could not find the file');
   };
 
-  const bucketHasFiles = decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
+  const bucketHasFiles =
+    decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
 
   return (
     <>
