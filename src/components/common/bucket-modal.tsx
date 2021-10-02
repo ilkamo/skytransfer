@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';
 import { v4 as uuid } from 'uuid';
-import { keySet } from '../../features/user/user-slice';
+import { setUserKeys } from '../../features/user/user-slice';
 import { Bucket, BucketInfo } from '../../models/files/bucket';
 import {
   encryptAndStoreBucket,
@@ -79,12 +79,7 @@ export const BucketModal = ({
       onError(error);
     }
 
-    dispatch(
-      keySet({
-        bucketPrivateKey: bucketInfo.privateKey,
-        bucketEncryptionKey: bucketInfo.encryptionKey,
-      })
-    );
+    dispatch(setUserKeys(bucketInfo.privateKey, bucketInfo.encryptionKey));
 
     setIsLoading(false);
     onDone(modalBucketInfo);

@@ -18,7 +18,7 @@ import {
 
 import { User } from '../../features/user/user';
 
-import { selectUser, login, keySet } from '../../features/user/user-slice';
+import { selectUser, login, setUserKeys } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserState, UserStatus } from '../../models/user';
 
@@ -91,12 +91,7 @@ const Buckets = () => {
   };
 
   const openBucket = (b: BucketInfo) => {
-    dispatch(
-      keySet({
-        bucketPrivateKey: b.privateKey,
-        bucketEncryptionKey: b.encryptionKey,
-      })
-    );
+    dispatch(setUserKeys(b.privateKey, b.encryptionKey));
     history.push('/');
   };
 

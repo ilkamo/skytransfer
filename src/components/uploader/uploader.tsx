@@ -590,9 +590,10 @@ const Uploader = () => {
         }}
         header={
           <p>
-            Your <strong>SkyTransfer</strong> bucket is ready. Your files have been
-            encrypted and uploaded on Skynet. Copy the link and share your bucket
-            or just continue uploading. When you share a bucket draft, others can edit it.
+            Your <strong>SkyTransfer</strong> bucket is ready. Your files have
+            been encrypted and uploaded on Skynet. Copy the link and share your
+            bucket or just continue uploading. When you share a bucket draft,
+            others can edit it.
           </p>
         }
         shareLinkOnClick={finishUpload}
