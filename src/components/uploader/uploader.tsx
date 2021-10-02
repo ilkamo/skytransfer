@@ -62,13 +62,11 @@ import { useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { UserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
-import { BucketIcon } from '../common/icons';
 import { BucketInformation } from '../common/bucket-information';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
-const { Meta } = Card;
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
