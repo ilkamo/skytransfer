@@ -100,7 +100,7 @@ const Buckets = () => {
       message.error(error.message);
     }
 
-    dispatch(keySet({bucketPrivateKey, bucketEncryptionKey }));
+    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
 
     setIsLoading(false);
     setNewBucketModalVisible(false);

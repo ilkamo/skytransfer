@@ -12,9 +12,7 @@ import { initUserKeys } from './features/user/user-slice';
 
 const { bucketPrivateKey, bucketEncryptionKey } = SessionManager.sessionKeys;
 
-store.dispatch(
-  initUserKeys(bucketPrivateKey, bucketEncryptionKey)
-);
+store.dispatch(initUserKeys(bucketPrivateKey, bucketEncryptionKey));
 
 ReactDOM.render(
   <React.StrictMode>

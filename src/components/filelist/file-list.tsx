@@ -15,12 +15,12 @@ import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-
 import { Bucket, DecryptedBucket } from '../../models/files/bucket';
 import { EncryptedFile } from '../../models/files/encrypted-file';
 
+import { useDispatch } from 'react-redux';
+import { setUserKeys } from '../../features/user/user-slice';
+
 const { DownloadActivityBar } = ActivityBars;
 
 const { DirectoryTree } = Tree;
-
-import { useDispatch, useSelector } from 'react-redux';
-import { setUserKeys } from '../../features/user/user-slice';
 
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);

@@ -96,15 +96,14 @@ const Uploader = () => {
       user.encryptionKey
     );
     if (!bucket) {
-      bucket = 
-        new DecryptedBucket({
-          uuid: uuid(),
-          name: 'test',
-          description: '',
-          files: {},
-          created: Date.now(),
-          modified: Date.now(),
-        });
+      bucket = new DecryptedBucket({
+        uuid: uuid(),
+        name: 'test',
+        description: '',
+        files: {},
+        created: Date.now(),
+        modified: Date.now(),
+      });
     }
     debugger;
     setDecryptedBucket(new DecryptedBucket(bucket));
