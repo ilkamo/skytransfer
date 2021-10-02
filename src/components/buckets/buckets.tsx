@@ -136,7 +136,7 @@ const Buckets = () => {
       {user.status === UserStatus.NotLogged ? (
         <div
           className="default-margin buckets"
-          style={{ fontSize: 16, textAlign: 'center' }}
+          style={{ fontSize: 14, textAlign: 'center' }}
         >
           <Card style={{ borderColor: '#bdc3c7' }} cover={<BucketIcon />}>
             <Meta
