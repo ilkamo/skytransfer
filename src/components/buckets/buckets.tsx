@@ -102,10 +102,11 @@ const Buckets = () => {
 
   const deleteBucket = async (b: BucketInfo) => {
     const mySky = await getMySky();
-    deleteUserHiddenBucket(mySky, b);
+    await deleteUserHiddenBucket(mySky, b);
     setUserHiddenBuckets((p) => {
-      delete p[b.uuid];
-      return p;
+      const copy = { ...p };
+      delete copy[b.uuid];
+      return copy;
     });
   };
 
@@ -113,10 +114,21 @@ const Buckets = () => {
     Modal.confirm({
       title: 'Are you sure?',
       icon: <DeleteOutlined />,
-      content: `By starting a new draft, all files you've uploaded will be lost if you don't have the draft link. Make sure you've saved the draft link before continuing.`,
-      okText: 'New draft',
+      content: `By creating a new bucket, all files you've uploaded will be lost if you don't have the bucket link. Make sure you've saved the bucket link before continuing.`,
+      okText: 'New bucket',
       cancelText: 'Cancel',
       onOk: onNewDraftClick,
+    });
+  };
+
+  const deleteBucketConfirmModal = (onDeleteBucketClick: () => void) => {
+    Modal.confirm({
+      title: 'Are you sure?',
+      icon: <DeleteOutlined />,
+      content: `By deleting the bucket, all files you've uploaded into it will be lost.`,
+      okText: 'Delete',
+      cancelText: 'Cancel',
+      onOk: onDeleteBucketClick,
     });
   };
 
@@ -212,7 +224,9 @@ const Buckets = () => {
                   <Button
                     danger
                     type="link"
-                    onClick={() => deleteBucket(item)}
+                    onClick={() => {
+                      deleteBucketConfirmModal(() => deleteBucket(item));
+                    }}
                     key={`${item.uuid}`}
                   >
                     delete
