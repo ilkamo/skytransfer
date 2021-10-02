@@ -12,7 +12,6 @@ import {
   Bucket,
   BucketInfo,
   Buckets,
-  DecryptedBucket,
 } from '../models/files/bucket';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());

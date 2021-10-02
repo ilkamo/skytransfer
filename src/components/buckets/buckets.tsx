@@ -26,9 +26,9 @@ import {
 } from '@ant-design/icons';
 import { BucketModal } from '../common/bucket-modal';
 
-const { Title } = Typography;
-
 import { v4 as uuid } from 'uuid';
+
+const { Title } = Typography;
 
 const generateNewBucketInfo = (): BucketInfo => {
   const tempBucketID = uuid();
@@ -189,14 +189,15 @@ const Buckets = () => {
             renderItem={(item) => (
               <List.Item
                 actions={[
-                  <a
+                  <Button
+                    type="link"
                     onClick={() => {
                       openBucket(item);
                     }}
                     key={`${item.uuid}`}
                   >
                     open
-                  </a>,
+                  </Button>,
                 ]}
               >
                 <List.Item.Meta

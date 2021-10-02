@@ -2,7 +2,7 @@ import { Form, Input, Spin } from 'antd';
 import { Modal } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { genKeyPairAndSeed, MySky } from 'skynet-js';
+import { MySky } from 'skynet-js';
 import { v4 as uuid } from 'uuid';
 import { keySet } from '../../features/user/user-slice';
 import { Bucket, BucketInfo } from '../../models/files/bucket';
