@@ -58,6 +58,7 @@ import { ChunkResolver } from '../../crypto/chunk-resolver';
 import { selectUser } from '../../features/user/user-slice';
 import { useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
+import { UserState } from '../../models/user';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -84,7 +85,7 @@ const Uploader = () => {
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
-  const user = useSelector(selectUser);
+  const user: UserState = useSelector(selectUser);
 
   const finishUpload = () => {
     setShowUploadCompletedModal(false);
@@ -92,8 +93,8 @@ const Uploader = () => {
 
   const initBucket = async () => {
     let bucket: Bucket = await getDecryptedBucket(
-      publicKeyFromPrivateKey(user.privateKey),
-      user.encryptionKey
+      publicKeyFromPrivateKey(user.bucketPrivateKey),
+      user.bucketEncryptionKey
     );
     if (!bucket) {
       bucket = new DecryptedBucket({
@@ -105,13 +106,13 @@ const Uploader = () => {
         modified: Date.now(),
       });
     }
-    debugger;
+    
     setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };
 
   useEffect(() => {
-    if (user.privateKey !== null) {
+    if (user.bucketPrivateKey !== null) {
       initBucket();
     }
   }, [user]);
@@ -122,8 +123,8 @@ const Uploader = () => {
     try {
       message.loading('Syncing files in SkyDB...');
       await encryptAndStoreBucket(
-        user.privateKey,
-        user.encryptionKey,
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey,
         decryptedBucket
       );
 

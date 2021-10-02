@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+
 import {
   encryptAndStoreBucket,
   getMySky,
@@ -21,13 +23,14 @@ import { User } from '../../features/user/user';
 
 import { selectUser, login, keySet } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
-import { UserStatus } from '../../models/user';
+import { UserState, UserStatus } from '../../models/user';
 
 import {
   LoginOutlined,
   InboxOutlined,
   ProfileOutlined,
   LoadingOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 
 const { Title } = Typography;
@@ -36,12 +39,14 @@ const modalSpinner = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
-  const [isloading, setIsLoading] = useState(true);
+  const [isloading, setIsLoading] = useState(false);
   const [newBucketModalVisible, setNewBucketModalVisible] = useState(false);
-  const user = useSelector(selectUser);
+  const user: UserState = useSelector(selectUser);
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const init = async () => {
+    setIsLoading(true);
     try {
       const mySky: MySky = await getMySky();
       const hiddenBuckets = await getUserHiddenBuckets(mySky);
@@ -52,8 +57,10 @@ const Buckets = () => {
     setIsLoading(false);
   };
 
+  const isLoggedUser = user.status === UserStatus.Logged;
+
   useEffect(() => {
-    if (user.status === UserStatus.Logged) {
+    if (isLoggedUser) {
       init();
     }
   }, [user]);
@@ -89,13 +96,16 @@ const Buckets = () => {
     });
 
     try {
-      const mySky: MySky = await getMySky();
       await encryptAndStoreBucket(
         bucketPrivateKey,
         bucketEncryptionKey,
         tempBucket
       );
-      await storeUserHiddenBucket(mySky, tempBucketInfo);
+
+      if (isLoggedUser) {
+        const mySky: MySky = await getMySky();
+        await storeUserHiddenBucket(mySky, tempBucketInfo);
+      }
     } catch (error) {
       message.error(error.message);
     }
@@ -104,6 +114,8 @@ const Buckets = () => {
 
     setIsLoading(false);
     setNewBucketModalVisible(false);
+
+    history.push('/');
   };
 
   const [visible, setVisible] = useState(false);
@@ -116,6 +128,17 @@ const Buckets = () => {
 
   const resolveBucketLink = (b: BucketInfo) => {
     return `https://${window.location.hostname}/#/${b.privateKey}/${b.encryptionKey}`;
+  };
+
+  const newDraftConfirmModal = (onNewDraftClick: () => void) => {
+    Modal.confirm({
+      title: 'Are you sure?',
+      icon: <DeleteOutlined />,
+      content: `By starting a new draft, all files you've uploaded will be lost if you don't have the draft link. Make sure you've saved the draft link before continuing.`,
+      okText: 'New draft',
+      cancelText: 'Cancel',
+      onOk: onNewDraftClick,
+    });
   };
 
   return (
@@ -133,6 +156,20 @@ const Buckets = () => {
             size="large"
           >
             Sign in with MySky
+          </Button>
+          <br />
+          <br />
+          <Button
+            icon={<InboxOutlined />}
+            size="large"
+            type="primary"
+            onClick={() =>
+              newDraftConfirmModal(() => {
+                setNewBucketModalVisible(true);
+              })
+            }
+          >
+            Create new bucket
           </Button>
         </div>
       ) : (
@@ -199,46 +236,45 @@ const Buckets = () => {
               </List.Item>
             )}
           />
-
-          <Modal
-            title="Vertically centered modal dialog"
-            centered
-            visible={newBucketModalVisible}
-            onCancel={() => setNewBucketModalVisible(false)}
-            okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
-          >
-            <Form name="create-bucket" onFinish={onSubmit}>
-              <Form.Item
-                name="bucketName"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please add the bucket name',
-                  },
-                ]}
-              >
-                <Input placeholder="Bucket name" />
-              </Form.Item>
-              <Form.Item
-                name="bucketDescription"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please add a short bucket description',
-                  },
-                ]}
-              >
-                <Input.TextArea placeholder="Bucket description" />
-              </Form.Item>
-            </Form>
-            {isloading && (
-              <div className="default-margin" style={{ textAlign: 'center' }}>
-                <Spin indicator={modalSpinner} tip="Creating the bucket..." />
-              </div>
-            )}
-          </Modal>
         </>
       )}
+      <Modal
+        title="Vertically centered modal dialog"
+        centered
+        visible={newBucketModalVisible}
+        onCancel={() => setNewBucketModalVisible(false)}
+        okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
+      >
+        <Form name="create-bucket" onFinish={onSubmit}>
+          <Form.Item
+            name="bucketName"
+            rules={[
+              {
+                required: true,
+                message: 'Please add the bucket name',
+              },
+            ]}
+          >
+            <Input placeholder="Bucket name" />
+          </Form.Item>
+          <Form.Item
+            name="bucketDescription"
+            rules={[
+              {
+                required: true,
+                message: 'Please add a short bucket description',
+              },
+            ]}
+          >
+            <Input.TextArea placeholder="Bucket description" />
+          </Form.Item>
+        </Form>
+        {isloading && (
+          <div className="default-margin" style={{ textAlign: 'center' }}>
+            <Spin indicator={modalSpinner} tip="Creating the bucket..." />
+          </div>
+        )}
+      </Modal>
     </>
   );
 };
