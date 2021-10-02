@@ -18,7 +18,6 @@ import {
   Empty,
   Divider,
   Modal,
-  Card,
 } from 'antd';
 
 import {
