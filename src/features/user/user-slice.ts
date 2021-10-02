@@ -52,10 +52,10 @@ const performLogin = async (dispatch, mySky: MySky) => {
   };
 
   if (userProfile.avatar && userProfile.avatar.length > 0) {
-    const avatarPrefix = `${getCurrentPortal()}/`;
+    const avatarPrefix = getCurrentPortal().domain;
     tempUser['avatar'] = userProfile.avatar[0].url.replace(
       'sia://',
-      avatarPrefix
+      `https://${avatarPrefix}/`
     );
   }
 

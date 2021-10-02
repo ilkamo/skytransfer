@@ -8,11 +8,7 @@ import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
-import {
-  Bucket,
-  BucketInfo,
-  Buckets,
-} from '../models/files/bucket';
+import { Bucket, BucketInfo, Buckets } from '../models/files/bucket';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
