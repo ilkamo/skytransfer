@@ -422,6 +422,10 @@ const Uploader = () => {
         ''
       )}
 
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
+      )}
+
       <TabsCards
         tabType="line"
         values={[
@@ -484,10 +488,6 @@ const Uploader = () => {
             setEditBucketModalVisible(false);
           }}
         />
-      )}
-
-      {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation bucket={decryptedBucket} />
       )}
 
       {bucketHasFiles ? (

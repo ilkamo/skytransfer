@@ -20,7 +20,11 @@ export const BucketInformation = ({ bucket }: BucketInformationProps) => {
       <div className="default-margin" style={{ textAlign: 'center' }}>
         <Collapse>
           <Panel header="Bucket information" key="1">
-            <Card title={bucket.name} cover={<BucketIcon />}>
+            <Card
+              style={{ border: 'none' }}
+              title={bucket.name}
+              cover={<BucketIcon />}
+            >
               <Meta description={bucket.description} />
               <Divider />
               {createdText}

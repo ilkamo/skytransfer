@@ -20,6 +20,7 @@
   white-space: nowrap;
   overflow: hidden;
   flex: auto;
+  font-size: 14px;
 }
 
 .directory-tree-line__buttons {

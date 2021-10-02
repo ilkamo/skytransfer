@@ -184,9 +184,9 @@ const Buckets = () => {
           >
             <User></User>
           </Drawer>
-          <Title level={3}>Your Buckets</Title>
+          <Title level={4}>Your Buckets</Title>
           <Divider className="default-margin" orientation="right"></Divider>
-          <div style={{ fontSize: 16 }}>
+          <div style={{ fontSize: 14 }}>
             <p>
               Welcome to the buckets section. Here you can access previously
               created buckets.
