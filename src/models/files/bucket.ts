@@ -14,6 +14,7 @@ export interface BucketInfo {
   name: string;
   description: string;
   created: number;
+  modified: number;
   privateKey: string;
   encryptionKey: string;
 }
@@ -39,5 +40,17 @@ export class DecryptedBucket {
     }
 
     throw Error("file doesn't exist");
+  }
+
+  toBucketInfo(bucketPrivateKey, bucketEncryptionKey): BucketInfo {
+    return {
+      uuid: this.uuid,
+      name: this.name,
+      description: this.description,
+      created: this.created,
+      modified: this.modified,
+      privateKey: bucketPrivateKey,
+      encryptionKey: bucketEncryptionKey,
+    };
   }
 }

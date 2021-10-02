@@ -25,6 +25,7 @@ import {
   DownOutlined,
   LoadingOutlined,
   QuestionCircleOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -50,7 +51,7 @@ import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { EncryptedFile } from '../../models/files/encrypted-file';
-import { Bucket, DecryptedBucket } from '../../models/files/bucket';
+import { Bucket, BucketInfo, DecryptedBucket } from '../../models/files/bucket';
 import { FileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
@@ -58,7 +59,8 @@ import { ChunkResolver } from '../../crypto/chunk-resolver';
 import { selectUser } from '../../features/user/user-slice';
 import { useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
-import { UserState } from '../../models/user';
+import { UserState, UserStatus } from '../../models/user';
+import { BucketModal } from '../common/bucket-modal';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -70,6 +72,18 @@ const sleep = (ms): Promise<void> => {
 
 let uploadCount = 0;
 let skydbSyncInProgress = false;
+
+const generateRandomDecryptedBucket = (): DecryptedBucket => {
+  const randName = (Math.random() + 1).toString(36).substring(7);
+  return new DecryptedBucket({
+    uuid: uuid(),
+    name: `skytransfer-${randName}`,
+    description: '',
+    files: {},
+    created: Date.now(),
+    modified: Date.now(),
+  });
+};
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -85,6 +99,9 @@ const Uploader = () => {
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
+  const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
+  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+
   const user: UserState = useSelector(selectUser);
 
   const finishUpload = () => {
@@ -96,17 +113,18 @@ const Uploader = () => {
       publicKeyFromPrivateKey(user.bucketPrivateKey),
       user.bucketEncryptionKey
     );
-    if (!bucket) {
-      bucket = new DecryptedBucket({
-        uuid: uuid(),
-        name: 'test',
-        description: '',
-        files: {},
-        created: Date.now(),
-        modified: Date.now(),
-      });
+
+    let decryptedBucket = generateRandomDecryptedBucket();
+    if (bucket) {
+      decryptedBucket = new DecryptedBucket(bucket);
     }
 
+    setBucketInfo(
+      decryptedBucket.toBucketInfo(
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey
+      )
+    );
     setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };
@@ -447,12 +465,41 @@ const Uploader = () => {
         ]}
       />
 
+      {bucketInfo && decryptedBucket && (
+        <BucketModal
+          bucket={decryptedBucket}
+          bucketInfo={bucketInfo}
+          visible={editBucketModalVisible}
+          onCancel={() => setEditBucketModalVisible(false)}
+          isLoggedUser={user.status === UserStatus.Logged}
+          modalTitle="Edit bucket"
+          onDone={(bucketInfo) => {
+            setBucketInfo(bucketInfo);
+            setEditBucketModalVisible(false);
+          }}
+          onError={(e) => {
+            console.error(e);
+            setEditBucketModalVisible(false);
+          }}
+        />
+      )}
+
       {bucketHasFiles ? (
         <div className="file-list default-margin">
           <DownloadActivityBar
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
+          <div style={{ textAlign: 'center' }}>
+            <Button
+              style={{ margin: 12 }}
+              icon={<EditOutlined />}
+              onClick={() => setEditBucketModalVisible(true)}
+              size="middle"
+            >
+              Edit bucket
+            </Button>
+          </div>
           {isLoading && (
             <div style={{ textAlign: 'center' }}>
               <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />

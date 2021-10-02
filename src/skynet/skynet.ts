@@ -118,7 +118,7 @@ export const getDecryptedBucket = async (
       );
 
       if (data && data.data && typeof data.data === 'string') {
-        bucket = jsonCrypto.decrypt(data.data) as DecryptedBucket;
+        bucket = jsonCrypto.decrypt(data.data) as Bucket;
       }
 
       return resolve(bucket);

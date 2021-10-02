@@ -13,6 +13,7 @@ import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
+import { HeaderNotification } from './components/common/notification';
 
 const { Content, Footer } = Layout;
 
@@ -34,6 +35,21 @@ const App = () => {
   return (
     <Router>
       <Layout className="layout">
+        <HeaderNotification
+          content={
+            <>
+              You are using SkyTransfer v2. To switch the old version {' '}
+              <a
+                target="_blank"
+                href="https://skytransfer-v1.hns.siasky.net/"
+                rel="noreferrer"
+              >
+                click here
+              </a>
+              .
+            </>
+          }
+        />
         <AppHeader
           shareOnClick={() => {
             setState({ ...state, shareModalVisible: true });

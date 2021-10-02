@@ -1,20 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import {
-  encryptAndStoreBucket,
-  getMySky,
-  getUserHiddenBuckets,
-  storeUserHiddenBucket,
-} from '../../skynet/skynet';
+import { getMySky, getUserHiddenBuckets } from '../../skynet/skynet';
 
-import { Form, Input, Button, Divider, Spin, List, message } from 'antd';
+import { Button, Divider, List, message } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
-import { v4 as uuid } from 'uuid';
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
 import {
-  Bucket,
   BucketInfo,
   Buckets as HiddenBuckets,
 } from '../../models/files/bucket';
@@ -29,18 +22,40 @@ import {
   LoginOutlined,
   InboxOutlined,
   ProfileOutlined,
-  LoadingOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import { BucketModal } from '../common/bucket-modal';
 
 const { Title } = Typography;
 
-const modalSpinner = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+import { v4 as uuid } from 'uuid';
+
+const generateNewBucketInfo = (): BucketInfo => {
+  const tempBucketID = uuid();
+
+  const bucketPrivateKey = genKeyPairAndSeed().privateKey;
+  const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
+
+  const tempBucketInfo: BucketInfo = {
+    uuid: tempBucketID,
+    name: '',
+    description: '',
+    created: Date.now(),
+    modified: Date.now(),
+    privateKey: bucketPrivateKey,
+    encryptionKey: bucketEncryptionKey,
+  };
+
+  return tempBucketInfo;
+};
 
 const Buckets = () => {
   const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
   const [isloading, setIsLoading] = useState(false);
   const [newBucketModalVisible, setNewBucketModalVisible] = useState(false);
+  const [newBucketInfo, setNewBucketInfo] = useState<BucketInfo>(
+    generateNewBucketInfo()
+  );
   const user: UserState = useSelector(selectUser);
   const dispatch = useDispatch();
   const history = useHistory();
@@ -57,66 +72,11 @@ const Buckets = () => {
     setIsLoading(false);
   };
 
-  const isLoggedUser = user.status === UserStatus.Logged;
-
   useEffect(() => {
-    if (isLoggedUser) {
+    if (user.status === UserStatus.Logged) {
       init();
     }
-  }, [isLoggedUser]);
-
-  const onSubmit = async (values: any) => {
-    setIsLoading(true);
-    const tempBucketID = uuid();
-
-    const bucketPrivateKey = genKeyPairAndSeed().privateKey;
-    const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
-
-    const tempBucketInfo: BucketInfo = {
-      uuid: tempBucketID,
-      name: values.bucketName,
-      description: values.bucketDescription,
-      created: Date.now(),
-      privateKey: bucketPrivateKey,
-      encryptionKey: bucketEncryptionKey,
-    };
-
-    const tempBucket: Bucket = {
-      uuid: tempBucketID,
-      name: values.bucketName,
-      description: values.bucketDescription,
-      files: {},
-      created: Date.now(),
-      modified: Date.now(),
-    };
-
-    setUserHiddenBuckets((p) => {
-      p[tempBucketInfo.uuid] = tempBucketInfo;
-      return p;
-    });
-
-    try {
-      await encryptAndStoreBucket(
-        bucketPrivateKey,
-        bucketEncryptionKey,
-        tempBucket
-      );
-
-      if (isLoggedUser) {
-        const mySky: MySky = await getMySky();
-        await storeUserHiddenBucket(mySky, tempBucketInfo);
-      }
-    } catch (error) {
-      message.error(error.message);
-    }
-
-    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
-
-    setIsLoading(false);
-    setNewBucketModalVisible(false);
-
-    history.push('/');
-  };
+  }, [user]);
 
   const [visible, setVisible] = useState(false);
   const showDrawer = () => {
@@ -126,8 +86,14 @@ const Buckets = () => {
     setVisible(false);
   };
 
-  const resolveBucketLink = (b: BucketInfo) => {
-    return `https://${window.location.hostname}/#/${b.privateKey}/${b.encryptionKey}`;
+  const openBucket = (b: BucketInfo) => {
+    dispatch(
+      keySet({
+        bucketPrivateKey: b.privateKey,
+        bucketEncryptionKey: b.encryptionKey,
+      })
+    );
+    history.push('/');
   };
 
   const newDraftConfirmModal = (onNewDraftClick: () => void) => {
@@ -165,6 +131,7 @@ const Buckets = () => {
             type="primary"
             onClick={() =>
               newDraftConfirmModal(() => {
+                setNewBucketInfo(generateNewBucketInfo());
                 setNewBucketModalVisible(true);
               })
             }
@@ -222,9 +189,12 @@ const Buckets = () => {
             renderItem={(item) => (
               <List.Item
                 actions={[
-                  <a href="#">edit</a>,
-                  // TODO: this is just a test link. Change the link logic and pass only one key in the future??.
-                  <a href={resolveBucketLink(item)} key={`${item.uuid}`}>
+                  <a
+                    onClick={() => {
+                      openBucket(item);
+                    }}
+                    key={`${item.uuid}`}
+                  >
                     open
                   </a>,
                 ]}
@@ -238,43 +208,25 @@ const Buckets = () => {
           />
         </>
       )}
-      <Modal
-        title="Vertically centered modal dialog"
-        centered
+      <BucketModal
+        bucketInfo={newBucketInfo}
         visible={newBucketModalVisible}
         onCancel={() => setNewBucketModalVisible(false)}
-        okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
-      >
-        <Form name="create-bucket" onFinish={onSubmit}>
-          <Form.Item
-            name="bucketName"
-            rules={[
-              {
-                required: true,
-                message: 'Please add the bucket name',
-              },
-            ]}
-          >
-            <Input placeholder="Bucket name" />
-          </Form.Item>
-          <Form.Item
-            name="bucketDescription"
-            rules={[
-              {
-                required: true,
-                message: 'Please add a short bucket description',
-              },
-            ]}
-          >
-            <Input.TextArea placeholder="Bucket description" />
-          </Form.Item>
-        </Form>
-        {isloading && (
-          <div className="default-margin" style={{ textAlign: 'center' }}>
-            <Spin indicator={modalSpinner} tip="Creating the bucket..." />
-          </div>
-        )}
-      </Modal>
+        isLoggedUser={user.status === UserStatus.Logged}
+        modalTitle="Create new bucket"
+        onDone={(bucketInfo) => {
+          setUserHiddenBuckets((p) => {
+            p[bucketInfo.uuid] = bucketInfo;
+            return p;
+          });
+          setNewBucketModalVisible(false);
+          history.push('/');
+        }}
+        onError={(e) => {
+          console.error(e);
+          setNewBucketModalVisible(false);
+        }}
+      />
     </>
   );
 };
