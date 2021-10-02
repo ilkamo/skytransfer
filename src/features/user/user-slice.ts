@@ -5,13 +5,16 @@ import { getCurrentPortal } from '../../portals';
 import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { User, UserState, UserStatus } from '../../models/user';
 import { getMySky } from '../../skynet/skynet';
+import SessionManager from '../../session/session-manager';
 
 const userProfileRecord = new UserProfileDAC();
 
 const initialState: UserState = {
   status: UserStatus.NotLogged,
   data: null,
-}
+  bucketPrivateKey: null,
+  bucketEncryptionKey: null,
+};
 
 export const userSlice = createSlice({
   name: 'user',
@@ -24,10 +27,14 @@ export const userSlice = createSlice({
       state.data = action.payload;
       state.status = UserStatus.Logged;
     },
+    keySet: (state, action) => {
+      state.bucketPrivateKey = action.payload.bucketPrivateKey;
+      state.bucketEncryptionKey = action.payload.bucketEncryptionKey;
+    },
   },
 });
 
-export const { logout, userLoaded } = userSlice.actions;
+export const { logout, userLoaded, keySet } = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -36,9 +43,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   await mySky.loadDacs(userProfileRecord);
 
   // @ts-ignore
-  const userProfile = await userProfileRecord.getProfile(
-    await mySky.userID()
-  );
+  const userProfile = await userProfileRecord.getProfile(await mySky.userID());
 
   const tempUser: User = {
     username: userProfile.username,
@@ -47,12 +52,15 @@ const performLogin = async (dispatch, mySky: MySky) => {
   };
 
   if (userProfile.avatar && userProfile.avatar.length > 0) {
-    const avatarPrefix = `${getCurrentPortal()}/`;
-    tempUser['avatar'] = userProfile.avatar[0].url.replace('sia://', avatarPrefix);
+    const avatarPrefix = getCurrentPortal().domain;
+    tempUser['avatar'] = userProfile.avatar[0].url.replace(
+      'sia://',
+      `https://${avatarPrefix}/`
+    );
   }
 
   dispatch(userLoaded(tempUser));
-}
+};
 
 export const checkLogin = () => {
   // the inside "thunk function"
@@ -84,6 +92,22 @@ export const login = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+};
+
+export const initUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+  return async (dispatch, getState) => {
+    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
+  };
+};
+
+export const setUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+  return async (dispatch, getState) => {
+    SessionManager.setSessionKeys({
+      bucketPrivateKey,
+      bucketEncryptionKey,
+    });
+    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
   };
 };
 

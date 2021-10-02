@@ -12,4 +12,6 @@ export enum UserStatus {
 export interface UserState {
   status: UserStatus;
   data: User;
+  bucketPrivateKey: string;
+  bucketEncryptionKey: string;
 }

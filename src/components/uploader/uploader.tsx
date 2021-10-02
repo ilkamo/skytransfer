@@ -1,6 +1,6 @@
 import './uploader.css';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { EncryptionType } from '../../models/encryption';
 
@@ -25,6 +25,7 @@ import {
   DownOutlined,
   LoadingOutlined,
   QuestionCircleOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -41,9 +42,6 @@ import {
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import SessionManager from '../../session/session-manager';
-import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
-
 import {
   getDecryptedBucket,
   encryptAndStoreBucket,
@@ -53,21 +51,21 @@ import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { EncryptedFile } from '../../models/files/encrypted-file';
-import { Bucket, DecryptedBucket } from '../../models/files/bucket';
+import { Bucket, BucketInfo, DecryptedBucket } from '../../models/files/bucket';
 import { FileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
 
+import { selectUser } from '../../features/user/user-slice';
+import { useSelector } from 'react-redux';
+import { publicKeyFromPrivateKey } from '../../crypto/crypto';
+import { UserState, UserStatus } from '../../models/user';
+import { BucketModal } from '../common/bucket-modal';
+import { BucketInformation } from '../common/bucket-information';
+
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
-
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-};
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -76,11 +74,22 @@ const sleep = (ms): Promise<void> => {
 let uploadCount = 0;
 let skydbSyncInProgress = false;
 
+const generateRandomDecryptedBucket = (): DecryptedBucket => {
+  const randName = (Math.random() + 1).toString(36).substring(7);
+  return new DecryptedBucket({
+    uuid: uuid(),
+    name: `skytransfer-${randName}`,
+    description:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    files: {},
+    created: Date.now(),
+    modified: Date.now(),
+  });
+};
+
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>(
-    new DecryptedBucket()
-  );
+  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>();
 
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
@@ -92,23 +101,41 @@ const Uploader = () => {
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
+  const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
+  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+
+  const user: UserState = useSelector(selectUser);
+
   const finishUpload = () => {
     setShowUploadCompletedModal(false);
   };
 
-  const initSession = async () => {
-    const bucket: Bucket = await getDecryptedBucket(
-      SessionManager.sessionPublicKey,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
+  const initBucket = async () => {
+    let bucket: Bucket = await getDecryptedBucket(
+      publicKeyFromPrivateKey(user.bucketPrivateKey),
+      user.bucketEncryptionKey
     );
-    if (!bucket) {
-      setLoading(false);
-      return;
+
+    let decryptedBucket = generateRandomDecryptedBucket();
+    if (bucket) {
+      decryptedBucket = new DecryptedBucket(bucket);
     }
 
-    setDecryptedBucket(Object.assign(new DecryptedBucket(), bucket));
+    setBucketInfo(
+      decryptedBucket.toBucketInfo(
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey
+      )
+    );
+    setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (user.bucketPrivateKey !== null) {
+      initBucket();
+    }
+  }, [user]);
 
   const updateFilesInSkyDB = async () => {
     setLoading(true);
@@ -116,8 +143,8 @@ const Uploader = () => {
     try {
       message.loading('Syncing files in SkyDB...');
       await encryptAndStoreBucket(
-        SessionManager.sessionPrivateKey,
-        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey,
         decryptedBucket
       );
 
@@ -163,10 +190,6 @@ const Uploader = () => {
       }
     }
   };
-
-  useConstructor(() => {
-    initSession();
-  });
 
   useEffect(() => {
     skyDBSyncer();
@@ -339,6 +362,7 @@ const Uploader = () => {
 
             setDecryptedBucket((p) => {
               p.files[relativePath] = encryptedFile;
+              p.modified = Date.now();
               return p;
             });
           }
@@ -379,6 +403,11 @@ const Uploader = () => {
     }
   };
 
+  const bucketHasFiles =
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
+
   const isLoading = uploading || loading;
   return (
     <>
@@ -391,6 +420,10 @@ const Uploader = () => {
         />
       ) : (
         ''
+      )}
+
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
       )}
 
       <TabsCards
@@ -438,19 +471,51 @@ const Uploader = () => {
         ]}
       />
 
-      {Object.keys(decryptedBucket.files).length > 0 ? (
+      {bucketInfo && decryptedBucket && (
+        <BucketModal
+          bucket={decryptedBucket}
+          bucketInfo={bucketInfo}
+          visible={editBucketModalVisible}
+          onCancel={() => setEditBucketModalVisible(false)}
+          isLoggedUser={user.status === UserStatus.Logged}
+          modalTitle="Edit bucket"
+          onDone={(bucketInfo) => {
+            setBucketInfo(bucketInfo);
+            setEditBucketModalVisible(false);
+          }}
+          onError={(e) => {
+            console.error(e);
+            setEditBucketModalVisible(false);
+          }}
+        />
+      )}
+
+      {bucketHasFiles ? (
         <div className="file-list default-margin">
           <DownloadActivityBar
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
+          <div style={{ textAlign: 'center' }}>
+            <Button
+              type="primary"
+              ghost
+              style={{ margin: 12 }}
+              icon={<EditOutlined />}
+              onClick={() => setEditBucketModalVisible(true)}
+              size="middle"
+              disabled={isLoading}
+            >
+              Edit bucket
+            </Button>
+          </div>
           {isLoading && (
             <div style={{ textAlign: 'center' }}>
               <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />
               Sync in progress...
             </div>
           )}
-          <Divider>Uploaded files</Divider>
+          <Divider>{decryptedBucket.name}</Divider>
           <DirectoryTree
             multiple
             showIcon={false}
@@ -508,7 +573,7 @@ const Uploader = () => {
         </Empty>
       )}
 
-      {!isLoading && Object.keys(decryptedBucket.files).length > 0 && (
+      {!isLoading && bucketHasFiles && (
         <div style={{ textAlign: 'center' }}>
           <Button
             icon={<DownloadOutlined />}
@@ -533,10 +598,10 @@ const Uploader = () => {
         }}
         header={
           <p>
-            Your <strong>SkyTransfer</strong> is ready. Your files have been
-            encrypted and uploaded on Skynet. Copy the link and share your files
-            or just continue uploading. When you share a draft, others can add
-            files to your SkyTransfer.
+            Your <strong>SkyTransfer</strong> bucket is ready. Your files have
+            been encrypted and uploaded on Skynet. Copy the link and share your
+            bucket or just continue uploading. When you share a bucket draft,
+            others can edit it.
           </p>
         }
         shareLinkOnClick={finishUpload}

@@ -8,12 +8,7 @@ import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
-import {
-  Bucket,
-  BucketInfo,
-  Buckets,
-  DecryptedBucket,
-} from '../models/files/bucket';
+import { Bucket, BucketInfo, Buckets } from '../models/files/bucket';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -118,7 +113,7 @@ export const getDecryptedBucket = async (
       );
 
       if (data && data.data && typeof data.data === 'string') {
-        bucket = jsonCrypto.decrypt(data.data) as DecryptedBucket;
+        bucket = jsonCrypto.decrypt(data.data) as Bucket;
       }
 
       return resolve(bucket);
@@ -166,5 +161,20 @@ export async function storeUserHiddenBucket(
     await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
   } catch (error) {
     throw Error('content record error: ' + error.message);
+  }
+}
+
+export async function deleteUserHiddenBucket(
+  mySky: MySky,
+  newBucket: BucketInfo
+) {
+  let buckets = await getUserHiddenBuckets(mySky);
+  if (newBucket.uuid in buckets) {
+    delete buckets[newBucket.uuid];
+    try {
+      await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
+    } catch (error) {
+      throw Error('content record error: ' + error.message);
+    }
   }
 }

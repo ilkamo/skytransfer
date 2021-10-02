@@ -7,7 +7,6 @@ import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../../crypto/file-decrypt';
-import { SESSION_KEY_NAME } from '../../config';
 import { getDecryptedBucket } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
@@ -15,6 +14,10 @@ import { ActivityBars } from '../uploader/activity-bar';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { Bucket, DecryptedBucket } from '../../models/files/bucket';
 import { EncryptedFile } from '../../models/files/encrypted-file';
+
+import { useDispatch } from 'react-redux';
+import { setUserKeys } from '../../features/user/user-slice';
+import { BucketInformation } from '../common/bucket-information';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -31,14 +34,13 @@ const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
+  const dispatch = useDispatch();
 
-  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>(
-    new DecryptedBucket()
-  );
+  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>();
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
-      localStorage.setItem(SESSION_KEY_NAME, transferKey);
+      dispatch(setUserKeys(transferKey, encryptionKey));
       history.push('/');
     }
 
@@ -48,7 +50,7 @@ const FileList = () => {
       return;
     }
 
-    setDecryptedBucket(Object.assign(new DecryptedBucket(), bucket));
+    setDecryptedBucket(new DecryptedBucket(bucket));
     setlLoading(false);
   });
 
@@ -109,17 +111,25 @@ const FileList = () => {
     throw Error('could not find the file');
   };
 
+  const bucketHasFiles =
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
+
   return (
     <>
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
+      )}
       <Divider orientation="left">Shared files</Divider>
-      {Object.keys(decryptedBucket.files).length > 0 ? (
+      {bucketHasFiles ? (
         <>
           <div className="file-list">
             <DownloadActivityBar
               downloadProgress={downloadProgress}
               decryptProgress={decryptProgress}
             />
-            <Divider />
+            <Divider>{decryptedBucket.name}</Divider>
             <DirectoryTree
               multiple
               showIcon={false}

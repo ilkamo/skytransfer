@@ -6,13 +6,14 @@ import { useState } from 'react';
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
 
-import { Layout } from 'antd';
+import { Layout, Divider } from 'antd';
 import AppHeader from './components/header/header';
 import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
+import { HeaderNotification } from './components/common/notification';
 
 const { Content, Footer } = Layout;
 
@@ -22,9 +23,8 @@ export interface State {
 
 const ShareModalHeader = (
   <p>
-    Share your <strong>SkyTransfer</strong> directory. Copy the link and share
-    your files. When you share a draft, others can add more files to your
-    SkyTransfer.
+    Share your <strong>SkyTransfer</strong> bucket. Copy the link and share your
+    files. When you share a bucket draft, others can edit it.
   </p>
 );
 
@@ -34,6 +34,21 @@ const App = () => {
   return (
     <Router>
       <Layout className="layout">
+        <HeaderNotification
+          content={
+            <>
+              You are using SkyTransfer v2. You can still access the previous version by {' '}
+              <a
+                target="_blank"
+                href="https://skytransfer-v1.hns.siasky.net/"
+                rel="noreferrer"
+              >
+                going here
+              </a>
+              .
+            </>
+          }
+        />
         <AppHeader
           shareOnClick={() => {
             setState({ ...state, shareModalVisible: true });
@@ -74,7 +89,7 @@ const App = () => {
           visible={state.shareModalVisible}
           onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
-
+        <Divider />
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"

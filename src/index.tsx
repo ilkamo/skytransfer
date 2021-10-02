@@ -7,6 +7,12 @@ import App from './app';
 
 import store from './app/store';
 import { Provider } from 'react-redux';
+import SessionManager from './session/session-manager';
+import { initUserKeys } from './features/user/user-slice';
+
+const { bucketPrivateKey, bucketEncryptionKey } = SessionManager.sessionKeys;
+
+store.dispatch(initUserKeys(bucketPrivateKey, bucketEncryptionKey));
 
 ReactDOM.render(
   <React.StrictMode>

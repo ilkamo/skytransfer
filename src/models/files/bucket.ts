@@ -1,4 +1,4 @@
-import { EncryptedFile, EncryptedFiles } from "./encrypted-file";
+import { EncryptedFile, EncryptedFiles } from './encrypted-file';
 
 export interface Bucket {
   uuid: string;
@@ -7,9 +7,6 @@ export interface Bucket {
   files: EncryptedFiles;
   created: number;
   modified: number;
-
-  encryptedFileExists(relativePath: string): boolean;
-  getEncryptedFile(relativePath: string): EncryptedFile;
 }
 
 export interface BucketInfo {
@@ -17,20 +14,21 @@ export interface BucketInfo {
   name: string;
   description: string;
   created: number;
-  key: string;
+  modified: number;
+  privateKey: string;
+  encryptionKey: string;
 }
 
 export interface Buckets {
   [bucketID: string]: BucketInfo;
 }
 
-export class DecryptedBucket implements Bucket {
-  uuid: string;
-  name: string;
-  description: string;
-  files: EncryptedFiles = {};
-  created: number;
-  modified: number;
+export interface DecryptedBucket extends Bucket {}
+
+export class DecryptedBucket {
+  constructor(bucket: Bucket) {
+    Object.assign(this, bucket, {});
+  }
 
   encryptedFileExists(relativePath: string): boolean {
     return relativePath in this.files;
@@ -42,5 +40,17 @@ export class DecryptedBucket implements Bucket {
     }
 
     throw Error("file doesn't exist");
+  }
+
+  toBucketInfo(bucketPrivateKey, bucketEncryptionKey): BucketInfo {
+    return {
+      uuid: this.uuid,
+      name: this.name,
+      description: this.description,
+      created: this.created,
+      modified: this.modified,
+      privateKey: bucketPrivateKey,
+      encryptionKey: bucketEncryptionKey,
+    };
   }
 }

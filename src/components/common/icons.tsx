@@ -3,6 +3,7 @@ import SupportUsSVG from '../../images/support.svg';
 import SmileSVG from '../../images/smile.svg';
 import HomescreenSVG from '../../images/homescreen.svg';
 import SkyTransferSVG from '../../images/skytransfer-logo.svg';
+import BucketSVG from '../../images/bucket.svg';
 
 import './icons.css';
 
@@ -31,4 +32,9 @@ export const HomescreenIcon = () => {
 export const SkyTransferLogo = () => {
   const component = () => <SkyTransferSVG />;
   return <Icon className="skytransfer-logo" component={component} />;
+};
+
+export const BucketIcon = () => {
+  const component = () => <BucketSVG />;
+  return <Icon className="bucket" component={component} />;
 };
