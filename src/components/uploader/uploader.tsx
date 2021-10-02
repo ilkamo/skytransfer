@@ -106,7 +106,7 @@ const Uploader = () => {
         modified: Date.now(),
       });
     }
-    
+
     setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };

@@ -1,4 +1,4 @@
-import { Menu, Layout, Modal } from 'antd';
+import { Menu, Layout } from 'antd';
 
 import { useReducer } from 'react';
 import {

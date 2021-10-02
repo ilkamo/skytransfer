@@ -63,7 +63,7 @@ const Buckets = () => {
     if (isLoggedUser) {
       init();
     }
-  }, [user]);
+  }, [isLoggedUser]);
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
