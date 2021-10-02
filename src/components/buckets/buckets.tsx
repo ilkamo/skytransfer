@@ -142,7 +142,7 @@ const Buckets = () => {
             <Meta
               title="Buckets"
               description="Buckets are Skytransfer's most advanced feature. Thanks to them you
-      can manage your content as never before."
+      can manage your content like never before."
             />
           </Card>
           <Divider />

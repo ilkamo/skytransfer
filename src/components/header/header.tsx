@@ -74,7 +74,7 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           disabled={!canResumeSession}
           icon={<RedoOutlined />}
         >
-          Resume
+          Resume draft
         </Menu.Item>
         <Menu.Item
           key="buckets"
