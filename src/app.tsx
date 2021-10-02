@@ -23,9 +23,8 @@ export interface State {
 
 const ShareModalHeader = (
   <p>
-    Share your <strong>SkyTransfer</strong> directory. Copy the link and share
-    your files. When you share a draft, others can add more files to your
-    SkyTransfer.
+    Share your <strong>SkyTransfer</strong> bucket. Copy the link and share
+    your files. When you share a bucket draft, others can edit it.
   </p>
 );
 

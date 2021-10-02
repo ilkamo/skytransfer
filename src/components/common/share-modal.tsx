@@ -30,7 +30,7 @@ export const ShareModal = ({
         qrValue={SessionManager.readOnlyLink}
         linkOnClick={() => {
           navigator.clipboard.writeText(SessionManager.readOnlyLink);
-          message.info('SkyTransfer link copied');
+          message.info('SkyTransfer bucket link copied');
           shareLinkOnClick();
         }}
       />
@@ -43,7 +43,7 @@ export const ShareModal = ({
         qrValue={SessionManager.readWriteLink}
         linkOnClick={() => {
           navigator.clipboard.writeText(SessionManager.readWriteLink);
-          message.info('SkyTransfer draft link copied');
+          message.info('SkyTransfer bucket draft link copied');
           shareDraftLinkOnClick();
         }}
       />
