@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { getMySky, getUserHiddenBuckets } from '../../skynet/skynet';
+import {
+  deleteUserHiddenBucket,
+  getMySky,
+  getUserHiddenBuckets,
+} from '../../skynet/skynet';
 
 import { Button, Divider, List, message } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
@@ -94,6 +98,15 @@ const Buckets = () => {
       })
     );
     history.push('/');
+  };
+
+  const deleteBucket = async (b: BucketInfo) => {
+    const mySky = await getMySky();
+    deleteUserHiddenBucket(mySky, b);
+    setUserHiddenBuckets((p) => {
+      delete p[b.uuid];
+      return p;
+    });
   };
 
   const newDraftConfirmModal = (onNewDraftClick: () => void) => {
@@ -191,12 +204,18 @@ const Buckets = () => {
                 actions={[
                   <Button
                     type="link"
-                    onClick={() => {
-                      openBucket(item);
-                    }}
+                    onClick={() => openBucket(item)}
                     key={`${item.uuid}`}
                   >
                     open
+                  </Button>,
+                  <Button
+                    danger
+                    type="link"
+                    onClick={() => deleteBucket(item)}
+                    key={`${item.uuid}`}
+                  >
+                    delete
                   </Button>,
                 ]}
               >

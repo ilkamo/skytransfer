@@ -163,3 +163,18 @@ export async function storeUserHiddenBucket(
     throw Error('content record error: ' + error.message);
   }
 }
+
+export async function deleteUserHiddenBucket(
+  mySky: MySky,
+  newBucket: BucketInfo
+) {
+  let buckets = await getUserHiddenBuckets(mySky);
+  if (newBucket.uuid in buckets) {
+    delete buckets[newBucket.uuid];
+    try {
+      await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
+    } catch (error) {
+      throw Error('content record error: ' + error.message);
+    }
+  }
+}

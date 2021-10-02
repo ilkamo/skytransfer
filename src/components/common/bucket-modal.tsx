@@ -97,6 +97,7 @@ export const BucketModal = ({
       visible={visible}
       onCancel={onCancel}
       okButtonProps={{ form: 'create-bucket', htmlType: 'submit' }}
+      confirmLoading={isloading}
     >
       <Form
         name="create-bucket"
@@ -105,8 +106,12 @@ export const BucketModal = ({
           bucketDescription: bucketInfo.description,
         }}
         onFinish={onSubmit}
+        layout="vertical"
       >
         <Form.Item
+          label="Bucket name"
+          required
+          tooltip="Name the bucket"
           name="bucketName"
           rules={[
             {
@@ -115,9 +120,12 @@ export const BucketModal = ({
             },
           ]}
         >
-          <Input placeholder="Bucket name" />
+          <Input disabled={isloading} placeholder="Bucket name" />
         </Form.Item>
         <Form.Item
+          label="Bucket description"
+          required
+          tooltip="Describe the content of the bucket"
           name="bucketDescription"
           rules={[
             {
@@ -126,7 +134,10 @@ export const BucketModal = ({
             },
           ]}
         >
-          <Input.TextArea placeholder="Bucket description" />
+          <Input.TextArea
+            disabled={isloading}
+            placeholder="Bucket description"
+          />
         </Form.Item>
       </Form>
       {isloading && (

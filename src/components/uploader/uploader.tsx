@@ -496,6 +496,7 @@ const Uploader = () => {
               icon={<EditOutlined />}
               onClick={() => setEditBucketModalVisible(true)}
               size="middle"
+              disabled={isLoading}
             >
               Edit bucket
             </Button>
