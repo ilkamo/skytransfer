@@ -17,6 +17,7 @@ import { EncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch } from 'react-redux';
 import { setUserKeys } from '../../features/user/user-slice';
+import { BucketInformation } from '../common/bucket-information';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -117,6 +118,9 @@ const FileList = () => {
 
   return (
     <>
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
+      )}
       <Divider orientation="left">Shared files</Divider>
       {bucketHasFiles ? (
         <>

@@ -18,6 +18,7 @@ import {
   Empty,
   Divider,
   Modal,
+  Card,
 } from 'antd';
 
 import {
@@ -61,10 +62,13 @@ import { useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { UserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
+import { BucketIcon } from '../common/icons';
+import { BucketInformation } from '../common/bucket-information';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
+const { Meta } = Card;
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -78,7 +82,8 @@ const generateRandomDecryptedBucket = (): DecryptedBucket => {
   return new DecryptedBucket({
     uuid: uuid(),
     name: `skytransfer-${randName}`,
-    description: '',
+    description:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     files: {},
     created: Date.now(),
     modified: Date.now(),
@@ -484,6 +489,10 @@ const Uploader = () => {
         />
       )}
 
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
+      )}
+
       {bucketHasFiles ? (
         <div className="file-list default-margin">
           <DownloadActivityBar
@@ -492,6 +501,8 @@ const Uploader = () => {
           />
           <div style={{ textAlign: 'center' }}>
             <Button
+              type="primary"
+              ghost
               style={{ margin: 12 }}
               icon={<EditOutlined />}
               onClick={() => setEditBucketModalVisible(true)}

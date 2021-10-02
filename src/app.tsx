@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
 
-import { Layout } from 'antd';
+import { Layout, Divider } from 'antd';
 import AppHeader from './components/header/header';
 import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
@@ -89,7 +89,7 @@ const App = () => {
           visible={state.shareModalVisible}
           onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
-
+        <Divider />
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"

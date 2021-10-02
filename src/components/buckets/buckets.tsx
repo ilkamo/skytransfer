@@ -1,3 +1,5 @@
+import './buckets.css';
+
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -7,7 +9,7 @@ import {
   getUserHiddenBuckets,
 } from '../../skynet/skynet';
 
-import { Button, Divider, List, message } from 'antd';
+import { Button, Divider, List, message, Card } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
@@ -31,8 +33,10 @@ import {
 import { BucketModal } from '../common/bucket-modal';
 
 import { v4 as uuid } from 'uuid';
+import { BucketIcon } from '../common/icons';
 
 const { Title } = Typography;
+const { Meta } = Card;
 
 const generateNewBucketInfo = (): BucketInfo => {
   const tempBucketID = uuid();
@@ -108,8 +112,8 @@ const Buckets = () => {
   const newDraftConfirmModal = (onNewDraftClick: () => void) => {
     Modal.confirm({
       title: 'Are you sure?',
-      icon: <DeleteOutlined />,
-      content: `By creating a new bucket, all files you've uploaded will be lost if you don't have the bucket link. Make sure you've saved the bucket link before continuing.`,
+      icon: <DeleteOutlined style={{ color: 'red' }} />,
+      content: `By creating a new anonymous bucket, all files you've uploaded will be lost if you don't have the bucket link. Make sure you've saved the anonymous bucket link before continuing.`,
       okText: 'New bucket',
       cancelText: 'Cancel',
       onOk: onNewDraftClick,
@@ -119,7 +123,7 @@ const Buckets = () => {
   const deleteBucketConfirmModal = (onDeleteBucketClick: () => void) => {
     Modal.confirm({
       title: 'Are you sure?',
-      icon: <DeleteOutlined />,
+      icon: <DeleteOutlined style={{ color: 'red' }} />,
       content: `By deleting the bucket, all files you've uploaded into it will be lost.`,
       okText: 'Delete',
       cancelText: 'Cancel',
@@ -131,10 +135,21 @@ const Buckets = () => {
     <>
       {user.status === UserStatus.NotLogged ? (
         <div
-          className="default-margin"
+          className="default-margin buckets"
           style={{ fontSize: 16, textAlign: 'center' }}
         >
-          <p>You are not logged. Login and access your buckets.</p>
+          <Card style={{ borderColor: '#bdc3c7' }} cover={<BucketIcon />}>
+            <Meta
+              title="Buckets"
+              description="Buckets are Skytransfer's most advanced feature. Thanks to them you
+      can manage your content as never before."
+            />
+          </Card>
+          <Divider />
+          <p>
+            Sign in with MySky, access your buckets and unclock the power of
+            Skytransfer.
+          </p>
           <Button
             onClick={() => dispatch(login())}
             type="primary"
@@ -143,12 +158,12 @@ const Buckets = () => {
           >
             Sign in with MySky
           </Button>
-          <br />
-          <br />
+          <Divider />
+          <p>Continue as anonymous user and create an anonymous bucket.</p>
           <Button
             icon={<InboxOutlined />}
             size="large"
-            type="primary"
+            type="ghost"
             onClick={() =>
               newDraftConfirmModal(() => {
                 setNewBucketInfo(generateNewBucketInfo());
@@ -156,7 +171,7 @@ const Buckets = () => {
               })
             }
           >
-            Create new bucket
+            Create anonymous bucket
           </Button>
         </div>
       ) : (

@@ -61,6 +61,7 @@ export const BucketModal = ({
     if (bucket) {
       bucket.name = values.bucketName;
       bucket.description = values.bucketDescription;
+      bucket.modified = Date.now();
       bucketToStore = bucket;
     }
 
@@ -137,7 +138,7 @@ export const BucketModal = ({
       </Form>
       {isloading && (
         <div className="default-margin" style={{ textAlign: 'center' }}>
-          <Spin indicator={modalSpinner} tip="Creating the bucket..." />
+          <Spin indicator={modalSpinner} tip="Sync in progress..." />
         </div>
       )}
     </Modal>

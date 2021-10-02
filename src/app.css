@@ -4,7 +4,15 @@
 html,
 body {
   font-family: 'Lato', sans-serif;
-  background: #f0f2f5;
+  background: #efefef;
+}
+
+.ant-layout {
+  background: #efefef;
+}
+
+.ant-layout-footer {
+  background: #efefef;
 }
 
 .App {
