@@ -1,5 +1,3 @@
-import { genKeyPairFromSeed } from 'skynet-js';
-
 export interface FileEncrypt {
   encrypt(): Promise<File>;
   encryptChunkSize: number;
@@ -10,6 +8,6 @@ export interface FileDecrypt {
   decryptChunkSize: number;
 }
 
-export const deriveEncryptionKeyFromKey = (key): string => {
-  return genKeyPairFromSeed(`${key}-aes-encrypt`).privateKey;
+export const publicKeyFromPrivateKey = (key: string): string => {
+  return key.substr(key.length - 64);
 };

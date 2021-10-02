@@ -1,7 +1,8 @@
 import { EncryptionType } from "./models/encryption";
 
 export const SKYTRANSFER_BUCKET = 'SKYTRANSFER_BUCKET';
-export const SESSION_KEY_NAME = 'transferSessionKey';
+export const BUCKET_PRIVATE_KEY_NAME = 'BUCKET_PRIVATE_KEY';
+export const BUCKET_ENCRYPTION_KEY_NAME = 'BUCKET_ENCRYPTION_KEY';
 export const MAX_PARALLEL_UPLOAD = 5;
 export const MAX_AXIOS_RETRIES = 3;
 

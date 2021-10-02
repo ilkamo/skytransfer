@@ -16,11 +16,10 @@ import {
   BucketInfo,
   Buckets as HiddenBuckets,
 } from '../../models/files/bucket';
-import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
 
 import { User } from '../../features/user/user';
 
-import { selectUser, login } from '../../features/user/user-slice';
+import { selectUser, login, keySet } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
@@ -64,7 +63,7 @@ const Buckets = () => {
     const tempBucketID = uuid();
 
     const bucketPrivateKey = genKeyPairAndSeed().privateKey;
-    const bucketEncryptionKey = deriveEncryptionKeyFromKey(bucketPrivateKey);
+    const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
 
     const tempBucketInfo: BucketInfo = {
       uuid: tempBucketID,
@@ -100,6 +99,8 @@ const Buckets = () => {
     } catch (error) {
       message.error(error.message);
     }
+
+    dispatch(keySet({bucketPrivateKey, bucketEncryptionKey }));
 
     setIsLoading(false);
     setNewBucketModalVisible(false);

@@ -1,6 +1,6 @@
 import './uploader.css';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { EncryptionType } from '../../models/encryption';
 
@@ -41,9 +41,6 @@ import {
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import SessionManager from '../../session/session-manager';
-import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
-
 import {
   getDecryptedBucket,
   encryptAndStoreBucket,
@@ -58,16 +55,13 @@ import { FileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
 
+import { selectUser } from '../../features/user/user-slice';
+import { useSelector } from 'react-redux';
+import { publicKeyFromPrivateKey } from '../../crypto/crypto';
+
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
-
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-};
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -90,17 +84,19 @@ const Uploader = () => {
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
+  const user = useSelector(selectUser);
+
   const finishUpload = () => {
     setShowUploadCompletedModal(false);
   };
 
-  const initSession = async () => {
-    const bucket: Bucket = await getDecryptedBucket(
-      SessionManager.sessionPublicKey,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
+  const initBucket = async () => {
+    let bucket: Bucket = await getDecryptedBucket(
+      publicKeyFromPrivateKey(user.privateKey),
+      user.encryptionKey
     );
     if (!bucket) {
-      setDecryptedBucket(
+      bucket = 
         new DecryptedBucket({
           uuid: uuid(),
           name: 'test',
@@ -108,15 +104,18 @@ const Uploader = () => {
           files: {},
           created: Date.now(),
           modified: Date.now(),
-        })
-      );
-      setLoading(false);
-      return;
+        });
     }
-
+    debugger;
     setDecryptedBucket(new DecryptedBucket(bucket));
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (user.privateKey !== null) {
+      initBucket();
+    }
+  }, [user]);
 
   const updateFilesInSkyDB = async () => {
     setLoading(true);
@@ -124,8 +123,8 @@ const Uploader = () => {
     try {
       message.loading('Syncing files in SkyDB...');
       await encryptAndStoreBucket(
-        SessionManager.sessionPrivateKey,
-        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
+        user.privateKey,
+        user.encryptionKey,
         decryptedBucket
       );
 
@@ -171,10 +170,6 @@ const Uploader = () => {
       }
     }
   };
-
-  useConstructor(() => {
-    initSession();
-  });
 
   useEffect(() => {
     skyDBSyncer();
@@ -389,7 +384,9 @@ const Uploader = () => {
   };
 
   const bucketHasFiles =
-    decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
 
   const isLoading = uploading || loading;
   return (

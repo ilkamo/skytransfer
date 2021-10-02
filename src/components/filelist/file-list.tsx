@@ -7,7 +7,6 @@ import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import AESFileDecrypt from '../../crypto/file-decrypt';
-import { SESSION_KEY_NAME } from '../../config';
 import { getDecryptedBucket } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
@@ -20,6 +19,9 @@ const { DownloadActivityBar } = ActivityBars;
 
 const { DirectoryTree } = Tree;
 
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserKeys } from '../../features/user/user-slice';
+
 const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
@@ -31,12 +33,13 @@ const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const [decryptedBucket, setDecryptedBucket] = useState<Bucket>();
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
-      localStorage.setItem(SESSION_KEY_NAME, transferKey);
+      dispatch(setUserKeys(transferKey, encryptionKey));
       history.push('/');
     }
 
@@ -108,7 +111,9 @@ const FileList = () => {
   };
 
   const bucketHasFiles =
-    decryptedBucket && Object.keys(decryptedBucket.files).length > 0;
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
 
   return (
     <>
@@ -120,7 +125,7 @@ const FileList = () => {
               downloadProgress={downloadProgress}
               decryptProgress={decryptProgress}
             />
-            <Divider />
+            <Divider>{decryptedBucket.name}</Divider>
             <DirectoryTree
               multiple
               showIcon={false}

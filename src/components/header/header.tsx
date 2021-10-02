@@ -89,19 +89,6 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           Resume draft
         </Menu.Item>
         <Menu.Item
-          key="new-draft"
-          onClick={() => {
-            newDraftConfirmModal(() => {
-              SessionManager.destroySession();
-              history.push('/');
-              window.location.reload();
-            });
-          }}
-          icon={<DeleteOutlined />}
-        >
-          New draft
-        </Menu.Item>
-        <Menu.Item
           key="buckets"
           onClick={() => {
             history.push('/buckets');
