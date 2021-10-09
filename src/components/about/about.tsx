@@ -31,7 +31,7 @@ const About = () => {
         Uploaded files are{' '}
         <strong>
           encrypted using{' '}
-          <a href="https://github.com/jedisct1/libsodium.js" target="_blank">
+          <a href="https://github.com/jedisct1/libsodium.js" target="_blank" rel="noreferrer">
             the sodium crypto library
           </a>{' '}
           compiled to WebAssembly and pure JavaScript

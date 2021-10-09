@@ -8,7 +8,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
   private file: File;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
-  private state: _sodium.StateAddress;
+  private stateOut: _sodium.StateAddress;
 
   parts: BlobPart[] = [];
 
@@ -43,7 +43,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
 
     let res = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
     let [state_out, header] = [res.state, res.header];
-    this.state = state_out;
+    this.stateOut = state_out;
 
     this.parts.push(salt);
     this.parts.push(header);
@@ -90,7 +90,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
       : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
 
     return sodium.crypto_secretstream_xchacha20poly1305_push(
-      this.state,
+      this.stateOut,
       new Uint8Array(chunk),
       null,
       tag

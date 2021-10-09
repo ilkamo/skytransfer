@@ -24,7 +24,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: EncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
-  private state: _sodium.StateAddress;
+  private stateIn: _sodium.StateAddress;
 
   skynetClient = new SkynetClient(getEndpointInCurrentPortal());
 
@@ -68,7 +68,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
       sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 
-    this.state = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+    this.stateIn = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
       cryptoMetadata.header,
       key
     );
@@ -155,7 +155,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     sodium: typeof _sodium
   ): Promise<BlobPart> {
     const result = sodium.crypto_secretstream_xchacha20poly1305_pull(
-      this.state,
+      this.stateIn,
       new Uint8Array(chunk)
     );
 
