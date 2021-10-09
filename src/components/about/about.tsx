@@ -28,8 +28,15 @@ const About = () => {
         <strong>single link</strong> or <strong>QR code</strong>.
       </p>
       <p>
-        Uploaded files are <strong>encrypted using the AES algorithm</strong>:
-        no one can access them without your permission. Only by{' '}
+        Uploaded files are{' '}
+        <strong>
+          encrypted using{' '}
+          <a href="https://github.com/jedisct1/libsodium.js" target="_blank">
+            the sodium crypto library
+          </a>{' '}
+          compiled to WebAssembly and pure JavaScript
+        </strong>
+        : no one can access them without your permission. Only by{' '}
         <strong>sharing the link</strong>, other people can{' '}
         <strong>download and decrypt</strong> the content you uploaded. In
         addition, by <strong>sharing a draft</strong>, people can continue
