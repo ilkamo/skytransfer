@@ -25,7 +25,6 @@ import {
   DownOutlined,
   LoadingOutlined,
   QuestionCircleOutlined,
-  EditOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -423,7 +422,10 @@ const Uploader = () => {
       )}
 
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation bucket={decryptedBucket} onEdit={()=> setEditBucketModalVisible(true)} />
+        <BucketInformation
+          bucket={decryptedBucket}
+          onEdit={() => setEditBucketModalVisible(true)}
+        />
       )}
 
       <TabsCards
