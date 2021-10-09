@@ -9,7 +9,7 @@ import {
   getUserHiddenBuckets,
 } from '../../skynet/skynet';
 
-import { Button, Divider, List, message, Card, Row, Col } from 'antd';
+import { Button, Divider, List, message, Row, Col } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
