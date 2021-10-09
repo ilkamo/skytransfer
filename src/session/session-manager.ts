@@ -40,8 +40,8 @@ export default class SessionManager {
 
   static isReadOnlyFromLink() {
     return (
-      window.location.hash.split('/').length === 3 &&
-      window.location.hash.split('/')[1].length === 64
+      window.location.hash.split('/').length === 4 &&
+      window.location.hash.split('/')[2].length === 64
     );
   }
 
@@ -51,7 +51,7 @@ export default class SessionManager {
     if (this.isReadOnlyFromLink()) {
       return `https://${window.location.hostname}/${window.location.hash}`;
     }
-    return `https://${window.location.hostname}/#/${publicKeyFromPrivateKey(
+    return `https://${window.location.hostname}/#/v2/${publicKeyFromPrivateKey(
       bucketPrivateKey
     )}/${bucketEncryptionKey}`;
   }
@@ -59,7 +59,7 @@ export default class SessionManager {
   static get readWriteLink() {
     const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
 
-    return `https://${window.location.hostname}/#/${bucketPrivateKey}/${bucketEncryptionKey}`;
+    return `https://${window.location.hostname}/#/v2/${bucketPrivateKey}/${bucketEncryptionKey}`;
   }
 
   static canResume() {

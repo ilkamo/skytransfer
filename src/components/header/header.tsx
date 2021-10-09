@@ -1,3 +1,5 @@
+import './header.css';
+
 import { Menu, Layout } from 'antd';
 
 import { useReducer } from 'react';
@@ -74,7 +76,7 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           disabled={!canResumeSession}
           icon={<RedoOutlined />}
         >
-          Resume
+          Resume draft
         </Menu.Item>
         <Menu.Item
           key="buckets"

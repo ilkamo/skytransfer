@@ -1,4 +1,4 @@
-import './app.css';
+import './app.less';
 
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { useState } from 'react';
@@ -14,6 +14,7 @@ import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
 import { HeaderNotification } from './components/common/notification';
+import RedirectV1 from './components/redirect-v1/redirect-v1';
 
 const { Content, Footer } = Layout;
 
@@ -37,7 +38,8 @@ const App = () => {
         <HeaderNotification
           content={
             <>
-              You are using SkyTransfer v2. You can still access the previous version by {' '}
+              You are using SkyTransfer v2. You can still access the previous
+              version by{' '}
               <a
                 target="_blank"
                 href="https://skytransfer-v1.hns.siasky.net/"
@@ -56,9 +58,14 @@ const App = () => {
         />
         <Content className="container">
           <Switch>
-            <Route path="/:transferKey/:encryptionKey">
+            <Route path="/v2/:transferKey/:encryptionKey">
               <Content>
                 <FileList />
+              </Content>
+            </Route>
+            <Route path="/:transferKey/:encryptionKey">
+              <Content>
+                <RedirectV1 />
               </Content>
             </Route>
             <Route path="/buckets">
@@ -89,7 +96,6 @@ const App = () => {
           visible={state.shareModalVisible}
           onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
-        <Divider />
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"
@@ -115,7 +121,7 @@ const App = () => {
             Skynet
           </a>
           .
-          <div style={{ padding: '10px 0' }}>
+          <Divider />
             <a
               target="_blank"
               href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
@@ -123,7 +129,6 @@ const App = () => {
             >
               <HomescreenIcon />
             </a>
-          </div>
         </Footer>
       </Layout>
     </Router>

@@ -1,9 +1,16 @@
 import { SkyTransferLogo } from '../common/icons';
 import './about.css';
 
+import { Typography, Divider } from 'antd';
+const { Title } = Typography;
+
 const About = () => {
   return (
-    <div className="about">
+    <div className="about page">
+      <Title style={{ textAlign: 'left' }} level={4}>
+        About us
+      </Title>
+      <Divider />
       <p style={{ textAlign: 'center' }}>
         <SkyTransferLogo />
       </p>

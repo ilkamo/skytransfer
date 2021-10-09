@@ -1,12 +1,3 @@
-.about {
-  max-width: 800px;
-  margin: 20px auto;
-}
-
-.about p {
-  font-size: 14px;
-}
-
 .about .title {
   color: #20bf6b;
   font-weight: bold;

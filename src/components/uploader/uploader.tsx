@@ -25,7 +25,6 @@ import {
   DownOutlined,
   LoadingOutlined,
   QuestionCircleOutlined,
-  EditOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -410,7 +409,7 @@ const Uploader = () => {
 
   const isLoading = uploading || loading;
   return (
-    <>
+    <div className="page">
       {errorMessage ? (
         <Alert
           className="error-message"
@@ -423,7 +422,10 @@ const Uploader = () => {
       )}
 
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation bucket={decryptedBucket} />
+        <BucketInformation
+          bucket={decryptedBucket}
+          onEdit={() => setEditBucketModalVisible(true)}
+        />
       )}
 
       <TabsCards
@@ -496,19 +498,6 @@ const Uploader = () => {
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
-          <div style={{ textAlign: 'center' }}>
-            <Button
-              type="primary"
-              ghost
-              style={{ margin: 12 }}
-              icon={<EditOutlined />}
-              onClick={() => setEditBucketModalVisible(true)}
-              size="middle"
-              disabled={isLoading}
-            >
-              Edit bucket
-            </Button>
-          </div>
           {isLoading && (
             <div style={{ textAlign: 'center' }}>
               <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />
@@ -577,7 +566,7 @@ const Uploader = () => {
         <div style={{ textAlign: 'center' }}>
           <Button
             icon={<DownloadOutlined />}
-            size="large"
+            size="middle"
             onClick={async () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile in decryptedBucket.files) {
@@ -607,7 +596,7 @@ const Uploader = () => {
         shareLinkOnClick={finishUpload}
         shareDraftLinkOnClick={finishUpload}
       />
-    </>
+    </div>
   );
 };
 

@@ -44,6 +44,7 @@ const FileList = () => {
       history.push('/');
     }
 
+    // transferKey is a publicKey
     const bucket: Bucket = await getDecryptedBucket(transferKey, encryptionKey);
     if (!bucket) {
       setlLoading(false);
@@ -117,7 +118,7 @@ const FileList = () => {
     Object.keys(decryptedBucket.files).length > 0;
 
   return (
-    <>
+    <div className="page">
       {decryptedBucket && decryptedBucket.files && (
         <BucketInformation bucket={decryptedBucket} />
       )}
@@ -185,7 +186,7 @@ const FileList = () => {
           {loading ? <Spin /> : <span>No shared data found</span>}
         </Empty>
       )}
-    </>
+    </div>
   );
 };
 
