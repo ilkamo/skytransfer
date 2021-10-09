@@ -566,7 +566,7 @@ const Uploader = () => {
         <div style={{ textAlign: 'center' }}>
           <Button
             icon={<DownloadOutlined />}
-            size="large"
+            size="middle"
             onClick={async () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile in decryptedBucket.files) {
