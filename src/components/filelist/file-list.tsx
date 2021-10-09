@@ -44,6 +44,7 @@ const FileList = () => {
       history.push('/');
     }
 
+    // transferKey is a publicKey
     const bucket: Bucket = await getDecryptedBucket(transferKey, encryptionKey);
     if (!bucket) {
       setlLoading(false);

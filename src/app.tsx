@@ -1,6 +1,10 @@
 import './app.css';
 
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import {
+  HashRouter as Router,
+  Switch,
+  Route,
+} from 'react-router-dom';
 import { useState } from 'react';
 
 import Uploader from './components/uploader/uploader';
@@ -14,6 +18,7 @@ import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
 import { HeaderNotification } from './components/common/notification';
+import RedirectV1 from './components/redirect-v1/redirect-v1';
 
 const { Content, Footer } = Layout;
 
@@ -57,9 +62,14 @@ const App = () => {
         />
         <Content className="container">
           <Switch>
-            <Route path="/:transferKey/:encryptionKey">
+            <Route path="/v2/:transferKey/:encryptionKey">
               <Content>
                 <FileList />
+              </Content>
+            </Route>
+            <Route path="/:transferKey/:encryptionKey">
+              <Content>
+                <RedirectV1 />
               </Content>
             </Route>
             <Route path="/buckets">
