@@ -423,7 +423,7 @@ const Uploader = () => {
       )}
 
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation bucket={decryptedBucket} />
+        <BucketInformation bucket={decryptedBucket} onEdit={()=> setEditBucketModalVisible(true)} />
       )}
 
       <TabsCards
@@ -496,19 +496,6 @@ const Uploader = () => {
             decryptProgress={decryptProgress}
             downloadProgress={downloadProgress}
           />
-          <div style={{ textAlign: 'center' }}>
-            <Button
-              type="primary"
-              ghost
-              style={{ margin: 12 }}
-              icon={<EditOutlined />}
-              onClick={() => setEditBucketModalVisible(true)}
-              size="middle"
-              disabled={isLoading}
-            >
-              Edit bucket
-            </Button>
-          </div>
           {isLoading && (
             <div style={{ textAlign: 'center' }}>
               <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />
