@@ -13,6 +13,7 @@ import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
+import { HeaderNotification } from './components/common/notification';
 
 const { Content, Footer } = Layout;
 
@@ -34,6 +35,21 @@ const App = () => {
   return (
     <Router>
       <Layout className="layout">
+        <HeaderNotification
+          content={
+            <>
+              You are using the legacy version of SkyTransfer. Switch to{' '}
+              <a
+                target="_blank"
+                href="https://skytransfer.hns.siasky.net/"
+                rel="noreferrer"
+              >
+                SkyTransfer v2
+              </a>
+              !
+            </>
+          }
+        />
         <AppHeader
           shareOnClick={() => {
             setState({ ...state, shareModalVisible: true });
@@ -98,11 +114,12 @@ const App = () => {
           . Powered by{' '}
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
-          </a>.
+          </a>
+          .
           <div style={{ padding: '10px 0' }}>
             <a
               target="_blank"
-              href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
+              href="https://homescreen.hns.siasky.net/#/skylink/AQBgVq89JBDxumKfK5nEfqoOHJZZb2oUGISI_MgiUWSlPA"
               rel="noreferrer"
             >
               <HomescreenIcon />
