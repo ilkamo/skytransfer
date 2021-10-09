@@ -30,8 +30,8 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../../crypto/file-encrypt';
-import AESFileDecrypt from '../../crypto/file-decrypt';
+import LibsodiumEncrypt from '../../crypto/file-encrypt';
+import LibsodiumDecrypt from '../../crypto/file-decrypt';
 import {
   DEFAULT_ENCRYPTION_TYPE,
   MAX_PARALLEL_UPLOAD,
@@ -223,7 +223,7 @@ const Uploader = () => {
   }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFile) => {
-    const decrypt = new AESFileDecrypt(encryptedFile);
+    const decrypt = new LibsodiumDecrypt(encryptedFile);
 
     let file: File;
     try {
@@ -262,7 +262,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(file, fileKey);
+      const fe = new LibsodiumEncrypt(file, fileKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);

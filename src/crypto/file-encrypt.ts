@@ -1,13 +1,14 @@
-import CryptoJS from 'crypto-js';
 import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
 import { FileEncrypt } from './crypto';
 import { v4 as uuid } from 'uuid';
+import _sodium from 'libsodium-wrappers';
 
-export default class AESFileEncrypt implements FileEncrypt {
+export default class LibsodiumEncrypt implements FileEncrypt {
   private file: File;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
+  private state: _sodium.StateAddress;
 
   parts: BlobPart[] = [];
 
@@ -27,22 +28,40 @@ export default class AESFileEncrypt implements FileEncrypt {
       percentage: number
     ) => void = () => {}
   ): Promise<File> {
+    await _sodium.ready;
+    const salt = _sodium.randombytes_buf(_sodium.crypto_pwhash_SALTBYTES);
+
+    const key = _sodium.crypto_pwhash(
+      _sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+      this.encryptionKey,
+      salt,
+      _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      _sodium.crypto_pwhash_ALG_ARGON2ID13
+    );
+
+    let res = _sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
+    let [state_out, header] = [res.state, res.header];
+    this.state = state_out;
+
+    this.parts.push(salt);  
+    this.parts.push(header);
+
     const totalChunks = Math.ceil(this.file.size / this.encryptChunkSize);
 
     for (let i = 0; i < totalChunks; i++) {
       let chunkPart: BlobPart;
 
       if (i === totalChunks - 1) {
-        chunkPart = await this.encryptBlob(
-          this.file.slice(i * this.encryptChunkSize, this.file.size)
-        );
+        const buff = await this.file
+          .slice(i * this.encryptChunkSize, this.file.size)
+          .arrayBuffer();
+        chunkPart = await this.encryptBlob(buff);
       } else {
-        chunkPart = await this.encryptBlob(
-          this.file.slice(
-            i * this.encryptChunkSize,
-            (i + 1) * this.encryptChunkSize
-          )
-        );
+        const buff = await this.file
+          .slice(i * this.encryptChunkSize, (i + 1) * this.encryptChunkSize)
+          .arrayBuffer();
+        chunkPart = await this.encryptBlob(buff);
       }
 
       const progress = Math.floor(((i + 1) / totalChunks) * 100);
@@ -60,26 +79,22 @@ export default class AESFileEncrypt implements FileEncrypt {
     });
   }
 
-  private async encryptBlob(fileBlob: Blob): Promise<BlobPart> {
-    const $this = this;
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  private async encryptBlob(
+    chunk: ArrayBuffer,
+    last: boolean = false
+  ): Promise<BlobPart> {
+    await _sodium.ready;
+    const sodium = _sodium;
 
-      reader.onload = async function (e) {
-        const data = e.target.result;
+    let tag = last
+      ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+      : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
 
-        const wordArray = CryptoJS.lib.WordArray.create(data);
-        const encrypted = CryptoJS.AES.encrypt(
-          wordArray,
-          $this.encryptionKey
-        ).toString();
-
-        return resolve(encrypted);
-      };
-
-      reader.onerror = reject;
-
-      reader.readAsArrayBuffer(fileBlob);
-    });
+    return sodium.crypto_secretstream_xchacha20poly1305_push(
+      this.state,
+      new Uint8Array(chunk),
+      null,
+      tag
+    );
   }
 }

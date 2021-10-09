@@ -1,9 +1,9 @@
 export enum EncryptionType {
-  AES_4MB,
-  AES_8MB,
-  AES_16MB,
-  AES_32MB,
-  AES_64MB,
+  xchacha20poly1305_4MB,
+  xchacha20poly1305_8MB,
+  xchacha20poly1305_16MB,
+  xchacha20poly1305_32MB,
+  xchacha20poly1305_64MB,
 }
 
 export interface EncryptedFileReference {
