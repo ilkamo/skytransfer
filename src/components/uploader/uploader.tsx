@@ -126,7 +126,7 @@ const Uploader = () => {
         user.bucketEncryptionKey
       )
     );
-    setDecryptedBucket(new DecryptedBucket(bucket));
+    setDecryptedBucket(new DecryptedBucket(decryptedBucket));
     setLoading(false);
   };
 

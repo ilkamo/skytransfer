@@ -31,7 +31,7 @@ export class DecryptedBucket {
   }
 
   encryptedFileExists(relativePath: string): boolean {
-    return relativePath in this.files;
+    return this.files && relativePath in this.files;
   }
 
   getEncryptedFile(relativePath: string): EncryptedFile {

@@ -122,13 +122,13 @@ const App = () => {
           </a>
           .
           <Divider />
-            <a
-              target="_blank"
-              href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
-              rel="noreferrer"
-            >
-              <HomescreenIcon />
-            </a>
+          <a
+            target="_blank"
+            href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
+            rel="noreferrer"
+          >
+            <HomescreenIcon />
+          </a>
         </Footer>
       </Layout>
     </Router>
