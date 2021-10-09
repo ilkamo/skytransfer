@@ -96,7 +96,6 @@ const App = () => {
           visible={state.shareModalVisible}
           onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
-        <Divider />
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"
@@ -122,7 +121,7 @@ const App = () => {
             Skynet
           </a>
           .
-          <div style={{ padding: '10px 0' }}>
+          <Divider />
             <a
               target="_blank"
               href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
@@ -130,7 +129,6 @@ const App = () => {
             >
               <HomescreenIcon />
             </a>
-          </div>
         </Footer>
       </Layout>
     </Router>
