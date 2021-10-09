@@ -4,7 +4,7 @@ import { FileEncrypt } from './crypto';
 import { v4 as uuid } from 'uuid';
 import _sodium from 'libsodium-wrappers';
 
-export default class LibsodiumEncrypt implements FileEncrypt {
+export default class xchacha20poly1305Encrypt implements FileEncrypt {
   private file: File;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
@@ -29,22 +29,23 @@ export default class LibsodiumEncrypt implements FileEncrypt {
     ) => void = () => {}
   ): Promise<File> {
     await _sodium.ready;
-    const salt = _sodium.randombytes_buf(_sodium.crypto_pwhash_SALTBYTES);
+    const sodium = _sodium;
+    const salt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
 
-    const key = _sodium.crypto_pwhash(
-      _sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+    const key = sodium.crypto_pwhash(
+      sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       this.encryptionKey,
       salt,
-      _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
-      _sodium.crypto_pwhash_ALG_ARGON2ID13
+      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 
-    let res = _sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
+    let res = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
     let [state_out, header] = [res.state, res.header];
     this.state = state_out;
 
-    this.parts.push(salt);  
+    this.parts.push(salt);
     this.parts.push(header);
 
     const totalChunks = Math.ceil(this.file.size / this.encryptChunkSize);
@@ -56,12 +57,12 @@ export default class LibsodiumEncrypt implements FileEncrypt {
         const buff = await this.file
           .slice(i * this.encryptChunkSize, this.file.size)
           .arrayBuffer();
-        chunkPart = await this.encryptBlob(buff);
+        chunkPart = await this.encryptBlob(buff, sodium, true);
       } else {
         const buff = await this.file
           .slice(i * this.encryptChunkSize, (i + 1) * this.encryptChunkSize)
           .arrayBuffer();
-        chunkPart = await this.encryptBlob(buff);
+        chunkPart = await this.encryptBlob(buff, sodium);
       }
 
       const progress = Math.floor(((i + 1) / totalChunks) * 100);
@@ -81,11 +82,9 @@ export default class LibsodiumEncrypt implements FileEncrypt {
 
   private async encryptBlob(
     chunk: ArrayBuffer,
+    sodium: typeof _sodium,
     last: boolean = false
   ): Promise<BlobPart> {
-    await _sodium.ready;
-    const sodium = _sodium;
-
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
       : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;

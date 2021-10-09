@@ -16,27 +16,27 @@ const MBSize = 1048576;
 const encryptions: Encryption[] = [
   {
     encryptChunkSize: MBSize * 4,
-    decryptChunkSize: (MBSize * 4) + 17,
+    decryptChunkSize: MBSize * 4 + 17,
     encryptionType: EncryptionType.xchacha20poly1305_4MB,
   },
   {
     encryptChunkSize: MBSize * 8,
-    decryptChunkSize: (MBSize * 8) + 17,
+    decryptChunkSize: MBSize * 8 + 17,
     encryptionType: EncryptionType.xchacha20poly1305_8MB,
   },
   {
     encryptChunkSize: MBSize * 16,
-    decryptChunkSize: (MBSize * 16) + 17,
+    decryptChunkSize: MBSize * 16 + 17,
     encryptionType: EncryptionType.xchacha20poly1305_16MB,
   },
   {
     encryptChunkSize: MBSize * 32,
-    decryptChunkSize: (MBSize * 32) + 17,
+    decryptChunkSize: MBSize * 32 + 17,
     encryptionType: EncryptionType.xchacha20poly1305_32MB,
   },
   {
     encryptChunkSize: MBSize * 64,
-    decryptChunkSize: (MBSize * 64) + 17,
+    decryptChunkSize: MBSize * 64 + 17,
     encryptionType: EncryptionType.xchacha20poly1305_64MB,
   },
 ];

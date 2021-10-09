@@ -10,7 +10,12 @@ import _sodium from 'libsodium-wrappers';
 
 const metadataSize = 40;
 
-export default class LibsodiumDecrypt implements FileDecrypt {
+export interface ICryptoMetadata {
+  salt: Uint8Array;
+  header: Uint8Array;
+}
+
+export default class xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: EncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
@@ -44,41 +49,22 @@ export default class LibsodiumDecrypt implements FileDecrypt {
       percentage: number
     ) => void = () => {}
   ): Promise<File> {
-    const headerAndSaltBytesRange = `bytes=${0}-${39}`;
-    const response = await downloadFile(
-      this.encryptedFile.file.url,
-      (progressEvent) => {
-        const progress = Math.round(
-          (progressEvent.loaded / progressEvent.total) * 100
-        );
-        onFileDownloadProgress(false, progress);
-      },
-      headerAndSaltBytesRange
-    );
-
-    const data: Blob = response.data;
-    
-    const [salt, header] = await Promise.all([
-      data.slice(0, 16).arrayBuffer(), //salt
-      data.slice(16, 40).arrayBuffer(), //header
-    ]);
-
-    let decSalt = new Uint8Array(salt);
-    let decHeader = new Uint8Array(header);
-
     await _sodium.ready;
+    const sodium = _sodium;
 
-    let key = _sodium.crypto_pwhash(
-      _sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+    const cryptoMetadata = await this.cryptoMetadata();
+
+    let key = sodium.crypto_pwhash(
+      sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
       this.encryptionKey,
-      decSalt,
-      _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
-      _sodium.crypto_pwhash_ALG_ARGON2ID13
+      cryptoMetadata.salt,
+      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 
-    this.state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
-      decHeader,
+    this.state = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+      cryptoMetadata.header,
       key
     );
 
@@ -87,8 +73,6 @@ export default class LibsodiumDecrypt implements FileDecrypt {
         this.decryptChunkSize
     );
 
-    debugger;
-
     let rangeEnd = 0;
     let index = metadataSize;
 
@@ -96,11 +80,10 @@ export default class LibsodiumDecrypt implements FileDecrypt {
       if (i === totalChunks - 1) {
         rangeEnd = this.encryptedFile.file.encryptedSize;
       } else {
-        rangeEnd = index + this.decryptChunkSize - 1; // -1 because rangeEnd is included 
+        rangeEnd = index + this.decryptChunkSize - 1; // -1 because rangeEnd is included
       }
 
       const bytesRange = `bytes=${index}-${rangeEnd}`;
-      debugger;
 
       try {
         const response = await downloadFile(
@@ -119,7 +102,7 @@ export default class LibsodiumDecrypt implements FileDecrypt {
 
         const data: Blob = response.data;
         const buff = await data.arrayBuffer();
-        const chunkPart = await this.decryptBlob(buff);
+        const chunkPart = await this.decryptBlob(buff, sodium);
         this.parts.push(chunkPart);
 
         index += this.decryptChunkSize;
@@ -138,23 +121,40 @@ export default class LibsodiumDecrypt implements FileDecrypt {
     });
   }
 
-  private async decryptBlob(
-    chunk: ArrayBuffer
-  ): Promise<BlobPart> {
-    await _sodium.ready;
-    const sodium = _sodium;
+  private async cryptoMetadata(): Promise<ICryptoMetadata> {
+    const headerAndSaltBytesRange = `bytes=${0}-${39}`;
+    const response = await downloadFile(
+      this.encryptedFile.file.url,
+      () => {},
+      headerAndSaltBytesRange
+    );
 
+    const data: Blob = response.data;
+
+    const [salt, header] = await Promise.all([
+      data.slice(0, 16).arrayBuffer(), //salt
+      data.slice(16, 40).arrayBuffer(), //header
+    ]);
+
+    let uSalt = new Uint8Array(salt);
+    let uHeader = new Uint8Array(header);
+
+    return {
+      salt: uSalt,
+      header: uHeader,
+    };
+  }
+
+  private async decryptBlob(chunk: ArrayBuffer, sodium: typeof _sodium): Promise<BlobPart> {
     const result = sodium.crypto_secretstream_xchacha20poly1305_pull(
       this.state,
       new Uint8Array(chunk)
     );
 
     if (!result) {
-      throw Error("error during decryption");
+      throw Error('error during decryption');
     }
 
-    console.log(result.tag);
-
-    return result.message
+    return result.message;
   }
 }
