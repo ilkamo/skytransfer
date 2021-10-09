@@ -223,7 +223,7 @@ const Buckets = () => {
             </div>
           </div>
           <Divider orientation="left">Your private buckets</Divider>
-          <List
+          <List style={{textAlign: "left"}}
             loading={isloading}
             bordered
             itemLayout="horizontal"

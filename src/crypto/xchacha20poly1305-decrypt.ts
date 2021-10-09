@@ -1,5 +1,4 @@
 import { SkynetClient } from 'skynet-js';
-import CryptoJS from 'crypto-js';
 import { EncryptionType } from '../models/encryption';
 import { FileDecrypt } from './crypto';
 import { getEndpointInCurrentPortal } from '../portals';
@@ -7,10 +6,25 @@ import { ChunkResolver } from './chunk-resolver';
 import { downloadFile } from '../skynet/skynet';
 import { EncryptedFile } from '../models/files/encrypted-file';
 
-export default class AESFileDecrypt implements FileDecrypt {
+import _sodium from 'libsodium-wrappers';
+
+/* 
+  salt and header are appended to each file as Uint8Array
+  salt is 16 bytes long
+  header is 24 bytes long
+*/
+const METADATA_SIZE = 40;
+
+export interface ICryptoMetadata {
+  salt: Uint8Array;
+  header: Uint8Array;
+}
+
+export default class Xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: EncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
+  private stateIn: _sodium.StateAddress;
 
   skynetClient = new SkynetClient(getEndpointInCurrentPortal());
 
@@ -40,23 +54,41 @@ export default class AESFileDecrypt implements FileDecrypt {
       percentage: number
     ) => void = () => {}
   ): Promise<File> {
-    const totalChunks = Math.ceil(
-      this.encryptedFile.file.encryptedSize / this.decryptChunkSize
+    await _sodium.ready;
+    const sodium = _sodium;
+
+    const cryptoMetadata = await this.cryptoMetadata();
+
+    let key = sodium.crypto_pwhash(
+      sodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+      this.encryptionKey,
+      cryptoMetadata.salt,
+      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_ALG_ARGON2ID13
     );
 
-    let rangeStart,
-      rangeEnd = 0;
+    this.stateIn = sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+      cryptoMetadata.header,
+      key
+    );
+
+    const totalChunks = Math.ceil(
+      (this.encryptedFile.file.encryptedSize - METADATA_SIZE) /
+        this.decryptChunkSize
+    );
+
+    let rangeEnd = 0;
+    let index = METADATA_SIZE;
 
     for (let i = 0; i < totalChunks; i++) {
-      rangeStart = i * this.decryptChunkSize;
-
       if (i === totalChunks - 1) {
         rangeEnd = this.encryptedFile.file.encryptedSize;
       } else {
-        rangeEnd = (i + 1) * this.decryptChunkSize;
+        rangeEnd = index + this.decryptChunkSize - 1; // -1 because rangeEnd is included
       }
 
-      const bytesRange = `bytes=${rangeStart}-${rangeEnd}`;
+      const bytesRange = `bytes=${index}-${rangeEnd}`;
 
       try {
         const response = await downloadFile(
@@ -74,8 +106,11 @@ export default class AESFileDecrypt implements FileDecrypt {
         onDecryptProgress(false, progress);
 
         const data: Blob = response.data;
-        const chunkPart = await this.decryptBlob(data);
+        const buff = await data.arrayBuffer();
+        const chunkPart = await this.decryptBlob(buff, sodium);
         this.parts.push(chunkPart);
+
+        index += this.decryptChunkSize;
       } catch (error) {
         onFileDownloadProgress(true, 0);
         throw new Error(
@@ -91,35 +126,43 @@ export default class AESFileDecrypt implements FileDecrypt {
     });
   }
 
-  private async decryptBlob(encryptedData: Blob): Promise<BlobPart> {
-    return new Promise((resolve) => {
-      // To give some CPU time in order to refresh the UI.
-      setTimeout(() => {
-        var decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
-        var typedArray = this.convertWordArrayToUint8Array(decrypted);
-        resolve(typedArray);
-      }, 200);
-    });
+  private async cryptoMetadata(): Promise<ICryptoMetadata> {
+    const headerAndSaltBytesRange = `bytes=${0}-${39}`;
+    const response = await downloadFile(
+      this.encryptedFile.file.url,
+      () => {},
+      headerAndSaltBytesRange
+    );
+
+    const data: Blob = response.data;
+
+    const [salt, header] = await Promise.all([
+      data.slice(0, 16).arrayBuffer(), //salt
+      data.slice(16, 40).arrayBuffer(), //header
+    ]);
+
+    let uSalt = new Uint8Array(salt);
+    let uHeader = new Uint8Array(header);
+
+    return {
+      salt: uSalt,
+      header: uHeader,
+    };
   }
 
-  private convertWordArrayToUint8Array(wordArray) {
-    const arrayOfWords = wordArray.hasOwnProperty('words')
-      ? wordArray.words
-      : [];
-    const length = wordArray.hasOwnProperty('sigBytes')
-      ? wordArray.sigBytes
-      : arrayOfWords.length * 4;
-    let uInt8Array = new Uint8Array(length),
-      index = 0,
-      word,
-      i;
-    for (i = 0; i < length; i++) {
-      word = arrayOfWords[i];
-      uInt8Array[index++] = word >> 24;
-      uInt8Array[index++] = (word >> 16) & 0xff;
-      uInt8Array[index++] = (word >> 8) & 0xff;
-      uInt8Array[index++] = word & 0xff;
+  private async decryptBlob(
+    chunk: ArrayBuffer,
+    sodium: typeof _sodium
+  ): Promise<BlobPart> {
+    const result = sodium.crypto_secretstream_xchacha20poly1305_pull(
+      this.stateIn,
+      new Uint8Array(chunk)
+    );
+
+    if (!result) {
+      throw Error('error during xchacha20poly1305 decryption');
     }
-    return uInt8Array;
+
+    return result.message;
   }
 }

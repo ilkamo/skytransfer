@@ -72,7 +72,7 @@ export const downloadFile = async (
     headers: {
       Range: bytesRange,
     },
-    responseType: 'text',
+    responseType: 'blob',
     onDownloadProgress: onProgress,
     withCredentials: true,
   });

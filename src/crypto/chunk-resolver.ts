@@ -16,28 +16,28 @@ const MBSize = 1048576;
 const encryptions: Encryption[] = [
   {
     encryptChunkSize: MBSize * 4,
-    decryptChunkSize: 5592448,
-    encryptionType: EncryptionType.AES_4MB,
+    decryptChunkSize: MBSize * 4 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_4MB,
   },
   {
     encryptChunkSize: MBSize * 8,
-    decryptChunkSize: 11184856,
-    encryptionType: EncryptionType.AES_8MB,
+    decryptChunkSize: MBSize * 8 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_8MB,
   },
   {
     encryptChunkSize: MBSize * 16,
-    decryptChunkSize: 22369664,
-    encryptionType: EncryptionType.AES_16MB,
+    decryptChunkSize: MBSize * 16 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_16MB,
   },
   {
     encryptChunkSize: MBSize * 32,
-    decryptChunkSize: 44739288,
-    encryptionType: EncryptionType.AES_32MB,
+    decryptChunkSize: MBSize * 32 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_32MB,
   },
   {
     encryptChunkSize: MBSize * 64,
-    decryptChunkSize: 89478528,
-    encryptionType: EncryptionType.AES_64MB,
+    decryptChunkSize: MBSize * 64 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_64MB,
   },
 ];
 
