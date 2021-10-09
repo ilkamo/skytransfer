@@ -53,6 +53,7 @@
     "husky": "^7.0.2",
     "i": "^0.3.7",
     "less": "^4.1.1",
+    "less-loader": "^10.0.1",
     "libsodium": "^0.7.9",
     "libsodium-wrappers": "^0.7.9",
     "npm": "^7.24.1",

@@ -42,6 +42,30 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
+        test: /\.less$/,
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader', // translates CSS into CommonJS
+          },
+          {
+            loader: 'less-loader', // compiles Less to CSS
+            options: {
+              lessOptions: {
+                modifyVars: {
+                  'primary-color': '#20bf6b',
+                  'link-color': '#20bf6b',
+                  'border-radius-base': '2px',
+                },
+                javascriptEnabled: true,
+              },
+            },
+          },
+        ],
+      },
+      {
         test: /\.(jpg|jpeg|png|gif|mp3)$/,
         use: ['file-loader'],
       },
