@@ -409,7 +409,7 @@ const Uploader = () => {
 
   const isLoading = uploading || loading;
   return (
-    <>
+    <div className="page">
       {errorMessage ? (
         <Alert
           className="error-message"
@@ -596,7 +596,7 @@ const Uploader = () => {
         shareLinkOnClick={finishUpload}
         shareDraftLinkOnClick={finishUpload}
       />
-    </>
+    </div>
   );
 };
 

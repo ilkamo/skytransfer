@@ -9,7 +9,7 @@ import {
   getUserHiddenBuckets,
 } from '../../skynet/skynet';
 
-import { Button, Divider, List, message, Card } from 'antd';
+import { Button, Divider, List, message, Card, Row, Col } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
@@ -36,7 +36,6 @@ import { v4 as uuid } from 'uuid';
 import { BucketIcon } from '../common/icons';
 
 const { Title } = Typography;
-const { Meta } = Card;
 
 const generateNewBucketInfo = (): BucketInfo => {
   const tempBucketID = uuid();
@@ -132,19 +131,21 @@ const Buckets = () => {
   };
 
   return (
-    <>
+    <div
+      className="default-margin buckets page"
+      style={{ textAlign: 'center' }}
+    >
       {user.status === UserStatus.NotLogged ? (
-        <div
-          className="default-margin buckets"
-          style={{ fontSize: 14, textAlign: 'center' }}
-        >
-          <Card style={{ borderColor: '#bdc3c7' }} cover={<BucketIcon />}>
-            <Meta
-              title="Buckets"
-              description="Buckets are Skytransfer's most advanced feature. Thanks to them you
-      can manage your content like never before."
-            />
-          </Card>
+        <>
+          <Title style={{ textAlign: 'left' }} level={4}>
+            Buckets
+          </Title>
+          <Divider />
+          <BucketIcon />
+          <p>
+            Buckets are Skytransfer's most advanced feature. Thanks to them you
+            can manage your content like never before.
+          </p>
           <Divider />
           <p>
             Sign in with MySky, access your buckets and unclock the power of
@@ -154,7 +155,7 @@ const Buckets = () => {
             onClick={() => dispatch(login())}
             type="primary"
             icon={<LoginOutlined />}
-            size="large"
+            size="middle"
           >
             Sign in with MySky
           </Button>
@@ -162,7 +163,7 @@ const Buckets = () => {
           <p>Continue as anonymous user and create an anonymous bucket.</p>
           <Button
             icon={<InboxOutlined />}
-            size="large"
+            size="middle"
             type="ghost"
             onClick={() =>
               newDraftConfirmModal(() => {
@@ -173,7 +174,7 @@ const Buckets = () => {
           >
             Create anonymous bucket
           </Button>
-        </div>
+        </>
       ) : (
         <>
           <Drawer
@@ -184,36 +185,42 @@ const Buckets = () => {
           >
             <User></User>
           </Drawer>
-          <Title level={4}>Your Buckets</Title>
-          <Divider className="default-margin" orientation="right"></Divider>
-          <div style={{ fontSize: 14 }}>
-            <p>
-              Welcome to the buckets section. Here you can access previously
-              created buckets.
-            </p>
-            <p>
-              You can also create a new bucket which will be stored in your
-              account.
-            </p>
-          </div>
-          <div className="default-margin" style={{ textAlign: 'center' }}>
-            <Button
-              style={{ marginRight: 10 }}
-              icon={<ProfileOutlined />}
-              size="large"
-              type="primary"
-              onClick={showDrawer}
-            >
-              Manage account
-            </Button>
-            <Button
-              icon={<InboxOutlined />}
-              size="large"
-              type="primary"
-              onClick={() => setNewBucketModalVisible(true)}
-            >
-              Create bucket
-            </Button>
+          <Row>
+            <Col span={12} style={{ textAlign: 'left' }}>
+              <Title level={4}>Buckets</Title>
+            </Col>
+            <Col span={12} style={{ textAlign: 'right' }}>
+              <Button
+                icon={<ProfileOutlined />}
+                type="ghost"
+                size="middle"
+                onClick={showDrawer}
+              >
+                Manage account
+              </Button>
+            </Col>
+          </Row>
+          <Divider className="default-margin" orientation="right" />
+          <BucketIcon />
+          <div style={{ textAlign: 'center' }}>
+            <div>
+              <p>
+                Welcome to the buckets section where you can access previously
+                created buckets.
+                <p></p>
+                Buckets are like folders in which files are stored. Before files
+                can be uploaded, a bucket must first be created.
+              </p>
+              <Divider />
+              <Button
+                icon={<InboxOutlined />}
+                size="middle"
+                type="primary"
+                onClick={() => setNewBucketModalVisible(true)}
+              >
+                Create bucket
+              </Button>
+            </div>
           </div>
           <Divider orientation="left">Your private buckets</Divider>
           <List
@@ -271,7 +278,7 @@ const Buckets = () => {
           setNewBucketModalVisible(false);
         }}
       />
-    </>
+    </div>
   );
 };
 
