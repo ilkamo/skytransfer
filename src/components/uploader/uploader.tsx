@@ -30,8 +30,8 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import xchacha20poly1305Encrypt from '../../crypto/xchacha20poly1305-encrypt';
-import xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
+import Xchacha20poly1305Encrypt from '../../crypto/xchacha20poly1305-encrypt';
+import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import {
   DEFAULT_ENCRYPTION_TYPE,
   MAX_PARALLEL_UPLOAD,
@@ -223,7 +223,7 @@ const Uploader = () => {
   }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFile) => {
-    const decrypt = new xchacha20poly1305Decrypt(encryptedFile);
+    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
 
     let file: File;
     try {
@@ -262,7 +262,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new xchacha20poly1305Encrypt(file, fileKey);
+      const fe = new Xchacha20poly1305Encrypt(file, fileKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);

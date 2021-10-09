@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
+import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import { getDecryptedBucket } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
@@ -75,7 +75,7 @@ const FileList = () => {
   }, [decryptProgress]);
 
   const downloadFile = async (encryptedFile: EncryptedFile) => {
-    const decrypt = new xchacha20poly1305Decrypt(encryptedFile);
+    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
     let file: File;
     try {
       file = await decrypt.decrypt(

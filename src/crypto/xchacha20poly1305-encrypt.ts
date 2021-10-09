@@ -4,7 +4,7 @@ import { FileEncrypt } from './crypto';
 import { v4 as uuid } from 'uuid';
 import _sodium from 'libsodium-wrappers';
 
-export default class xchacha20poly1305Encrypt implements FileEncrypt {
+export default class Xchacha20poly1305Encrypt implements FileEncrypt {
   private file: File;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;

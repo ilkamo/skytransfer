@@ -8,14 +8,19 @@ import { EncryptedFile } from '../models/files/encrypted-file';
 
 import _sodium from 'libsodium-wrappers';
 
-const metadataSize = 40;
+/* 
+  salt and header are appended to each file as Uint8Array
+  salt is 16 bytes long
+  header is 24 bytes long
+*/
+const METADATA_SIZE = 40;
 
 export interface ICryptoMetadata {
   salt: Uint8Array;
   header: Uint8Array;
 }
 
-export default class xchacha20poly1305Decrypt implements FileDecrypt {
+export default class Xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: EncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
@@ -69,12 +74,12 @@ export default class xchacha20poly1305Decrypt implements FileDecrypt {
     );
 
     const totalChunks = Math.ceil(
-      (this.encryptedFile.file.encryptedSize - metadataSize) /
+      (this.encryptedFile.file.encryptedSize - METADATA_SIZE) /
         this.decryptChunkSize
     );
 
     let rangeEnd = 0;
-    let index = metadataSize;
+    let index = METADATA_SIZE;
 
     for (let i = 0; i < totalChunks; i++) {
       if (i === totalChunks - 1) {
@@ -145,14 +150,17 @@ export default class xchacha20poly1305Decrypt implements FileDecrypt {
     };
   }
 
-  private async decryptBlob(chunk: ArrayBuffer, sodium: typeof _sodium): Promise<BlobPart> {
+  private async decryptBlob(
+    chunk: ArrayBuffer,
+    sodium: typeof _sodium
+  ): Promise<BlobPart> {
     const result = sodium.crypto_secretstream_xchacha20poly1305_pull(
       this.state,
       new Uint8Array(chunk)
     );
 
     if (!result) {
-      throw Error('error during decryption');
+      throw Error('error during xchacha20poly1305 decryption');
     }
 
     return result.message;
