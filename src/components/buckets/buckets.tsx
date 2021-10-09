@@ -143,13 +143,13 @@ const Buckets = () => {
           <Divider />
           <BucketIcon />
           <p>
-            Buckets are Skytransfer's most advanced feature. Thanks to them you
+            Buckets are SkyTransfer's most advanced feature. Thanks to them you
             can manage your content like never before.
           </p>
           <Divider />
           <p>
             Sign in with MySky, access your buckets and unclock the power of
-            Skytransfer.
+            SkyTransfer.
           </p>
           <Button
             onClick={() => dispatch(login())}
@@ -223,7 +223,8 @@ const Buckets = () => {
             </div>
           </div>
           <Divider orientation="left">Your private buckets</Divider>
-          <List style={{textAlign: "left"}}
+          <List
+            style={{ textAlign: 'left' }}
             loading={isloading}
             bordered
             itemLayout="horizontal"

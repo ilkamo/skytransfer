@@ -37,33 +37,28 @@ const About = () => {
             rel="noreferrer"
           >
             the sodium crypto library
-          </a>{' '}
-          compiled to WebAssembly and pure JavaScript
-        </strong>
-        : no one can access them without your permission. Only by{' '}
-        <strong>sharing the link</strong>, other people can{' '}
+          </a>
+        </strong>{' '}
+        compiled to WebAssembly and pure JavaScript: no one can access them
+        without your permission. Only by{' '}
+        <strong>sharing the bucket link</strong>, other people can{' '}
         <strong>download and decrypt</strong> the content you uploaded. In
         addition, by <strong>sharing a draft</strong>, people can continue
-        uploading more data into the same SkyTransfer directory. Be careful when
-        you share a draft!
+        uploading more data into the same bucket. Be careful when you share a
+        draft!
       </p>
       <p>
         SkyTransfer supports <strong>uploading entire directories</strong>.
       </p>
       <p>
-        Last but not least, thanks to MySky integration you can{' '}
-        <strong>Publish your main directory</strong>. What does it exactly mean?
-        Let's explain it with an example. Imagine SkyTransfer as a box that you
-        can put different files in. This box can be opened by others only if
-        they have the correct key. There is no other way of doing it. By
-        publishing your SkyTransfer, you advertise this box with all its files
-        on the public Skynet. At the same time, you attach the keys to the box
-        so others can open it. Publish a SkyTransfer only when you are really
-        aware of the consequences!
+        Last but not least, using MySky you can access{' '}
+        <strong>"buckets"</strong>, SkyTransfer's most advanced feature. Buckets are like folders in which files are stored. Before files can be uploaded, a bucket must first be created. Thanks
+        to them you can manage your content like never before.
       </p>
       <p>
         SkyTransfer is still in development. Please report any issues, new ideas
-        or bugs.
+        or bugs and keep in mind that the encryption process has not yet been
+        audited.
       </p>
     </div>
   );
