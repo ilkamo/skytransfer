@@ -2,18 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useHistory } from 'react-router-dom';
-import { EncryptedFileReference } from '../../models/encryption';
 
 import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
 import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import AESFileDecrypt from '../../crypto/file-decrypt';
-import { SESSION_KEY_NAME } from '../../config';
-import { getEncryptedFiles } from '../../skynet/skynet';
+import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
+import { getDecryptedBucket } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
 
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
+import { Bucket, DecryptedBucket } from '../../models/files/bucket';
+import { EncryptedFile } from '../../models/files/encrypted-file';
+
+import { useDispatch } from 'react-redux';
+import { setUserKeys } from '../../features/user/user-slice';
+import { BucketInformation } from '../common/bucket-information';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -30,22 +34,24 @@ const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const history = useHistory();
+  const dispatch = useDispatch();
 
-  const [loadedFiles, setLoadedFiles] = useState<EncryptedFileReference[]>([]);
+  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>();
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
-      localStorage.setItem(SESSION_KEY_NAME, transferKey);
+      dispatch(setUserKeys(transferKey, encryptionKey));
       history.push('/');
     }
 
-    const files = await getEncryptedFiles(transferKey, encryptionKey);
-    if (!files) {
+    // transferKey is a publicKey
+    const bucket: Bucket = await getDecryptedBucket(transferKey, encryptionKey);
+    if (!bucket) {
       setlLoading(false);
       return;
     }
 
-    setLoadedFiles((prev) => [...prev, ...files]);
+    setDecryptedBucket(new DecryptedBucket(bucket));
     setlLoading(false);
   });
 
@@ -68,8 +74,8 @@ const FileList = () => {
     }
   }, [decryptProgress]);
 
-  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const decrypt = new AESFileDecrypt(encryptedFile, encryptionKey);
+  const downloadFile = async (encryptedFile: EncryptedFile) => {
+    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
     let file: File;
     try {
       file = await decrypt.decrypt(
@@ -88,33 +94,43 @@ const FileList = () => {
       return;
     }
 
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(file, encryptedFile.fileName);
-    } else {
-      var elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(file);
-      elem.download = file.name;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
+    var elem = window.document.createElement('a');
+    elem.href = window.URL.createObjectURL(file);
+    elem.download = file.name;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
   };
 
-  const getFileBy = (key: string): EncryptedFileReference => {
-    return loadedFiles.find((f) => f.uuid === key.split('_')[0]);
+  const getFileBy = (key: string): EncryptedFile => {
+    for (let path in decryptedBucket.files) {
+      if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
+        return decryptedBucket.files[path];
+      }
+    }
+
+    throw Error('could not find the file');
   };
+
+  const bucketHasFiles =
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
 
   return (
-    <>
+    <div className="page">
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation bucket={decryptedBucket} />
+      )}
       <Divider orientation="left">Shared files</Divider>
-      {loadedFiles.length > 0 ? (
+      {bucketHasFiles ? (
         <>
           <div className="file-list">
             <DownloadActivityBar
               downloadProgress={downloadProgress}
               decryptProgress={decryptProgress}
             />
-            <Divider />
+            <Divider>{decryptedBucket.name}</Divider>
             <DirectoryTree
               multiple
               showIcon={false}
@@ -122,24 +138,24 @@ const FileList = () => {
               className="file-tree default-margin"
               defaultExpandAll={true}
               switcherIcon={<DownOutlined className="directory-switcher" />}
-              treeData={renderTree(loadedFiles)}
+              treeData={renderTree(decryptedBucket.files)}
               selectable={false}
               titleRender={(node) => {
                 const key: string = `${node.key}`;
-                const encryptedFileReference = getFileBy(key);
-                return encryptedFileReference ? (
+                const encryptedFile = getFileBy(key);
+                return encryptedFile ? (
                   <DirectoryTreeLine
                     disabled={false}
                     isLeaf={node.isLeaf}
                     name={node.title.toString()}
-                    updatedAt={encryptedFileReference.updatedAt}
+                    updatedAt={encryptedFile.created}
                     onDownloadClick={() => {
                       if (!node.isLeaf) {
                         return;
                       }
-                      if (encryptedFileReference) {
+                      if (encryptedFile) {
                         message.loading(`Download and decryption started`);
-                        downloadFile(encryptedFileReference);
+                        downloadFile(encryptedFile);
                       }
                     }}
                   />
@@ -152,11 +168,12 @@ const FileList = () => {
           <div className="default-margin" style={{ textAlign: 'center' }}>
             <Button
               icon={<DownloadOutlined />}
-              size="large"
+              size="middle"
               onClick={async () => {
                 message.loading(`Download and decryption started`);
-                for (const encyptedFile of loadedFiles) {
-                  await downloadFile(encyptedFile);
+                for (const encyptedFile in decryptedBucket.files) {
+                  const file = decryptedBucket.files[encyptedFile];
+                  await downloadFile(file);
                 }
               }}
             >
@@ -169,7 +186,7 @@ const FileList = () => {
           {loading ? <Spin /> : <span>No shared data found</span>}
         </Empty>
       )}
-    </>
+    </div>
   );
 };
 

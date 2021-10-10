@@ -1,7 +1,8 @@
 import { EncryptionType } from "./models/encryption";
 
-export const ENCRYPTED_FILES_SKYDB_KEY_NAME = 'ENCRYPTED_FILES';
-export const SESSION_KEY_NAME = 'transferSessionKey';
+export const SKYTRANSFER_BUCKET = 'SKYTRANSFER_BUCKET';
+export const BUCKET_PRIVATE_KEY_NAME = 'BUCKET_PRIVATE_KEY';
+export const BUCKET_ENCRYPTION_KEY_NAME = 'BUCKET_ENCRYPTION_KEY';
 export const MAX_PARALLEL_UPLOAD = 5;
 export const MAX_AXIOS_RETRIES = 3;
 
@@ -13,4 +14,4 @@ export const MAX_AXIOS_RETRIES = 3;
 export const SKYDB_SYNC_FACTOR = 10;
 export const MIN_SKYDB_SYNC_FACTOR = 5;
 
-export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.AES_16MB;
+export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.Xchacha20poly1305_64MB;

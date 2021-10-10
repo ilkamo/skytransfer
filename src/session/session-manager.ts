@@ -1,49 +1,68 @@
 import { genKeyPairAndSeed } from 'skynet-js';
-import { SESSION_KEY_NAME } from '../config';
-import { deriveEncryptionKeyFromKey } from '../crypto/crypto';
+import { BUCKET_ENCRYPTION_KEY_NAME, BUCKET_PRIVATE_KEY_NAME } from '../config';
+import { publicKeyFromPrivateKey } from '../crypto/crypto';
+
+export interface ISessionManagerKeys {
+  bucketPrivateKey: string;
+  bucketEncryptionKey: string;
+}
 
 export default class SessionManager {
-  static get sessionPrivateKey(): string {
-    let sessionKey = localStorage.getItem(SESSION_KEY_NAME);
-    if (!sessionKey) {
-      sessionKey = genKeyPairAndSeed().privateKey;
-      localStorage.setItem(SESSION_KEY_NAME, sessionKey);
+  static get sessionKeys(): ISessionManagerKeys {
+    let bucketPrivateKey = localStorage.getItem(BUCKET_PRIVATE_KEY_NAME);
+    let bucketEncryptionKey = localStorage.getItem(BUCKET_ENCRYPTION_KEY_NAME);
+
+    if (!bucketPrivateKey || !bucketEncryptionKey) {
+      bucketPrivateKey = genKeyPairAndSeed().privateKey;
+      localStorage.setItem(BUCKET_PRIVATE_KEY_NAME, bucketPrivateKey);
+
+      bucketEncryptionKey = genKeyPairAndSeed().privateKey;
+      localStorage.setItem(BUCKET_ENCRYPTION_KEY_NAME, bucketEncryptionKey);
     }
 
-    return sessionKey;
+    return {
+      bucketPrivateKey,
+      bucketEncryptionKey,
+    };
   }
 
-  static get sessionPublicKey(): string {
-    return this.sessionPrivateKey.substr(this.sessionPrivateKey.length - 64);
+  static setSessionKeys(sessionKeys: ISessionManagerKeys) {
+    localStorage.setItem(BUCKET_PRIVATE_KEY_NAME, sessionKeys.bucketPrivateKey);
+    localStorage.setItem(
+      BUCKET_ENCRYPTION_KEY_NAME,
+      sessionKeys.bucketEncryptionKey
+    );
   }
 
   static destroySession() {
-    localStorage.removeItem(SESSION_KEY_NAME);
+    localStorage.removeItem(BUCKET_PRIVATE_KEY_NAME);
   }
 
   static isReadOnlyFromLink() {
     return (
-      window.location.hash.split('/').length === 3 &&
-      window.location.hash.split('/')[1].length === 64
+      window.location.hash.split('/').length === 4 &&
+      window.location.hash.split('/')[2].length === 64
     );
   }
 
   static get readOnlyLink() {
+    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
+
     if (this.isReadOnlyFromLink()) {
       return `https://${window.location.hostname}/${window.location.hash}`;
     }
-    return `https://${window.location.hostname}/#/${
-      this.sessionPublicKey
-    }/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+    return `https://${window.location.hostname}/#/v2/${publicKeyFromPrivateKey(
+      bucketPrivateKey
+    )}/${bucketEncryptionKey}`;
   }
 
   static get readWriteLink() {
-    return `https://${window.location.hostname}/#/${
-      this.sessionPrivateKey
-    }/${deriveEncryptionKeyFromKey(this.sessionPrivateKey)}`;
+    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
+
+    return `https://${window.location.hostname}/#/v2/${bucketPrivateKey}/${bucketEncryptionKey}`;
   }
 
   static canResume() {
-    return localStorage.getItem(SESSION_KEY_NAME) !== null;
+    return localStorage.getItem(BUCKET_PRIVATE_KEY_NAME) !== null;
   }
 }

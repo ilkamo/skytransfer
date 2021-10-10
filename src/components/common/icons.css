@@ -12,3 +12,14 @@
   width: 256px;
   height: 28px;
 }
+
+.skytransfer-logo svg {
+  width: 90px;
+  height: 90px;
+  margin: 10px auto;
+}
+
+.bucket svg {
+  width: 90px;
+  margin: 10px auto;
+}

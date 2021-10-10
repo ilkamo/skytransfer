@@ -1,18 +1,20 @@
-import { EncryptedFileReference } from '../models/encryption';
 import { FileNode } from '../models/file-tree';
+import { EncryptedFiles } from '../models/files/encrypted-file';
 
-export function renderTree(paths: EncryptedFileReference[]): FileNode[] {
+export function renderTree(paths: EncryptedFiles): FileNode[] {
   let result: FileNode[] = [];
   let level = { result };
 
-  paths.forEach((f) => {
-    f.relativePath.split('/').reduce((r, name, i, a) => {
+  for (let path in paths) {
+    let p = paths[path];
+
+    p.file.relativePath.split('/').reduce((r, name, i, a) => {
       if (!r[name]) {
         r[name] = { result: [] };
         // uuid of the encrypted file is passed as part of the key in order to have a reference to the file and allow download
         r.result.push({
           title: name,
-          key: `${f.uuid}_${name}_${i}`,
+          key: `${p.uuid}_${name}_${i}`,
           children: r[name].result,
           isLeaf: false,
         });
@@ -20,7 +22,7 @@ export function renderTree(paths: EncryptedFileReference[]): FileNode[] {
 
       return r[name];
     }, level);
-  });
+  }
 
   calculateLeaf(result);
 

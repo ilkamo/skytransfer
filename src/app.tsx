@@ -1,4 +1,4 @@
-import './app.css';
+import './app.less';
 
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { useState } from 'react';
@@ -6,13 +6,15 @@ import { useState } from 'react';
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
 
-import { Layout } from 'antd';
+import { Layout, Divider } from 'antd';
 import AppHeader from './components/header/header';
-import Publish from './components/publish/publish';
+import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
 import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
+import { HeaderNotification } from './components/common/notification';
+import RedirectV1 from './components/redirect-v1/redirect-v1';
 
 const { Content, Footer } = Layout;
 
@@ -22,9 +24,8 @@ export interface State {
 
 const ShareModalHeader = (
   <p>
-    Share your <strong>SkyTransfer</strong> directory. Copy the link and share
-    your files. When you share a draft, others can add more files to your
-    SkyTransfer.
+    Share your <strong>SkyTransfer</strong> bucket. Copy the link and share your
+    files. When you share a bucket draft, others can edit it.
   </p>
 );
 
@@ -34,6 +35,28 @@ const App = () => {
   return (
     <Router>
       <Layout className="layout">
+        <HeaderNotification
+          content={
+            <>
+              <a
+                href="https://github.com/kamy22/skytransfer/wiki/Changelog"
+                target="_blank"
+                rel="noreferrer"
+              >
+                SkyTransfer v2
+              </a>{' '}
+              is here but you can still{' '}
+              <a
+                target="_blank"
+                href="https://skytransfer-v1.hns.siasky.net/"
+                rel="noreferrer"
+              >
+                access the previous version
+              </a>
+              .
+            </>
+          }
+        />
         <AppHeader
           shareOnClick={() => {
             setState({ ...state, shareModalVisible: true });
@@ -41,14 +64,19 @@ const App = () => {
         />
         <Content className="container">
           <Switch>
-            <Route path="/:transferKey/:encryptionKey">
+            <Route path="/v2/:transferKey/:encryptionKey">
               <Content>
                 <FileList />
               </Content>
             </Route>
-            <Route path="/publish">
+            <Route path="/:transferKey/:encryptionKey">
               <Content>
-                <Publish />
+                <RedirectV1 />
+              </Content>
+            </Route>
+            <Route path="/buckets">
+              <Content>
+                <Buckets />
               </Content>
             </Route>
             <Route path="/about">
@@ -74,7 +102,6 @@ const App = () => {
           visible={state.shareModalVisible}
           onCancel={() => setState({ ...state, shareModalVisible: false })}
         />
-
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"
@@ -98,16 +125,16 @@ const App = () => {
           . Powered by{' '}
           <a target="_blank" rel="noreferrer" href="https://siasky.net/">
             Skynet
-          </a>.
-          <div style={{ padding: '10px 0' }}>
-            <a
-              target="_blank"
-              href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
-              rel="noreferrer"
-            >
-              <HomescreenIcon />
-            </a>
-          </div>
+          </a>
+          .
+          <Divider />
+          <a
+            target="_blank"
+            href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
+            rel="noreferrer"
+          >
+            <HomescreenIcon />
+          </a>
         </Footer>
       </Layout>
     </Router>

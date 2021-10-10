@@ -1,4 +1,6 @@
-import { Menu, Layout, Modal } from 'antd';
+import './header.css';
+
+import { Menu, Layout } from 'antd';
 
 import { useReducer } from 'react';
 import {
@@ -9,10 +11,9 @@ import {
 
 import {
   CopyOutlined,
-  DeleteOutlined,
   LinkOutlined,
   RedoOutlined,
-  EyeOutlined,
+  UnorderedListOutlined,
   HeartOutlined,
 } from '@ant-design/icons';
 
@@ -57,17 +58,6 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
     );
   });
 
-  const newDraftConfirmModal = (onNewDraftClick: () => void) => {
-    Modal.confirm({
-      title: 'Are you sure?',
-      icon: <DeleteOutlined />,
-      content: `By starting a new draft, all files you've uploaded will be lost if you don't have the draft link. Make sure you've saved the draft link before continuing.`,
-      okText: 'New draft',
-      cancelText: 'Cancel',
-      onOk: onNewDraftClick,
-    });
-  };
-
   return (
     <Header>
       <Menu
@@ -89,27 +79,14 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
           Resume draft
         </Menu.Item>
         <Menu.Item
-          key="new-draft"
+          key="buckets"
           onClick={() => {
-            newDraftConfirmModal(() => {
-              SessionManager.destroySession();
-              history.push('/');
-              window.location.reload();
-            });
-          }}
-          icon={<DeleteOutlined />}
-        >
-          New draft
-        </Menu.Item>
-        <Menu.Item
-          key="publish"
-          onClick={() => {
-            history.push('/publish');
+            history.push('/buckets');
           }}
           disabled={!canPublishSession}
-          icon={<EyeOutlined />}
+          icon={<UnorderedListOutlined />}
         >
-          Publish (MySky)
+          Buckets
         </Menu.Item>
         <Menu.Item
           key="about-us"

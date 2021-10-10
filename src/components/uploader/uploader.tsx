@@ -1,8 +1,8 @@
 import './uploader.css';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-import { EncryptedFileReference } from '../../models/encryption';
+import { EncryptionType } from '../../models/encryption';
 
 import { isMobile } from 'react-device-detect';
 
@@ -30,8 +30,8 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import AESFileEncrypt from '../../crypto/file-encrypt';
-import AESFileDecrypt from '../../crypto/file-decrypt';
+import Xchacha20poly1305Encrypt from '../../crypto/xchacha20poly1305-encrypt';
+import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import {
   DEFAULT_ENCRYPTION_TYPE,
   MAX_PARALLEL_UPLOAD,
@@ -41,28 +41,30 @@ import {
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import SessionManager from '../../session/session-manager';
-import { deriveEncryptionKeyFromKey } from '../../crypto/crypto';
-
 import {
-  getEncryptedFiles,
-  storeEncryptedFiles,
+  getDecryptedBucket,
+  encryptAndStoreBucket,
   uploadFile,
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
+import { EncryptedFile } from '../../models/files/encrypted-file';
+import { Bucket, BucketInfo, DecryptedBucket } from '../../models/files/bucket';
+import { FileData } from '../../models/files/file-data';
+import { genKeyPairAndSeed } from 'skynet-js';
+import { ChunkResolver } from '../../crypto/chunk-resolver';
+
+import { selectUser } from '../../features/user/user-slice';
+import { useSelector } from 'react-redux';
+import { publicKeyFromPrivateKey } from '../../crypto/crypto';
+import { UserState, UserStatus } from '../../models/user';
+import { BucketModal } from '../common/bucket-modal';
+import { BucketInformation } from '../common/bucket-information';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
 const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
-
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-};
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -71,50 +73,78 @@ const sleep = (ms): Promise<void> => {
 let uploadCount = 0;
 let skydbSyncInProgress = false;
 
+const generateRandomDecryptedBucket = (): DecryptedBucket => {
+  const randName = (Math.random() + 1).toString(36).substring(7);
+  return new DecryptedBucket({
+    uuid: uuid(),
+    name: `skytransfer-${randName}`,
+    description:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    files: {},
+    created: Date.now(),
+    modified: Date.now(),
+  });
+};
+
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [uploadedEncryptedFiles, setUploadedEncryptedFiles] = useState<
-    EncryptedFileReference[]
-  >([]);
+  const [decryptedBucket, setDecryptedBucket] = useState<DecryptedBucket>();
 
   const [toStoreInSkyDBCount, setToStoreInSkyDBCount] = useState(0);
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
 
   const [uploading, setUploading] = useState(false);
-  const [showUploadCompletedModal, setShowUploadCompletedModal] = useState(
-    false
-  );
+  const [showUploadCompletedModal, setShowUploadCompletedModal] =
+    useState(false);
   const [loading, setLoading] = useState(true);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
+
+  const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
+  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+
+  const user: UserState = useSelector(selectUser);
 
   const finishUpload = () => {
     setShowUploadCompletedModal(false);
   };
 
-  const initSession = async () => {
-    const files = await getEncryptedFiles(
-      SessionManager.sessionPublicKey,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
+  const initBucket = async () => {
+    let bucket: Bucket = await getDecryptedBucket(
+      publicKeyFromPrivateKey(user.bucketPrivateKey),
+      user.bucketEncryptionKey
     );
-    if (!files) {
-      setLoading(false);
-      return;
+
+    let decryptedBucket = generateRandomDecryptedBucket();
+    if (bucket) {
+      decryptedBucket = new DecryptedBucket(bucket);
     }
 
-    setUploadedEncryptedFiles((prev) => [...prev, ...files]);
+    setBucketInfo(
+      decryptedBucket.toBucketInfo(
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey
+      )
+    );
+    setDecryptedBucket(new DecryptedBucket(decryptedBucket));
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (user.bucketPrivateKey !== null) {
+      initBucket();
+    }
+  }, [user]);
 
   const updateFilesInSkyDB = async () => {
     setLoading(true);
     skydbSyncInProgress = true;
     try {
       message.loading('Syncing files in SkyDB...');
-      await storeEncryptedFiles(
-        SessionManager.sessionPrivateKey,
-        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey),
-        uploadedEncryptedFiles
+      await encryptAndStoreBucket(
+        user.bucketPrivateKey,
+        user.bucketEncryptionKey,
+        decryptedBucket
       );
 
       message.success('Sync completed');
@@ -138,7 +168,7 @@ const Uploader = () => {
 
     const uploadCompletedSkyDBSync =
       toStoreInSkyDBCount > 0 &&
-      uploadedEncryptedFiles.length > 0 &&
+      Object.keys(decryptedBucket.files).length > 0 &&
       stillInProgressFilesCount === 0;
 
     const fileListEditedSkyDBSync =
@@ -159,10 +189,6 @@ const Uploader = () => {
       }
     }
   };
-
-  useConstructor(() => {
-    initSession();
-  });
 
   useEffect(() => {
     skyDBSyncer();
@@ -196,11 +222,8 @@ const Uploader = () => {
     }
   }, [encryptProgress]);
 
-  const downloadFile = async (encryptedFile: EncryptedFileReference) => {
-    const decrypt = new AESFileDecrypt(
-      encryptedFile,
-      deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
-    );
+  const downloadFile = async (encryptedFile: EncryptedFile) => {
+    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
 
     let file: File;
     try {
@@ -220,19 +243,18 @@ const Uploader = () => {
       return;
     }
 
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(file, encryptedFile.fileName);
-    } else {
-      var elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(file);
-      elem.download = file.name;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
+    var elem = window.document.createElement('a');
+    elem.href = window.URL.createObjectURL(file);
+    elem.download = file.name;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
   };
 
-  const queueParallelEncryption = (file: File): Promise<File> => {
+  const queueParallelEncryption = (
+    file: File,
+    fileKey: string
+  ): Promise<File> => {
     return new Promise(async (resolve) => {
       while (uploadCount > MAX_PARALLEL_UPLOAD) {
         await sleep(1000);
@@ -240,10 +262,7 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const fe = new AESFileEncrypt(
-        file,
-        deriveEncryptionKeyFromKey(SessionManager.sessionPrivateKey)
-      );
+      const fe = new Xchacha20poly1305Encrypt(file, fileKey);
       resolve(
         fe.encrypt((completed, eProgress) => {
           setEncryptProgress(eProgress);
@@ -254,8 +273,9 @@ const Uploader = () => {
 
   const queueAndUploadFile = async (options) => {
     const { onSuccess, onError, file, onProgress } = options;
-    const encryptedFile = await queueParallelEncryption(file);
-    await uploadFile(encryptedFile, onProgress, onSuccess, onError);
+    const fileKey = genKeyPairAndSeed().privateKey;
+    const encryptedFile = await queueParallelEncryption(file, fileKey);
+    await uploadFile(encryptedFile, fileKey, onProgress, onSuccess, onError);
   };
 
   const draggerConfig = {
@@ -301,25 +321,53 @@ const Uploader = () => {
             ? info.file.originFileObj.webkitRelativePath
             : info.file.name;
 
-          const tempFile: EncryptedFileReference = {
+          const cr = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
+
+          const tempFileData: FileData = {
             uuid: uuid(),
-            skylink: info.file.response.data.skylink,
-            encryptionType: DEFAULT_ENCRYPTION_TYPE,
-            fileName: info.file.name,
-            mimeType: info.file.type,
-            relativePath: relativePath,
             size: info.file.size,
+            chunkSize: cr.decryptChunkSize,
+            encryptionType: EncryptionType[DEFAULT_ENCRYPTION_TYPE],
+            url: info.file.response.data.skylink,
+            key: info.file.response.fileKey,
+            hash: '', // TODO: add hash
+            ts: Date.now(),
             encryptedSize: info.file.response.encryptedFileSize,
-            updatedAt: Date.now(),
+            relativePath: relativePath,
           };
+
+          if (decryptedBucket.encryptedFileExists(relativePath)) {
+            setDecryptedBucket((p) => {
+              const f = p.files[relativePath];
+              f.modified = Date.now();
+              f.name = info.file.name;
+              f.file = tempFileData;
+              f.history.push(tempFileData);
+              f.version++;
+
+              return p;
+            });
+          } else {
+            const encryptedFile: EncryptedFile = {
+              uuid: uuid(),
+              file: tempFileData,
+              created: Date.now(),
+              name: info.file.name,
+              modified: Date.now(),
+              mimeType: info.file.type,
+              history: [tempFileData],
+              version: 0,
+            };
+
+            setDecryptedBucket((p) => {
+              p.files[relativePath] = encryptedFile;
+              p.modified = Date.now();
+              return p;
+            });
+          }
 
           message.success(`${info.file.name} file uploaded successfully.`);
 
-          setUploadedEncryptedFiles((prev) => [
-            // overwrite if there is an old file with the same relativePath
-            ...prev.filter((f) => f.relativePath !== tempFile.relativePath),
-            tempFile,
-          ]);
           setToStoreInSkyDBCount((prev) => prev + 1);
           uploadCount--;
           setFileListToUpload((prev) =>
@@ -346,13 +394,22 @@ const Uploader = () => {
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
 
-  const getFileBy = (key: string): EncryptedFileReference => {
-    return uploadedEncryptedFiles.find((f) => f.uuid === key.split('_')[0]);
+  const getFileBy = (key: string): EncryptedFile => {
+    for (let path in decryptedBucket.files) {
+      if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
+        return decryptedBucket.files[path];
+      }
+    }
   };
+
+  const bucketHasFiles =
+    decryptedBucket &&
+    decryptedBucket.files &&
+    Object.keys(decryptedBucket.files).length > 0;
 
   const isLoading = uploading || loading;
   return (
-    <>
+    <div className="page">
       {errorMessage ? (
         <Alert
           className="error-message"
@@ -362,6 +419,13 @@ const Uploader = () => {
         />
       ) : (
         ''
+      )}
+
+      {decryptedBucket && decryptedBucket.files && (
+        <BucketInformation
+          bucket={decryptedBucket}
+          onEdit={() => setEditBucketModalVisible(true)}
+        />
       )}
 
       <TabsCards
@@ -409,7 +473,26 @@ const Uploader = () => {
         ]}
       />
 
-      {uploadedEncryptedFiles.length > 0 ? (
+      {bucketInfo && decryptedBucket && (
+        <BucketModal
+          bucket={decryptedBucket}
+          bucketInfo={bucketInfo}
+          visible={editBucketModalVisible}
+          onCancel={() => setEditBucketModalVisible(false)}
+          isLoggedUser={user.status === UserStatus.Logged}
+          modalTitle="Edit bucket"
+          onDone={(bucketInfo) => {
+            setBucketInfo(bucketInfo);
+            setEditBucketModalVisible(false);
+          }}
+          onError={(e) => {
+            console.error(e);
+            setEditBucketModalVisible(false);
+          }}
+        />
+      )}
+
+      {bucketHasFiles ? (
         <div className="file-list default-margin">
           <DownloadActivityBar
             decryptProgress={decryptProgress}
@@ -421,7 +504,7 @@ const Uploader = () => {
               Sync in progress...
             </div>
           )}
-          <Divider>Uploaded files</Divider>
+          <Divider>{decryptedBucket.name}</Divider>
           <DirectoryTree
             multiple
             showIcon={false}
@@ -430,31 +513,39 @@ const Uploader = () => {
             disabled={isLoading}
             defaultExpandAll={true}
             switcherIcon={<DownOutlined className="directory-switcher" />}
-            treeData={renderTree(uploadedEncryptedFiles)}
+            treeData={renderTree(decryptedBucket.files)}
             selectable={false}
             titleRender={(node) => {
               const key: string = `${node.key}`;
-              const encryptedFileReference = getFileBy(key);
-              return encryptedFileReference ? (
+              const encryptedFile = getFileBy(key);
+              return encryptedFile ? (
                 <DirectoryTreeLine
                   disabled={isLoading}
                   isLeaf={node.isLeaf}
                   name={node.title.toString()}
-                  updatedAt={encryptedFileReference.updatedAt}
+                  updatedAt={encryptedFile.created}
                   onDownloadClick={() => {
                     if (!node.isLeaf) {
                       return;
                     }
-                    if (encryptedFileReference) {
+                    if (encryptedFile) {
                       message.loading(`Download and decryption started`);
-                      downloadFile(encryptedFileReference);
+                      downloadFile(encryptedFile);
                     }
                   }}
                   onDeleteClick={() => {
                     deleteConfirmModal(node.title.toString(), () => {
-                      setUploadedEncryptedFiles((prev) =>
-                        prev.filter((f) => f.uuid !== key.split('_')[0])
-                      );
+                      setDecryptedBucket((p) => {
+                        for (let path in decryptedBucket.files) {
+                          if (
+                            decryptedBucket.files[path].uuid ===
+                            key.split('_')[0]
+                          ) {
+                            delete decryptedBucket.files[path];
+                          }
+                        }
+                        return p;
+                      });
                       setToRemoveFromSkyDBCount((prev) => prev + 1);
                     });
                   }}
@@ -471,15 +562,16 @@ const Uploader = () => {
         </Empty>
       )}
 
-      {!isLoading && uploadedEncryptedFiles.length > 0 && (
+      {!isLoading && bucketHasFiles && (
         <div style={{ textAlign: 'center' }}>
           <Button
             icon={<DownloadOutlined />}
-            size="large"
+            size="middle"
             onClick={async () => {
               message.loading(`Download and decryption started`);
-              for (const encyptedFile of uploadedEncryptedFiles) {
-                await downloadFile(encyptedFile);
+              for (const encyptedFile in decryptedBucket.files) {
+                const file = decryptedBucket.files[encyptedFile];
+                await downloadFile(file);
               }
             }}
           >
@@ -495,16 +587,16 @@ const Uploader = () => {
         }}
         header={
           <p>
-            Your <strong>SkyTransfer</strong> is ready. Your files have been
-            encrypted and uploaded on Skynet. Copy the link and share your files
-            or just continue uploading. When you share a draft, others can add
-            files to your SkyTransfer.
+            Your <strong>SkyTransfer</strong> bucket is ready. Your files have
+            been encrypted and uploaded on Skynet. Copy the link and share your
+            bucket or just continue uploading. When you share a bucket draft,
+            others can edit it.
           </p>
         }
         shareLinkOnClick={finishUpload}
         shareDraftLinkOnClick={finishUpload}
       />
-    </>
+    </div>
   );
 };
 

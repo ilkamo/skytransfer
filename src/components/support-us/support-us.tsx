@@ -1,11 +1,16 @@
 import { SmileIcon, SupportUsIcon } from '../common/icons';
 import './support-us.css';
 
-import { Divider } from 'antd';
+import { Divider, Typography } from 'antd';
+const { Title } = Typography;
 
 const SupportUs = () => {
   return (
-    <div className="support-us">
+    <div className="support-us page">
+      <Title style={{ textAlign: 'left' }} level={4}>
+        Support us
+      </Title>
+      <Divider />
       <p style={{ textAlign: 'center' }}>
         <SmileIcon />
       </p>
@@ -31,7 +36,7 @@ const SupportUs = () => {
         your way of returning the love we invested in developing SkyTransfer. We
         would appreciate it very much.
       </p>
-      <Divider>Gitcoin Grants</Divider>
+      <Divider className="divider-text">Gitcoin Grants</Divider>
       <p>
         SkyTransfer is an open source project and it is part of{' '}
         <a
@@ -45,7 +50,7 @@ const SupportUs = () => {
         relies on the number of donors a project has, so every gwei or dai
         counts!
       </p>
-      <Divider>Buy Us a coffee</Divider>
+      <Divider className="divider-text">Buy Us a coffee</Divider>
       <p style={{ textAlign: 'center' }}>
         <a
           href="https://www.buymeacoffee.com/skytransfer"
@@ -60,7 +65,7 @@ const SupportUs = () => {
         </a>
       </p>
       <br />
-      <Divider>Siacoin wallet address</Divider>
+      <Divider className="divider-text">Siacoin wallet address</Divider>
       <pre style={{ textAlign: 'center', fontWeight: 'bold' }}>
         a34ac5a2aa1d5174b1a9289584ab4cdb5d2f99fa24de4a86d592fb02b2f81b754ff97af0e6e4
       </pre>
