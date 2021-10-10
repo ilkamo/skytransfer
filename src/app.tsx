@@ -38,7 +38,7 @@ const App = () => {
         <HeaderNotification
           content={
             <>
-              SkyTransfer v2 is here but you can still{' '}
+              <a href="https://github.com/kamy22/skytransfer/wiki/Changelog" target="_blank">SkyTransfer v2</a> is here but you can still{' '}
               <a
                 target="_blank"
                 href="https://skytransfer-v1.hns.siasky.net/"
