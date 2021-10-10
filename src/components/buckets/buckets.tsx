@@ -203,24 +203,22 @@ const Buckets = () => {
           <Divider className="default-margin" orientation="right" />
           <BucketIcon />
           <div style={{ textAlign: 'center' }}>
-            <div>
-              <p>
-                Welcome to the buckets section where you can access previously
-                created buckets.
-                <p></p>
-                Buckets are like folders in which files are stored. Before files
-                can be uploaded, a bucket must first be created.
-              </p>
-              <Divider />
-              <Button
-                icon={<InboxOutlined />}
-                size="middle"
-                type="primary"
-                onClick={() => setNewBucketModalVisible(true)}
-              >
-                Create bucket
-              </Button>
-            </div>
+            <p>
+              Welcome to the buckets section where you can access previously
+              created buckets.
+              <p></p>
+              Buckets are like folders in which files are stored. Before files
+              can be uploaded, a bucket must first be created.
+            </p>
+            <Divider />
+            <Button
+              icon={<InboxOutlined />}
+              size="middle"
+              type="primary"
+              onClick={() => setNewBucketModalVisible(true)}
+            >
+              Create bucket
+            </Button>
           </div>
           <Divider orientation="left">Your private buckets</Divider>
           <List
