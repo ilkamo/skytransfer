@@ -44,7 +44,7 @@ const generateNewBucketInfo = (): BucketInfo => {
   const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
 
   const tempBucketInfo: BucketInfo = {
-    uuid: tempBucketID,
+    bucketID: tempBucketID,
     name: '',
     description: '',
     created: Date.now(),
@@ -103,7 +103,7 @@ const Buckets = () => {
     await deleteUserHiddenBucket(mySky, b);
     setUserHiddenBuckets((p) => {
       const copy = { ...p };
-      delete copy[b.uuid];
+      delete copy[b.bucketID];
       return copy;
     });
   };
@@ -203,24 +203,23 @@ const Buckets = () => {
           <Divider className="default-margin" orientation="right" />
           <BucketIcon />
           <div style={{ textAlign: 'center' }}>
-            <div>
-              <p>
-                Welcome to the buckets section where you can access previously
-                created buckets.
-                <p></p>
-                Buckets are like folders in which files are stored. Before files
-                can be uploaded, a bucket must first be created.
-              </p>
-              <Divider />
-              <Button
-                icon={<InboxOutlined />}
-                size="middle"
-                type="primary"
-                onClick={() => setNewBucketModalVisible(true)}
-              >
-                Create bucket
-              </Button>
-            </div>
+            <p>
+              Welcome to the buckets section where you can access previously
+              created buckets.
+            </p>
+            <p>
+              Buckets are like folders in which files are stored. Before files
+              can be uploaded, a bucket must first be created.
+            </p>
+            <Divider />
+            <Button
+              icon={<InboxOutlined />}
+              size="middle"
+              type="primary"
+              onClick={() => setNewBucketModalVisible(true)}
+            >
+              Create bucket
+            </Button>
           </div>
           <Divider orientation="left">Your private buckets</Divider>
           <List
@@ -241,7 +240,7 @@ const Buckets = () => {
                     type="ghost"
                     size="middle"
                     onClick={() => openBucket(item)}
-                    key={`${item.uuid}`}
+                    key={`opne-${item.bucketID}`}
                   >
                     open
                   </Button>
@@ -252,7 +251,7 @@ const Buckets = () => {
                     onClick={() => {
                       deleteBucketConfirmModal(() => deleteBucket(item));
                     }}
-                    key={`${item.uuid}`}
+                    key={`delete-${item.bucketID}`}
                   >
                     delete
                   </Button>
@@ -269,11 +268,6 @@ const Buckets = () => {
         isLoggedUser={user.status === UserStatus.Logged}
         modalTitle="Create new bucket"
         onDone={(bucketInfo) => {
-          setUserHiddenBuckets((p) => {
-            p[bucketInfo.uuid] = bucketInfo;
-            return p;
-          });
-          setNewBucketModalVisible(false);
           history.push('/');
         }}
         onError={(e) => {

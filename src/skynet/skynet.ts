@@ -25,7 +25,7 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 };
 
 const dataDomain = 'skytransfer.hns';
-const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
+const privateBucketsPath = 'skytransfer.hns/userBuckets.json';
 // const privateBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
 
 export const uploadFile = async (
@@ -152,11 +152,7 @@ export async function storeUserHiddenBucket(
 ) {
   let buckets = await getUserHiddenBuckets(mySky);
 
-  if (newBucket.uuid in buckets) {
-    throw Error('bucket already exists');
-  }
-
-  buckets[newBucket.uuid] = newBucket;
+  buckets[newBucket.bucketID] = newBucket;
   try {
     await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
   } catch (error) {
@@ -169,8 +165,8 @@ export async function deleteUserHiddenBucket(
   newBucket: BucketInfo
 ) {
   let buckets = await getUserHiddenBuckets(mySky);
-  if (newBucket.uuid in buckets) {
-    delete buckets[newBucket.uuid];
+  if (newBucket.bucketID in buckets) {
+    delete buckets[newBucket.bucketID];
     try {
       await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
     } catch (error) {

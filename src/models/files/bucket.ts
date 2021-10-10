@@ -10,7 +10,7 @@ export interface Bucket {
 }
 
 export interface BucketInfo {
-  uuid: string;
+  bucketID: string;
   name: string;
   description: string;
   created: number;
@@ -44,7 +44,7 @@ export class DecryptedBucket {
 
   toBucketInfo(bucketPrivateKey, bucketEncryptionKey): BucketInfo {
     return {
-      uuid: this.uuid,
+      bucketID: this.uuid,
       name: this.name,
       description: this.description,
       created: this.created,

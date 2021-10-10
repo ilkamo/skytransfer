@@ -3,7 +3,6 @@ import { Modal } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';
-import { v4 as uuid } from 'uuid';
 import { setUserKeys } from '../../features/user/user-slice';
 import { Bucket, BucketInfo } from '../../models/files/bucket';
 import {
@@ -42,7 +41,6 @@ export const BucketModal = ({
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
-    const tempBucketID = uuid();
 
     const modalBucketInfo = { ...bucketInfo };
     modalBucketInfo.name = values.bucketName;
@@ -50,7 +48,7 @@ export const BucketModal = ({
     modalBucketInfo.modified = Date.now();
 
     let bucketToStore: Bucket = {
-      uuid: tempBucketID,
+      uuid: bucketInfo.bucketID,
       name: values.bucketName,
       description: values.bucketDescription,
       files: {},
