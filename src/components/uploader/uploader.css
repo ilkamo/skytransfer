@@ -13,6 +13,17 @@
   background-color: #20bf6b !important;
 }
 
+.drop-container .version {
+  font-size: 12px;
+  color: #b2bec3;
+}
+
+.logo {
+  font-size: 30px;
+  color: #20bf6b;
+  font-weight: bold;
+}
+
 .file-error {
   display: inline-block;
   color: #9aa9bb;

@@ -135,7 +135,7 @@ const Buckets = () => {
       className="default-margin buckets page"
       style={{ textAlign: 'center' }}
     >
-      {user.status === UserStatus.NotLogged ? (
+      {user.status !== UserStatus.NotLogged ? (
         <>
           <Title style={{ textAlign: 'left' }} level={4}>
             Buckets
@@ -230,32 +230,34 @@ const Buckets = () => {
             itemLayout="horizontal"
             dataSource={Object.values(userHiddenBuckets)}
             renderItem={(item) => (
-              <List.Item
-                actions={[
+              <>
+                <List.Item>
+                  <List.Item.Meta
+                    title={item.name}
+                    description={item.description}
+                  />
                   <Button
-                    type="link"
+                    style={{ marginRight: '8px' }}
+                    type="ghost"
+                    size="middle"
                     onClick={() => openBucket(item)}
                     key={`${item.uuid}`}
                   >
                     open
-                  </Button>,
+                  </Button>
                   <Button
                     danger
-                    type="link"
+                    type="ghost"
+                    size="middle"
                     onClick={() => {
                       deleteBucketConfirmModal(() => deleteBucket(item));
                     }}
                     key={`${item.uuid}`}
                   >
                     delete
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={item.name}
-                  description={item.description}
-                />
-              </List.Item>
+                  </Button>
+                </List.Item>
+              </>
             )}
           />
         </>
