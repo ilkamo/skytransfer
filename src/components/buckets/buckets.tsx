@@ -135,7 +135,7 @@ const Buckets = () => {
       className="default-margin buckets page"
       style={{ textAlign: 'center' }}
     >
-      {user.status !== UserStatus.NotLogged ? (
+      {user.status === UserStatus.NotLogged ? (
         <>
           <Title style={{ textAlign: 'left' }} level={4}>
             Buckets

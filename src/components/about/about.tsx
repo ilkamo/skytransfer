@@ -52,8 +52,10 @@ const About = () => {
       </p>
       <p>
         Last but not least, using MySky you can access{' '}
-        <strong>"buckets"</strong>, SkyTransfer's most advanced feature. Buckets are like folders in which files are stored. Before files can be uploaded, a bucket must first be created. Thanks
-        to them you can manage your content like never before.
+        <strong>"buckets"</strong>, SkyTransfer's most advanced feature. Buckets
+        are like folders in which files are stored. Before files can be
+        uploaded, a bucket must first be created. Thanks to them you can manage
+        your content like never before.
       </p>
       <p>
         SkyTransfer is still in development. Please report any issues, new ideas

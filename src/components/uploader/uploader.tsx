@@ -434,21 +434,21 @@ const Uploader = () => {
           {
             name: 'Upload file(s)',
             content: (
-                <div style={{ paddingBottom: '4px' }}>
-                  <Dragger
-                    className="drop-container"
-                    {...draggerConfig}
-                    directory={false}
-                    multiple
-                    disabled={uploading}
-                  >
-                    <DraggerContent
-                      onlyClickable={isMobile}
-                      draggableMessage="Drag & Drop file(s) to upload"
-                    />
-                    <UploadActivityBar encryptProgress={encryptProgress} />
-                  </Dragger>
-                </div>
+              <div style={{ paddingBottom: '4px' }}>
+                <Dragger
+                  className="drop-container"
+                  {...draggerConfig}
+                  directory={false}
+                  multiple
+                  disabled={uploading}
+                >
+                  <DraggerContent
+                    onlyClickable={isMobile}
+                    draggableMessage="Drag & Drop file(s) to upload"
+                  />
+                  <UploadActivityBar encryptProgress={encryptProgress} />
+                </Dragger>
+              </div>
             ),
           },
           {
