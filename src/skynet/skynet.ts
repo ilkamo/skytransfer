@@ -25,7 +25,7 @@ const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
 };
 
 const dataDomain = 'skytransfer.hns';
-const privateBucketsPath = 'skytransfer.hns/privateBuckets.json';
+const privateBucketsPath = 'skytransfer.hns/userBuckets.json';
 // const privateBucketsPathFormat = 'skytransfer.hns/hiddenBucket/{bucketID}.json';
 
 export const uploadFile = async (
