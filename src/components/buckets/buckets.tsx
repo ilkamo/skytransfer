@@ -206,7 +206,8 @@ const Buckets = () => {
             <p>
               Welcome to the buckets section where you can access previously
               created buckets.
-              <p></p>
+            </p>
+            <p>
               Buckets are like folders in which files are stored. Before files
               can be uploaded, a bucket must first be created.
             </p>
