@@ -152,10 +152,6 @@ export async function storeUserHiddenBucket(
 ) {
   let buckets = await getUserHiddenBuckets(mySky);
 
-  if (newBucket.uuid in buckets) {
-    throw Error('bucket already exists');
-  }
-
   buckets[newBucket.uuid] = newBucket;
   try {
     await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
