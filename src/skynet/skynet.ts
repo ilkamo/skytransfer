@@ -152,7 +152,7 @@ export async function storeUserHiddenBucket(
 ) {
   let buckets = await getUserHiddenBuckets(mySky);
 
-  buckets[newBucket.uuid] = newBucket;
+  buckets[newBucket.bucketID] = newBucket;
   try {
     await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
   } catch (error) {
@@ -165,8 +165,8 @@ export async function deleteUserHiddenBucket(
   newBucket: BucketInfo
 ) {
   let buckets = await getUserHiddenBuckets(mySky);
-  if (newBucket.uuid in buckets) {
-    delete buckets[newBucket.uuid];
+  if (newBucket.bucketID in buckets) {
+    delete buckets[newBucket.bucketID];
     try {
       await mySky.setJSONEncrypted(privateBucketsPath, { buckets });
     } catch (error) {

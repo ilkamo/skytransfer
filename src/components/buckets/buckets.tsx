@@ -44,7 +44,7 @@ const generateNewBucketInfo = (): BucketInfo => {
   const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
 
   const tempBucketInfo: BucketInfo = {
-    uuid: tempBucketID,
+    bucketID: tempBucketID,
     name: '',
     description: '',
     created: Date.now(),
@@ -103,7 +103,7 @@ const Buckets = () => {
     await deleteUserHiddenBucket(mySky, b);
     setUserHiddenBuckets((p) => {
       const copy = { ...p };
-      delete copy[b.uuid];
+      delete copy[b.bucketID];
       return copy;
     });
   };
@@ -241,7 +241,7 @@ const Buckets = () => {
                     type="ghost"
                     size="middle"
                     onClick={() => openBucket(item)}
-                    key={`opne-${item.uuid}`}
+                    key={`opne-${item.bucketID}`}
                   >
                     open
                   </Button>
@@ -252,7 +252,7 @@ const Buckets = () => {
                     onClick={() => {
                       deleteBucketConfirmModal(() => deleteBucket(item));
                     }}
-                    key={`delete-${item.uuid}`}
+                    key={`delete-${item.bucketID}`}
                   >
                     delete
                   </Button>
@@ -269,11 +269,6 @@ const Buckets = () => {
         isLoggedUser={user.status === UserStatus.Logged}
         modalTitle="Create new bucket"
         onDone={(bucketInfo) => {
-          setUserHiddenBuckets((p) => {
-            p[bucketInfo.uuid] = bucketInfo;
-            return p;
-          });
-          setNewBucketModalVisible(false);
           history.push('/');
         }}
         onError={(e) => {

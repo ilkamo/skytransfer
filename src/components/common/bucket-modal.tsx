@@ -42,7 +42,6 @@ export const BucketModal = ({
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
-    const tempBucketID = uuid();
 
     const modalBucketInfo = { ...bucketInfo };
     modalBucketInfo.name = values.bucketName;
@@ -50,7 +49,7 @@ export const BucketModal = ({
     modalBucketInfo.modified = Date.now();
 
     let bucketToStore: Bucket = {
-      uuid: tempBucketID,
+      uuid: bucketInfo.bucketID,
       name: values.bucketName,
       description: values.bucketDescription,
       files: {},
