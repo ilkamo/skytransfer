@@ -21,8 +21,6 @@ const About = () => {
         <strong>between different devices</strong>? Are you writing an email and
         you need to <strong>attach files</strong>? Are you struggling with a ton
         of <strong>pictures to share</strong>? Try doing it using SkyTransfer.
-      </p>
-      <p>
         Use the minimal but powerful uploader (file picker or drag&drop) for{' '}
         <strong>uploading and sharing one or multiple files</strong> with a{' '}
         <strong>single link</strong> or <strong>QR code</strong>.
@@ -51,14 +49,17 @@ const About = () => {
         SkyTransfer supports <strong>uploading entire directories</strong>.
       </p>
       <p>
-        Last but not least, using MySky you can access{' '}
-        <strong>"buckets"</strong>, SkyTransfer's most advanced feature. Buckets are like folders in which files are stored. Before files can be uploaded, a bucket must first be created. Thanks
-        to them you can manage your content like never before.
+        Last but not least, using MySky you can access <strong>buckets</strong>,
+        SkyTransfer's most advanced feature. Buckets are like folders in which
+        files are stored. Before a collection of files can be uploaded, a bucket
+        must first be created.
       </p>
       <p>
-        SkyTransfer is still in development. Please report any issues, new ideas
-        or bugs and keep in mind that the encryption process has not yet been
-        audited.
+        SkyTransfer is still in development. Please report any bug or new idea{' '}
+        <a href="https://github.com/kamy22/skytransfer">
+          by opening an issue on github
+        </a>{' '}
+        and keep in mind that the encryption process has not yet been audited.
       </p>
     </div>
   );
