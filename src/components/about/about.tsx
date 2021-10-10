@@ -49,10 +49,10 @@ const About = () => {
         SkyTransfer supports <strong>uploading entire directories</strong>.
       </p>
       <p>
-        Last but not least, using MySky you can access{' '}
-        <strong>buckets</strong>, SkyTransfer's most advanced feature. Buckets
-        are like folders in which files are stored. Before a collection of files can be
-        uploaded, a bucket must first be created.
+        Last but not least, using MySky you can access <strong>buckets</strong>,
+        SkyTransfer's most advanced feature. Buckets are like folders in which
+        files are stored. Before a collection of files can be uploaded, a bucket
+        must first be created.
       </p>
       <p>
         SkyTransfer is still in development. Please report any bug or new idea{' '}
