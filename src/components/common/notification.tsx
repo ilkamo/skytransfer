@@ -1,3 +1,4 @@
+import './notification.css';
 import { NotificationOutlined } from '@ant-design/icons';
 
 type HeaderNotificationProps = {
@@ -6,7 +7,7 @@ type HeaderNotificationProps = {
 
 export const HeaderNotification = ({ content }: HeaderNotificationProps) => {
   return (
-    <div style={{ textAlign: 'center', padding: '14px', fontSize: 16 }}>
+    <div className="notification">
       <NotificationOutlined style={{ paddingRight: 10 }} />
       {content}
     </div>

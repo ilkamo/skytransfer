@@ -38,14 +38,13 @@ const App = () => {
         <HeaderNotification
           content={
             <>
-              You are using SkyTransfer v2. You can still access the previous
-              version by{' '}
+              SkyTransfer v2 is here but you can still{' '}
               <a
                 target="_blank"
                 href="https://skytransfer-v1.hns.siasky.net/"
                 rel="noreferrer"
               >
-                going here
+                access the previous version
               </a>
               .
             </>
