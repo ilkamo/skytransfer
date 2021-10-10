@@ -3,7 +3,6 @@ import { Modal } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';
-import { v4 as uuid } from 'uuid';
 import { setUserKeys } from '../../features/user/user-slice';
 import { Bucket, BucketInfo } from '../../models/files/bucket';
 import {
