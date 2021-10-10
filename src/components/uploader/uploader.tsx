@@ -483,6 +483,12 @@ const Uploader = () => {
           modalTitle="Edit bucket"
           onDone={(bucketInfo) => {
             setBucketInfo(bucketInfo);
+            setDecryptedBucket((p) => {
+              p.description = bucketInfo.description;
+              p.name = bucketInfo.name;
+              p.modified = bucketInfo.modified;
+              return p;
+            });
             setEditBucketModalVisible(false);
           }}
           onError={(e) => {
