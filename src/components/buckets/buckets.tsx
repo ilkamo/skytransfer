@@ -241,7 +241,7 @@ const Buckets = () => {
                     type="ghost"
                     size="middle"
                     onClick={() => openBucket(item)}
-                    key={`${item.uuid}`}
+                    key={`opne-${item.uuid}`}
                   >
                     open
                   </Button>
@@ -252,7 +252,7 @@ const Buckets = () => {
                     onClick={() => {
                       deleteBucketConfirmModal(() => deleteBucket(item));
                     }}
-                    key={`${item.uuid}`}
+                    key={`delete-${item.uuid}`}
                   >
                     delete
                   </Button>
