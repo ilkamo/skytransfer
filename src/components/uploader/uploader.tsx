@@ -95,7 +95,7 @@ const Uploader = () => {
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
 
   const [uploading, setUploading] = useState(false);
-  const [showShareBucketModal, setShareBucketModal] = useState(false);
+  const [showShareBucketModal, setShowShareBucketModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
@@ -106,7 +106,7 @@ const Uploader = () => {
   const user: UserState = useSelector(selectUser);
 
   const closeShareBucketModal = () => {
-    setShareBucketModal(false);
+    setShowShareBucketModal(false);
   };
 
   const initBucket = async () => {
@@ -185,7 +185,7 @@ const Uploader = () => {
       await updateFilesInSkyDB();
 
       if (uploadCompletedSkyDBSync) {
-        setShareBucketModal(true);
+        setShowShareBucketModal(true);
       }
     }
   };
@@ -289,7 +289,7 @@ const Uploader = () => {
     customRequest: queueAndUploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
-      setShareBucketModal(false);
+      setShowShareBucketModal(false);
       setUploading(true);
 
       setFileListToUpload(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
@@ -477,7 +477,7 @@ const Uploader = () => {
         <Button
           type="ghost"
           size="middle"
-          onClick={() => setShareBucketModal(true)}
+          onClick={() => setShowShareBucketModal(true)}
           icon={<ShareAltOutlined />}
         >
           Share bucket
@@ -601,7 +601,7 @@ const Uploader = () => {
         title="Share bucket"
         visible={showShareBucketModal}
         onCancel={() => {
-          setShareBucketModal(false);
+          setShowShareBucketModal(false);
         }}
         header={
           <p>
