@@ -69,7 +69,7 @@ export const ShareModal = ({
 
   return (
     <Modal
-      style={{ maxWidth: '420px' }}
+      style={{ maxWidth: '430px' }}
       title={title}
       centered
       visible={visible}
