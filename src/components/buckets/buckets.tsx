@@ -89,7 +89,7 @@ const Buckets = () => {
   const showDrawer = () => {
     setVisibleDrawer(true);
   };
-  
+
   const closeDrawer = () => {
     setVisibleDrawer(false);
   };

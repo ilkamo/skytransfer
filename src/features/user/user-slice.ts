@@ -65,8 +65,6 @@ const performLogin = async (dispatch, mySky: MySky) => {
 export const checkLogin = () => {
   // the inside "thunk function"
   return async (dispatch, getState) => {
-    console.log('checking login!');
-    
     try {
       const mySky = await getMySky();
       const loggedIn = await mySky.checkLogin();
