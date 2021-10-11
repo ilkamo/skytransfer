@@ -11,7 +11,6 @@ import {
 
 import {
   CopyOutlined,
-  LinkOutlined,
   RedoOutlined,
   UnorderedListOutlined,
   HeartOutlined,
