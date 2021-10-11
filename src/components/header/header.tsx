@@ -11,7 +11,6 @@ import {
 
 import {
   CopyOutlined,
-  LinkOutlined,
   RedoOutlined,
   UnorderedListOutlined,
   HeartOutlined,
@@ -25,11 +24,7 @@ import { ChangePortalIcon } from '../common/icons';
 const { Header } = Layout;
 const { SubMenu } = Menu;
 
-type HeaderProps = {
-  shareOnClick: () => void;
-};
-
-const AppHeader = ({ shareOnClick }: HeaderProps) => {
+const AppHeader = () => {
   const history = useHistory();
   let location = useLocation();
 
@@ -65,9 +60,6 @@ const AppHeader = ({ shareOnClick }: HeaderProps) => {
         mode="horizontal"
         selectedKeys={[getCurrentPortal().domain]}
       >
-        <Menu.Item key="share" onClick={shareOnClick} icon={<LinkOutlined />}>
-          Share
-        </Menu.Item>
         <Menu.Item
           key="resume-draft"
           onClick={() => {
