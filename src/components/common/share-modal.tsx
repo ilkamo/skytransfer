@@ -46,7 +46,7 @@ export const ShareModal = ({
       </>
     ),
   };
-  
+
   const shareDraftTab = {
     name: 'Share draft',
     content: (

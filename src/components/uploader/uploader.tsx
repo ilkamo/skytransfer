@@ -473,8 +473,13 @@ const Uploader = () => {
         ]}
       />
 
-      <div className="default-margin" style={{textAlign: "center"}}>
-        <Button type="ghost" size="middle" onClick={()=> setShareBucketModal(true)} icon={<ShareAltOutlined />}>
+      <div className="default-margin" style={{ textAlign: 'center' }}>
+        <Button
+          type="ghost"
+          size="middle"
+          onClick={() => setShareBucketModal(true)}
+          icon={<ShareAltOutlined />}
+        >
           Share bucket
         </Button>
       </div>

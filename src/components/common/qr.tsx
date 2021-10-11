@@ -19,7 +19,7 @@ export const QR = ({ qrValue, linkOnClick }: QRProps) => {
         autoSize
         style={{ fontSize: '12px', marginTop: 10, marginBottom: 10 }}
       />
-      <div style={{textAlign: "center"}}>
+      <div style={{ textAlign: 'center' }}>
         <Button
           type="ghost"
           size="middle"
