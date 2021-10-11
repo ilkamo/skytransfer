@@ -25,6 +25,7 @@ import {
   DownOutlined,
   LoadingOutlined,
   QuestionCircleOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -94,8 +95,7 @@ const Uploader = () => {
   const [toRemoveFromSkyDBCount, setToRemoveFromSkyDBCount] = useState(0);
 
   const [uploading, setUploading] = useState(false);
-  const [showUploadCompletedModal, setShowUploadCompletedModal] =
-    useState(false);
+  const [showShareBucketModal, setShareBucketModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uidsOfErrorFiles, setUidsOfErrorFiles] = useState<string[]>([]);
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
@@ -105,8 +105,8 @@ const Uploader = () => {
 
   const user: UserState = useSelector(selectUser);
 
-  const finishUpload = () => {
-    setShowUploadCompletedModal(false);
+  const closeShareBucketModal = () => {
+    setShareBucketModal(false);
   };
 
   const initBucket = async () => {
@@ -185,7 +185,7 @@ const Uploader = () => {
       await updateFilesInSkyDB();
 
       if (uploadCompletedSkyDBSync) {
-        setShowUploadCompletedModal(true);
+        setShareBucketModal(true);
       }
     }
   };
@@ -289,7 +289,7 @@ const Uploader = () => {
     customRequest: queueAndUploadFile,
     openFileDialogOnClick: true,
     onChange(info) {
-      setShowUploadCompletedModal(false);
+      setShareBucketModal(false);
       setUploading(true);
 
       setFileListToUpload(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
@@ -473,6 +473,12 @@ const Uploader = () => {
         ]}
       />
 
+      <div className="default-margin" style={{textAlign: "center"}}>
+        <Button type="ghost" size="middle" onClick={()=> setShareBucketModal(true)} icon={<ShareAltOutlined />}>
+          Share bucket
+        </Button>
+      </div>
+
       {bucketInfo && decryptedBucket && (
         <BucketModal
           bucket={decryptedBucket}
@@ -573,6 +579,7 @@ const Uploader = () => {
           <Button
             icon={<DownloadOutlined />}
             size="middle"
+            type="primary"
             onClick={async () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile in decryptedBucket.files) {
@@ -586,21 +593,19 @@ const Uploader = () => {
         </div>
       )}
       <ShareModal
-        title="Upload completed"
-        visible={showUploadCompletedModal}
+        title="Share bucket"
+        visible={showShareBucketModal}
         onCancel={() => {
-          setShowUploadCompletedModal(false);
+          setShareBucketModal(false);
         }}
         header={
           <p>
-            Your <strong>SkyTransfer</strong> bucket is ready. Your files have
-            been encrypted and uploaded on Skynet. Copy the link and share your
-            bucket or just continue uploading. When you share a bucket draft,
-            others can edit it.
+            Copy the link and share the bucket or just continue uploading. When
+            you share the bucket draft (writeable), others can edit it.
           </p>
         }
-        shareLinkOnClick={finishUpload}
-        shareDraftLinkOnClick={finishUpload}
+        shareLinkOnClick={closeShareBucketModal}
+        shareDraftLinkOnClick={closeShareBucketModal}
       />
     </div>
   );

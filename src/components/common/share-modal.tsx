@@ -23,30 +23,43 @@ export const ShareModal = ({
   shareLinkOnClick = () => {},
   shareDraftLinkOnClick = () => {},
 }: ShareModalProps) => {
+  const copyTextToClipboard = async (text: string) => {
+    if ('clipboard' in navigator) {
+      return await navigator.clipboard.writeText(text);
+    } else {
+      return document.execCommand('copy', true, text);
+    }
+  };
+
   const shareTab = {
     name: 'Share',
     content: (
-      <QR
-        qrValue={SessionManager.readOnlyLink}
-        linkOnClick={() => {
-          navigator.clipboard.writeText(SessionManager.readOnlyLink);
-          message.info('SkyTransfer bucket link copied');
-          shareLinkOnClick();
-        }}
-      />
+      <>
+        <QR
+          qrValue={SessionManager.readOnlyLink}
+          linkOnClick={() => {
+            copyTextToClipboard(SessionManager.readOnlyLink);
+            message.info('SkyTransfer bucket link copied');
+            shareLinkOnClick();
+          }}
+        />
+      </>
     ),
   };
+  
   const shareDraftTab = {
     name: 'Share draft',
     content: (
-      <QR
-        qrValue={SessionManager.readWriteLink}
-        linkOnClick={() => {
-          navigator.clipboard.writeText(SessionManager.readWriteLink);
-          message.info('SkyTransfer bucket draft link copied');
-          shareDraftLinkOnClick();
-        }}
-      />
+      <>
+        <QR
+          qrValue={SessionManager.readWriteLink}
+          linkOnClick={() => {
+            copyTextToClipboard(SessionManager.readWriteLink);
+            message.info('SkyTransfer bucket draft link copied');
+            shareDraftLinkOnClick();
+          }}
+        />
+      </>
     ),
   };
 
@@ -56,6 +69,7 @@ export const ShareModal = ({
 
   return (
     <Modal
+      style={{ maxWidth: '420px' }}
       title={title}
       centered
       visible={visible}
@@ -63,7 +77,6 @@ export const ShareModal = ({
       footer={null}
     >
       {header}
-
       <TabsCards values={tabs} />
     </Modal>
   );

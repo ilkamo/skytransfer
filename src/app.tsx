@@ -11,7 +11,6 @@ import AppHeader from './components/header/header';
 import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
 import SupportUs from './components/support-us/support-us';
-import { ShareModal } from './components/common/share-modal';
 import { HomescreenIcon } from './components/common/icons';
 import { HeaderNotification } from './components/common/notification';
 import RedirectV1 from './components/redirect-v1/redirect-v1';
@@ -21,22 +20,9 @@ import { checkLogin } from './features/user/user-slice';
 
 const { Content, Footer } = Layout;
 
-export interface State {
-  shareModalVisible: boolean;
-}
-
 store.dispatch(checkLogin());
 
-const ShareModalHeader = (
-  <p>
-    Share your <strong>SkyTransfer</strong> bucket. Copy the link and share your
-    files. When you share a bucket draft, others can edit it.
-  </p>
-);
-
 const App = () => {
-  const [state, setState] = useState<State>({ shareModalVisible: false });
-
   return (
     <Router>
       <Layout className="layout">
@@ -62,11 +48,7 @@ const App = () => {
             </>
           }
         />
-        <AppHeader
-          shareOnClick={() => {
-            setState({ ...state, shareModalVisible: true });
-          }}
-        />
+        <AppHeader />
         <Content className="container">
           <Switch>
             <Route path="/v2/:transferKey/:encryptionKey">
@@ -101,12 +83,6 @@ const App = () => {
             </Route>
           </Switch>
         </Content>
-        <ShareModal
-          title="Share"
-          header={ShareModalHeader}
-          visible={state.shareModalVisible}
-          onCancel={() => setState({ ...state, shareModalVisible: false })}
-        />
         <Footer style={{ textAlign: 'center' }}>
           <a
             rel="noreferrer"
