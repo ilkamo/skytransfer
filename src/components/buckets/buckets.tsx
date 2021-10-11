@@ -85,12 +85,13 @@ const Buckets = () => {
     }
   }, [user]);
 
-  const [visible, setVisible] = useState(false);
+  const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
-    setVisible(true);
+    setVisibleDrawer(true);
   };
-  const onClose = () => {
-    setVisible(false);
+
+  const closeDrawer = () => {
+    setVisibleDrawer(false);
   };
 
   const openBucket = (b: BucketInfo) => {
@@ -177,14 +178,6 @@ const Buckets = () => {
         </>
       ) : (
         <>
-          <Drawer
-            title="User profile"
-            placement="right"
-            onClose={onClose}
-            visible={visible}
-          >
-            <User></User>
-          </Drawer>
           <Row>
             <Col span={12} style={{ textAlign: 'left' }}>
               <Title level={4}>Buckets</Title>
@@ -275,6 +268,14 @@ const Buckets = () => {
           setNewBucketModalVisible(false);
         }}
       />
+      <Drawer
+        title="User profile"
+        placement="right"
+        onClose={closeDrawer}
+        visible={visibleDrawer}
+      >
+        <User></User>
+      </Drawer>
     </div>
   );
 };

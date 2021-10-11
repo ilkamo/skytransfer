@@ -1,27 +1,14 @@
-import { useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
 import { Card, Avatar } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
-import { checkLogin, selectUser } from './user-slice';
+import { selectUser } from './user-slice';
 const { Meta } = Card;
-
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-};
 
 export function User() {
   const user = useSelector(selectUser);
-  const dispatch = useDispatch();
-
-  useConstructor(async () => {
-    dispatch(checkLogin());
-  });
 
   return (
     <>
