@@ -250,7 +250,7 @@ const Buckets = () => {
               Create bucket
             </Button>
           </div>
-          <Divider orientation="left">Stored read write buckets</Divider>
+          <Divider orientation="left">Read write buckets</Divider>
           <List
             style={{ textAlign: 'left' }}
             loading={isloading}
@@ -291,7 +291,7 @@ const Buckets = () => {
             )}
           />
 
-          <Divider orientation="left">Stored read only buckets</Divider>
+          <Divider orientation="left">Read only buckets</Divider>
           <List
             style={{ textAlign: 'left' }}
             loading={isloading}

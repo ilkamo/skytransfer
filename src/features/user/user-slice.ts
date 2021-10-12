@@ -104,6 +104,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   }
 
   dispatch(userLoaded(tempUser));
+  dispatch(loadBuckets(mySky));
 };
 
 export const silentLogin = () => {
@@ -116,7 +117,6 @@ export const silentLogin = () => {
       }
 
       await performLogin(dispatch, mySky);
-      dispatch(loadBuckets(mySky));
     } catch (err) {
       console.error(err);
     }
