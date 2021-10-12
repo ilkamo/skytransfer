@@ -3,12 +3,7 @@ import './buckets.css';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import {
-  deleteUserReadWriteHiddenBucket,
-  getMySky,
-  getAllUserDecryptedBuckets,
-  deleteUserReadOnlyHiddenBucket,
-} from '../../skynet/skynet';
+import { getMySky, getAllUserDecryptedBuckets } from '../../skynet/skynet';
 
 import { Button, Divider, List, message, Row, Col } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
@@ -18,7 +13,13 @@ import { IBuckets, IReadWriteBucketInfo } from '../../models/files/bucket';
 
 import { User } from '../../features/user/user';
 
-import { selectUser, login, setUserKeys } from '../../features/user/user-slice';
+import {
+  selectUser,
+  login,
+  setUserKeys,
+  deleteReadWriteBucket,
+  deleteReadOnlyBucket,
+} from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { IUserState, UserStatus } from '../../models/user';
 
@@ -125,24 +126,14 @@ const Buckets = () => {
     }
   };
 
-  const deleteReadWriteBucket = async (bucketID: string) => {
+  const deleteReadWriteBucketUsingModal = async (bucketID: string) => {
     const mySky = await getMySky();
-    await deleteUserReadWriteHiddenBucket(mySky, bucketID);
-    setReadWriteDecryptedBuckets((p) => {
-      const copy = { ...p };
-      delete copy[bucketID];
-      return copy;
-    });
+    dispatch(deleteReadWriteBucket(mySky, bucketID));
   };
 
-  const deleteReadOnlyBucket = async (bucketID: string) => {
+  const deleteReadOnlyBucketUsingModal = async (bucketID: string) => {
     const mySky = await getMySky();
-    await deleteUserReadOnlyHiddenBucket(mySky, bucketID);
-    setReadOnlyDecryptedBuckets((p) => {
-      const copy = { ...p };
-      delete copy[bucketID];
-      return copy;
-    });
+    dispatch(deleteReadOnlyBucket(mySky, bucketID));
   };
 
   const newDraftConfirmModal = (onNewDraftClick: () => void) => {
@@ -279,7 +270,7 @@ const Buckets = () => {
                     size="middle"
                     onClick={() => {
                       deleteBucketConfirmModal(() =>
-                        dispatch(deleteReadWriteBucket(item.uuid))
+                        deleteReadWriteBucketUsingModal(item.uuid)
                       );
                     }}
                     key={`delete-${item.uuid}`}
@@ -319,9 +310,9 @@ const Buckets = () => {
                     type="ghost"
                     size="middle"
                     onClick={() => {
-                      deleteBucketConfirmModal(() =>
-                        dispatch(deleteReadOnlyBucket(item.uuid))
-                      );
+                      deleteBucketConfirmModal(() => {
+                        deleteReadOnlyBucketUsingModal(item.uuid);
+                      });
                     }}
                     key={`delete-${item.uuid}`}
                   >
