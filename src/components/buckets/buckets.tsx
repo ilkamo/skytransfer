@@ -18,11 +18,7 @@ import { IBuckets, IReadWriteBucketInfo } from '../../models/files/bucket';
 
 import { User } from '../../features/user/user';
 
-import {
-  selectUser,
-  login,
-  setUserKeys,
-} from '../../features/user/user-slice';
+import { selectUser, login, setUserKeys } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { IUserState, UserStatus } from '../../models/user';
 
@@ -94,7 +90,7 @@ const Buckets = () => {
     ) {
       init();
     }
-  }, [user.buckets, init]);
+  }, [user.buckets]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
