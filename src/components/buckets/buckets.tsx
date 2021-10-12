@@ -75,8 +75,6 @@ const Buckets = () => {
     setIsLoading(true);
     try {
       const mySky: MySky = await getMySky();
-      dispatch(loadBuckets(mySky));
-
       const allDecryptedBuckets = await getAllUserDecryptedBuckets(
         mySky,
         user.buckets
@@ -91,10 +89,13 @@ const Buckets = () => {
   };
 
   useEffect(() => {
-    if (user.status === UserStatus.Logged) {
+    if (
+      Object.values(user.buckets.readOnly).length > 0 ||
+      Object.values(user.buckets.readWrite).length > 0
+    ) {
       init();
     }
-  }, [user.status]);
+  }, [user.buckets, readOnlyDecryptedBuckets, readWriteDecryptedBuckets]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
