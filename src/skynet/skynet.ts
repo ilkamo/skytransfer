@@ -189,7 +189,8 @@ export async function getAllUserDecryptedBuckets(
       if (dBucket) {
         readOnly[dBucket.uuid] = dBucket;
       } else {
-        await deleteUserReadWriteHiddenBucket(mySky, b.bucketID);
+        console.log('could not decrypt readOnly bucket');
+        console.log(b);
       }
     })
   );
@@ -201,9 +202,10 @@ export async function getAllUserDecryptedBuckets(
         b.encryptionKey
       );
       if (dBucket) {
-        readOnly[dBucket.uuid] = dBucket;
+        readWrite[dBucket.uuid] = dBucket;
       } else {
-        await deleteUserReadWriteHiddenBucket(mySky, b.bucketID);
+        console.log('could not decrypt readWrite bucket');
+        console.log(b);
       }
     })
   );
