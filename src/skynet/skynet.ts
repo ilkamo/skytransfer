@@ -184,6 +184,8 @@ export async function getAllUserDecryptedBuckets(
   await Promise.all(
     Object.values(buckets.readOnly).map(async (b) => {
       const dBucket = await getDecryptedBucket(b.publicKey, b.encryptionKey);
+      console.log('readOnly');
+      console.log(dBucket);
       readOnly[dBucket.uuid] = dBucket;
     })
   );
@@ -194,6 +196,8 @@ export async function getAllUserDecryptedBuckets(
         publicKeyFromPrivateKey(b.privateKey),
         b.encryptionKey
       );
+      console.log('readWrite');
+      console.log(dBucket);
       readWrite[dBucket.uuid] = dBucket;
     })
   );
