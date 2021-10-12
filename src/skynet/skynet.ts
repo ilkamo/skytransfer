@@ -19,7 +19,6 @@ import {
   IReadWriteBucketsInfo,
 } from '../models/files/bucket';
 import { publicKeyFromPrivateKey } from '../crypto/crypto';
-import { deleteReadWriteBucket } from '../features/user/user-slice';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
