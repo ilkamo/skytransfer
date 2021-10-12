@@ -127,8 +127,16 @@ export const getDecryptedBucket = async (
         bucket = jsonCrypto.decrypt(data.data) as IBucket;
       }
 
+      if (!bucket) {
+        console.log("could not fetch bucket!!");
+        console.log(data);
+        console.log(`publicKey: ${publicKey}`);
+        console.log(`encryptionKey: ${encryptionKey}`);
+      }
+
       return resolve(bucket);
     } catch (error) {
+      console.error(error);
       return reject(error);
     }
   });
@@ -184,9 +192,9 @@ export async function getAllUserDecryptedBuckets(
   await Promise.all(
     Object.values(buckets.readOnly).map(async (b) => {
       const dBucket = await getDecryptedBucket(b.publicKey, b.encryptionKey);
-      console.log('readOnly');
-      console.log(dBucket);
-      readOnly[dBucket.uuid] = dBucket;
+      if (dBucket) {
+        readOnly[dBucket.uuid] = dBucket;
+      }
     })
   );
 
@@ -196,9 +204,9 @@ export async function getAllUserDecryptedBuckets(
         publicKeyFromPrivateKey(b.privateKey),
         b.encryptionKey
       );
-      console.log('readWrite');
-      console.log(dBucket);
-      readWrite[dBucket.uuid] = dBucket;
+      if (dBucket) {
+        readWrite[dBucket.uuid] = dBucket;
+      }
     })
   );
 
