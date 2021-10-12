@@ -26,6 +26,7 @@ import {
   LoadingOutlined,
   QuestionCircleOutlined,
   ShareAltOutlined,
+  FolderAddOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -46,6 +47,8 @@ import {
   getDecryptedBucket,
   encryptAndStoreBucket,
   uploadFile,
+  getMySky,
+  storeUserReadWriteHiddenBucket,
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
@@ -411,6 +414,19 @@ const Uploader = () => {
     decryptedBucket.files &&
     Object.keys(decryptedBucket.files).length > 0;
 
+  const pinBucket = async (bucketID: string) => {
+    const mySky = await getMySky();
+    await storeUserReadWriteHiddenBucket(mySky, {
+      privateKey: user.activeBucketPrivateKey,
+      encryptionKey: user.activeBucketEncryptionKey,
+      bucketID,
+    });
+  };
+
+  const isBucketPinned = (bucketID: string): boolean => {
+    return bucketID in user.buckets.readWrite;
+  };
+
   const isLoading = uploading || loading;
   return (
     <div className="page">
@@ -477,8 +493,9 @@ const Uploader = () => {
         ]}
       />
 
-      <div className="default-margin" style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
         <Button
+          style={{ marginTop: '20px' }}
           type="ghost"
           size="middle"
           onClick={() => setShowShareBucketModal(true)}
@@ -486,6 +503,18 @@ const Uploader = () => {
         >
           Share bucket
         </Button>
+        {user.status === UserStatus.Logged && (
+          <Button
+            style={{ marginTop: '20px' }}
+            disabled={isBucketPinned(decryptedBucket.uuid)}
+            type="ghost"
+            size="middle"
+            onClick={() => pinBucket(decryptedBucket.uuid)}
+            icon={<FolderAddOutlined />}
+          >
+            Pint bucket
+          </Button>
+        )}
       </div>
 
       {bucketInfo && decryptedBucket && (
