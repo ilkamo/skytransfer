@@ -418,6 +418,7 @@ const Uploader = () => {
   const pinBucket = async (bucketID: string) => {
     if (!bucketHasFiles) {
       message.error('Could not pin an empty bucket. Please upload some files.');
+      return;
     }
 
     const mySky = await getMySky();
@@ -428,6 +429,11 @@ const Uploader = () => {
         bucketID,
       })
     );
+
+    // TODO: Add message on success pinning!
+    // TODO: Add loading on button
+    // TODO: Add pinning to read only
+    // TODO: Handle errors from skynet methods
   };
 
   const isBucketPinned = (bucketID: string): boolean => {
