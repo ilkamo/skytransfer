@@ -415,10 +415,11 @@ const Uploader = () => {
     decryptedBucket.files &&
     Object.keys(decryptedBucket.files).length > 0;
 
-  const [pinningLoading, setPinningLoading] = useState(false);
-
   const pinBucket = async (bucketID: string) => {
-    setPinningLoading(true);
+    if (!bucketHasFiles) {
+      message.error('Could not pin an empty bucket. Please upload some files.');
+    }
+
     const mySky = await getMySky();
     dispatch(
       addReadWriteBucket(mySky, {
@@ -427,7 +428,6 @@ const Uploader = () => {
         bucketID,
       })
     );
-    setPinningLoading(false);
   };
 
   const isBucketPinned = (bucketID: string): boolean => {
@@ -512,9 +512,8 @@ const Uploader = () => {
         </Button>
         {decryptedBucket && user.status === UserStatus.Logged && (
           <Button
-            loading={pinningLoading}
             style={{ marginTop: '20px' }}
-            disabled={isBucketPinned(decryptedBucket.uuid) || pinningLoading}
+            disabled={isBucketPinned(decryptedBucket.uuid)}
             type="ghost"
             size="middle"
             onClick={() => pinBucket(decryptedBucket.uuid)}

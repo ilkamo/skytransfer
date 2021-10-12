@@ -19,6 +19,7 @@ import {
   IReadWriteBucketsInfo,
 } from '../models/files/bucket';
 import { publicKeyFromPrivateKey } from '../crypto/crypto';
+import { deleteReadWriteBucket } from '../features/user/user-slice';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -127,13 +128,6 @@ export const getDecryptedBucket = async (
         bucket = jsonCrypto.decrypt(data.data) as IBucket;
       }
 
-      if (!bucket) {
-        console.log("could not fetch bucket!!");
-        console.log(data);
-        console.log(`publicKey: ${publicKey}`);
-        console.log(`encryptionKey: ${encryptionKey}`);
-      }
-
       return resolve(bucket);
     } catch (error) {
       console.error(error);
@@ -194,6 +188,8 @@ export async function getAllUserDecryptedBuckets(
       const dBucket = await getDecryptedBucket(b.publicKey, b.encryptionKey);
       if (dBucket) {
         readOnly[dBucket.uuid] = dBucket;
+      } else {
+        await deleteUserReadWriteHiddenBucket(mySky, b.bucketID);
       }
     })
   );
@@ -205,7 +201,9 @@ export async function getAllUserDecryptedBuckets(
         b.encryptionKey
       );
       if (dBucket) {
-        readWrite[dBucket.uuid] = dBucket;
+        readOnly[dBucket.uuid] = dBucket;
+      } else {
+        await deleteUserReadWriteHiddenBucket(mySky, b.bucketID);
       }
     })
   );
