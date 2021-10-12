@@ -63,8 +63,8 @@ import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
 
-import { selectUser } from '../../features/user/user-slice';
-import { useSelector } from 'react-redux';
+import { addReadWriteBucket, selectUser } from '../../features/user/user-slice';
+import { useDispatch, useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
@@ -109,6 +109,8 @@ const Uploader = () => {
 
   const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
   const [bucketInfo, setBucketInfo] = useState<IReadWriteBucketInfo>();
+
+  const dispatch = useDispatch();
 
   const user: IUserState = useSelector(selectUser);
 
@@ -416,11 +418,13 @@ const Uploader = () => {
 
   const pinBucket = async (bucketID: string) => {
     const mySky = await getMySky();
-    await storeUserReadWriteHiddenBucket(mySky, {
-      privateKey: user.activeBucketPrivateKey,
-      encryptionKey: user.activeBucketEncryptionKey,
-      bucketID,
-    });
+    dispatch(
+      addReadWriteBucket(mySky, {
+        privateKey: user.activeBucketPrivateKey,
+        encryptionKey: user.activeBucketEncryptionKey,
+        bucketID,
+      })
+    );
   };
 
   const isBucketPinned = (bucketID: string): boolean => {
@@ -503,7 +507,7 @@ const Uploader = () => {
         >
           Share bucket
         </Button>
-        {user.status === UserStatus.Logged && (
+        {decryptedBucket && user.status === UserStatus.Logged && (
           <Button
             style={{ marginTop: '20px' }}
             disabled={isBucketPinned(decryptedBucket.uuid)}

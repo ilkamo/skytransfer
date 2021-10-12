@@ -9,9 +9,16 @@ import {
   deleteUserReadWriteHiddenBucket,
   getAllUserHiddenBuckets,
   getMySky,
+  storeUserReadOnlyHiddenBucket,
+  storeUserReadWriteHiddenBucket,
 } from '../../skynet/skynet';
 import SessionManager from '../../session/session-manager';
-import { IBucketsInfo } from '../../models/files/bucket';
+import {
+  IBucketsInfo,
+  IReadOnlyBucketInfo,
+  IReadWriteBucketInfo,
+  IReadWriteBucketsInfo,
+} from '../../models/files/bucket';
 
 type ActiveBucketKeys = {
   bucketPrivateKey: string;
@@ -68,6 +75,22 @@ export const userSlice = createSlice({
       delete newState[action.payload.bucketID];
       state.buckets.readOnly = newState;
     },
+    readWriteBucketAdded: (
+      state,
+      action: PayloadAction<IReadWriteBucketInfo>
+    ) => {
+      const newState = { ...state.buckets.readWrite };
+      newState[action.payload.bucketID] = action.payload;
+      state.buckets.readWrite = { ...newState };
+    },
+    readOnlyBucketAdded: (
+      state,
+      action: PayloadAction<IReadOnlyBucketInfo>
+    ) => {
+      const newState = { ...state.buckets.readOnly };
+      newState[action.payload.bucketID] = action.payload;
+      state.buckets.readOnly = { ...newState };
+    },
   },
 });
 
@@ -78,6 +101,8 @@ export const {
   bucketsSet,
   readWriteBucketRemoved,
   readOnlyBucketRemoved,
+  readWriteBucketAdded,
+  readOnlyBucketAdded,
 } = userSlice.actions;
 
 export default userSlice.reducer;
@@ -178,6 +203,26 @@ export const deleteReadOnlyBucket = (mySky: MySky, bucketID: string) => {
   return async (dispatch, getState) => {
     await deleteUserReadOnlyHiddenBucket(mySky, bucketID);
     dispatch(readOnlyBucketRemoved({ bucketID }));
+  };
+};
+
+export const addReadWriteBucket = (
+  mySky: MySky,
+  bucket: IReadWriteBucketInfo
+) => {
+  return async (dispatch, getState) => {
+    await storeUserReadWriteHiddenBucket(mySky, bucket);
+    dispatch(readWriteBucketAdded(bucket));
+  };
+};
+
+export const addReadOnlyBucket = (
+  mySky: MySky,
+  bucket: IReadOnlyBucketInfo
+) => {
+  return async (dispatch, getState) => {
+    await storeUserReadOnlyHiddenBucket(mySky, bucket);
+    dispatch(readOnlyBucketRemoved(bucket));
   };
 };
 
