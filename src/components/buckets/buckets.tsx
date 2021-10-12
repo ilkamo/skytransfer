@@ -94,7 +94,7 @@ const Buckets = () => {
     if (user.status === UserStatus.Logged) {
       init();
     }
-  }, [user]);
+  }, [user.status]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {

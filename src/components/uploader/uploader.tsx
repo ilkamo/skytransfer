@@ -138,7 +138,7 @@ const Uploader = () => {
     if (user.activeBucketPrivateKey !== null) {
       initBucket();
     }
-  }, [user]);
+  }, [user.activeBucketPrivateKey]);
 
   const updateFilesInSkyDB = async () => {
     setLoading(true);
