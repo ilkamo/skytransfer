@@ -1,19 +1,36 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MySky } from 'skynet-js';
 import { getCurrentPortal } from '../../portals';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
-import { User, UserState, UserStatus } from '../../models/user';
-import { getMySky } from '../../skynet/skynet';
+import { IUser, IUserState, UserStatus } from '../../models/user';
+import {
+  deleteUserReadOnlyHiddenBucket,
+  deleteUserReadWriteHiddenBucket,
+  getAllUserHiddenBuckets,
+  getMySky,
+} from '../../skynet/skynet';
 import SessionManager from '../../session/session-manager';
+import { IBucketsInfo } from '../../models/files/bucket';
+
+type ActiveBucketKeys = {
+  bucketPrivateKey: string;
+  bucketEncryptionKey: string;
+};
 
 const userProfileRecord = new UserProfileDAC();
 
-const initialState: UserState = {
+const initialState: IUserState = {
   status: UserStatus.NotLogged,
   data: null,
-  bucketPrivateKey: null,
-  bucketEncryptionKey: null,
+
+  activeBucketPrivateKey: null,
+  activeBucketEncryptionKey: null,
+
+  buckets: {
+    readOnly: {},
+    readWrite: {},
+  },
 };
 
 export const userSlice = createSlice({
@@ -23,18 +40,45 @@ export const userSlice = createSlice({
     logout: (state) => {
       // TODO
     },
-    userLoaded: (state, action) => {
+    userLoaded: (state, action: PayloadAction<IUser>) => {
       state.data = action.payload;
       state.status = UserStatus.Logged;
     },
-    keySet: (state, action) => {
-      state.bucketPrivateKey = action.payload.bucketPrivateKey;
-      state.bucketEncryptionKey = action.payload.bucketEncryptionKey;
+    keySet: (state, action: PayloadAction<ActiveBucketKeys>) => {
+      state.activeBucketPrivateKey = action.payload.bucketPrivateKey;
+      state.activeBucketEncryptionKey = action.payload.bucketEncryptionKey;
+    },
+    bucketsSet: (state, action: PayloadAction<IBucketsInfo>) => {
+      state.buckets.readOnly = action.payload.readOnly;
+      state.buckets.readWrite = action.payload.readWrite;
+    },
+    readWriteBucketRemoved: (
+      state,
+      action: PayloadAction<{ bucketID: string }>
+    ) => {
+      const newState = { ...state.buckets.readWrite };
+      delete newState[action.payload.bucketID];
+      state.buckets.readWrite = newState;
+    },
+    readOnlyBucketRemoved: (
+      state,
+      action: PayloadAction<{ bucketID: string }>
+    ) => {
+      const newState = { ...state.buckets.readOnly };
+      delete newState[action.payload.bucketID];
+      state.buckets.readOnly = newState;
     },
   },
 });
 
-export const { logout, userLoaded, keySet } = userSlice.actions;
+export const {
+  logout,
+  userLoaded,
+  keySet,
+  bucketsSet,
+  readWriteBucketRemoved,
+  readOnlyBucketRemoved,
+} = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -45,7 +89,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   // @ts-ignore
   const userProfile = await userProfileRecord.getProfile(await mySky.userID());
 
-  const tempUser: User = {
+  const tempUser: IUser = {
     username: userProfile.username,
     description: userProfile.description,
     avatar: null,
@@ -62,8 +106,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   dispatch(userLoaded(tempUser));
 };
 
-export const checkLogin = () => {
-  // the inside "thunk function"
+export const silentLogin = () => {
   return async (dispatch, getState) => {
     try {
       const mySky = await getMySky();
@@ -73,6 +116,7 @@ export const checkLogin = () => {
       }
 
       await performLogin(dispatch, mySky);
+      dispatch(loadBuckets(mySky));
     } catch (err) {
       console.error(err);
     }
@@ -80,7 +124,6 @@ export const checkLogin = () => {
 };
 
 export const login = () => {
-  // the inside "thunk function"
   return async (dispatch, getState) => {
     try {
       const mySky = await getMySky();
@@ -95,19 +138,46 @@ export const login = () => {
   };
 };
 
-export const initUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+export const initUserKeys = ({
+  bucketPrivateKey,
+  bucketEncryptionKey,
+}: ActiveBucketKeys) => {
   return async (dispatch, getState) => {
     dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
   };
 };
 
-export const setUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+export const setUserKeys = ({
+  bucketPrivateKey,
+  bucketEncryptionKey,
+}: ActiveBucketKeys) => {
   return async (dispatch, getState) => {
     SessionManager.setSessionKeys({
       bucketPrivateKey,
       bucketEncryptionKey,
     });
     dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
+  };
+};
+
+export const loadBuckets = (mySky: MySky) => {
+  return async (dispatch, getState) => {
+    const { readOnly, readWrite } = await getAllUserHiddenBuckets(mySky);
+    dispatch(bucketsSet({ readOnly, readWrite }));
+  };
+};
+
+export const deleteReadWriteBucket = (mySky: MySky, bucketID: string) => {
+  return async (dispatch, getState) => {
+    await deleteUserReadWriteHiddenBucket(mySky, bucketID);
+    dispatch(readWriteBucketRemoved({ bucketID }));
+  };
+};
+
+export const deleteReadOnlyBucket = (mySky: MySky, bucketID: string) => {
+  return async (dispatch, getState) => {
+    await deleteUserReadOnlyHiddenBucket(mySky, bucketID);
+    dispatch(readOnlyBucketRemoved({ bucketID }));
   };
 };
 

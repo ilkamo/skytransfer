@@ -50,16 +50,20 @@ import {
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
-import { EncryptedFile } from '../../models/files/encrypted-file';
-import { Bucket, BucketInfo, DecryptedBucket } from '../../models/files/bucket';
-import { FileData } from '../../models/files/file-data';
+import { IEncryptedFile } from '../../models/files/encrypted-file';
+import {
+  IBucket,
+  IReadWriteBucketInfo,
+  DecryptedBucket,
+} from '../../models/files/bucket';
+import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
 
 import { selectUser } from '../../features/user/user-slice';
 import { useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
-import { UserState, UserStatus } from '../../models/user';
+import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
 
@@ -101,18 +105,18 @@ const Uploader = () => {
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
-  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+  const [bucketInfo, setBucketInfo] = useState<IReadWriteBucketInfo>();
 
-  const user: UserState = useSelector(selectUser);
+  const user: IUserState = useSelector(selectUser);
 
   const closeShareBucketModal = () => {
     setShowShareBucketModal(false);
   };
 
   const initBucket = async () => {
-    let bucket: Bucket = await getDecryptedBucket(
-      publicKeyFromPrivateKey(user.bucketPrivateKey),
-      user.bucketEncryptionKey
+    let bucket: IBucket = await getDecryptedBucket(
+      publicKeyFromPrivateKey(user.activeBucketPrivateKey),
+      user.activeBucketEncryptionKey
     );
 
     let decryptedBucket = generateRandomDecryptedBucket();
@@ -120,18 +124,18 @@ const Uploader = () => {
       decryptedBucket = new DecryptedBucket(bucket);
     }
 
-    setBucketInfo(
-      decryptedBucket.toBucketInfo(
-        user.bucketPrivateKey,
-        user.bucketEncryptionKey
-      )
-    );
+    setBucketInfo({
+      bucketID: decryptedBucket.uuid,
+      privateKey: user.activeBucketPrivateKey,
+      encryptionKey: user.activeBucketEncryptionKey,
+    });
+
     setDecryptedBucket(new DecryptedBucket(decryptedBucket));
     setLoading(false);
   };
 
   useEffect(() => {
-    if (user.bucketPrivateKey !== null) {
+    if (user.activeBucketPrivateKey !== null) {
       initBucket();
     }
   }, [user]);
@@ -142,8 +146,8 @@ const Uploader = () => {
     try {
       message.loading('Syncing files in SkyDB...');
       await encryptAndStoreBucket(
-        user.bucketPrivateKey,
-        user.bucketEncryptionKey,
+        user.activeBucketPrivateKey,
+        user.activeBucketEncryptionKey,
         decryptedBucket
       );
 
@@ -222,7 +226,7 @@ const Uploader = () => {
     }
   }, [encryptProgress]);
 
-  const downloadFile = async (encryptedFile: EncryptedFile) => {
+  const downloadFile = async (encryptedFile: IEncryptedFile) => {
     const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
 
     let file: File;
@@ -323,7 +327,7 @@ const Uploader = () => {
 
           const cr = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
 
-          const tempFileData: FileData = {
+          const tempFileData: IFileData = {
             uuid: uuid(),
             size: info.file.size,
             chunkSize: cr.decryptChunkSize,
@@ -348,7 +352,7 @@ const Uploader = () => {
               return p;
             });
           } else {
-            const encryptedFile: EncryptedFile = {
+            const encryptedFile: IEncryptedFile = {
               uuid: uuid(),
               file: tempFileData,
               created: Date.now(),
@@ -394,7 +398,7 @@ const Uploader = () => {
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
 
-  const getFileBy = (key: string): EncryptedFile => {
+  const getFileBy = (key: string): IEncryptedFile => {
     for (let path in decryptedBucket.files) {
       if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
         return decryptedBucket.files[path];
@@ -492,12 +496,12 @@ const Uploader = () => {
           onCancel={() => setEditBucketModalVisible(false)}
           isLoggedUser={user.status === UserStatus.Logged}
           modalTitle="Edit bucket"
-          onDone={(bucketInfo) => {
+          onDone={(bucketInfo, bucket) => {
             setBucketInfo(bucketInfo);
             setDecryptedBucket((p) => {
-              p.description = bucketInfo.description;
-              p.name = bucketInfo.name;
-              p.modified = bucketInfo.modified;
+              p.description = bucket.description;
+              p.name = bucket.name;
+              p.modified = bucket.modified;
               return p;
             });
             setEditBucketModalVisible(false);

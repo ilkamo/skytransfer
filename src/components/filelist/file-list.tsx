@@ -12,8 +12,8 @@ import { getDecryptedBucket } from '../../skynet/skynet';
 import { ActivityBars } from '../uploader/activity-bar';
 
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
-import { Bucket, DecryptedBucket } from '../../models/files/bucket';
-import { EncryptedFile } from '../../models/files/encrypted-file';
+import { IBucket, DecryptedBucket } from '../../models/files/bucket';
+import { IEncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch } from 'react-redux';
 import { setUserKeys } from '../../features/user/user-slice';
@@ -36,16 +36,24 @@ const FileList = () => {
   const history = useHistory();
   const dispatch = useDispatch();
 
-  const [decryptedBucket, setDecryptedBucket] = useState<Bucket>();
+  const [decryptedBucket, setDecryptedBucket] = useState<IBucket>();
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
-      dispatch(setUserKeys(transferKey, encryptionKey));
+      dispatch(
+        setUserKeys({
+          bucketPrivateKey: transferKey,
+          bucketEncryptionKey: encryptionKey,
+        })
+      );
       history.push('/');
     }
 
     // transferKey is a publicKey
-    const bucket: Bucket = await getDecryptedBucket(transferKey, encryptionKey);
+    const bucket: IBucket = await getDecryptedBucket(
+      transferKey,
+      encryptionKey
+    );
     if (!bucket) {
       setlLoading(false);
       return;
@@ -74,7 +82,7 @@ const FileList = () => {
     }
   }, [decryptProgress]);
 
-  const downloadFile = async (encryptedFile: EncryptedFile) => {
+  const downloadFile = async (encryptedFile: IEncryptedFile) => {
     const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
     let file: File;
     try {
@@ -102,7 +110,7 @@ const FileList = () => {
     document.body.removeChild(elem);
   };
 
-  const getFileBy = (key: string): EncryptedFile => {
+  const getFileBy = (key: string): IEncryptedFile => {
     for (let path in decryptedBucket.files) {
       if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
         return decryptedBucket.files[path];

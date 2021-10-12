@@ -1,4 +1,6 @@
-export interface User {
+import { IBucketsInfo } from './files/bucket';
+
+export interface IUser {
   username: string;
   avatar: string;
   description: string;
@@ -9,9 +11,10 @@ export enum UserStatus {
   Logged,
 }
 
-export interface UserState {
+export interface IUserState {
   status: UserStatus;
-  data: User;
-  bucketPrivateKey: string;
-  bucketEncryptionKey: string;
+  data: IUser;
+  activeBucketPrivateKey: string;
+  activeBucketEncryptionKey: string;
+  buckets: IBucketsInfo;
 }

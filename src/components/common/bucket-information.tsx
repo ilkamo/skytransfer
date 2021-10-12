@@ -1,13 +1,13 @@
 import { Collapse, Card, Divider, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
-import { Bucket } from '../../models/files/bucket';
+import { IBucket } from '../../models/files/bucket';
 import { BucketIcon } from './icons';
 const { Panel } = Collapse;
 const { Meta } = Card;
 
 type BucketInformationProps = {
-  bucket: Bucket;
+  bucket: IBucket;
   onEdit?: () => void;
 };
 
