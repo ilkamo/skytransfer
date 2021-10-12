@@ -48,7 +48,6 @@ import {
   encryptAndStoreBucket,
   uploadFile,
   getMySky,
-  storeUserReadWriteHiddenBucket,
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
@@ -416,7 +415,10 @@ const Uploader = () => {
     decryptedBucket.files &&
     Object.keys(decryptedBucket.files).length > 0;
 
+  const [pinningLoading, setPinningLoading] = useState(false);
+
   const pinBucket = async (bucketID: string) => {
+    setPinningLoading(true);
     const mySky = await getMySky();
     dispatch(
       addReadWriteBucket(mySky, {
@@ -425,6 +427,7 @@ const Uploader = () => {
         bucketID,
       })
     );
+    setPinningLoading(false);
   };
 
   const isBucketPinned = (bucketID: string): boolean => {
@@ -509,8 +512,9 @@ const Uploader = () => {
         </Button>
         {decryptedBucket && user.status === UserStatus.Logged && (
           <Button
+            loading={pinningLoading}
             style={{ marginTop: '20px' }}
-            disabled={isBucketPinned(decryptedBucket.uuid)}
+            disabled={isBucketPinned(decryptedBucket.uuid) || pinningLoading}
             type="ghost"
             size="middle"
             onClick={() => pinBucket(decryptedBucket.uuid)}
