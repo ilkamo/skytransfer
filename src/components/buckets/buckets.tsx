@@ -22,7 +22,6 @@ import {
   selectUser,
   login,
   setUserKeys,
-  loadBuckets,
 } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { IUserState, UserStatus } from '../../models/user';
@@ -95,7 +94,7 @@ const Buckets = () => {
     ) {
       init();
     }
-  }, [user.buckets, readOnlyDecryptedBuckets, readWriteDecryptedBuckets]);
+  }, [user.buckets, init]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
