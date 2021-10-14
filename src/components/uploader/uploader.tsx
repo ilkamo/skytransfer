@@ -432,7 +432,7 @@ const Uploader = () => {
         bucketID,
       })
     );
-    
+
     // TODO: Handle errors from skynet methods
   };
 
