@@ -539,8 +539,9 @@ const Uploader = () => {
             onClick={() => pinBucket(decryptedBucket.uuid)}
             icon={<FolderAddOutlined />}
           >
-            {isBucketPinned(decryptedBucket.uuid)} : 'Already pinned' ? 'Pin
-            Bucket'
+            {isBucketPinned(decryptedBucket.uuid)
+              ? 'Already pinned'
+              : 'Pin bucket'}
           </Button>
         )}
       </div>
