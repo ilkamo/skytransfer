@@ -432,8 +432,7 @@ const Uploader = () => {
         bucketID,
       })
     );
-
-    // TODO: Add message on success pinning!
+    
     // TODO: Handle errors from skynet methods
   };
 

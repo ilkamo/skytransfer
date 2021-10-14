@@ -164,12 +164,20 @@ const Buckets = () => {
     });
   };
 
+  const userNotLogged = (): boolean => {
+    return userState.status === UserStatus.NotLogged;
+  };
+
+  const userLoading = (): boolean => {
+    return userState.status === UserStatus.Loading;
+  };
+
   return (
     <div
       className="default-margin buckets page"
       style={{ textAlign: 'center' }}
     >
-      {userState.status === UserStatus.NotLogged ? (
+      {userNotLogged() || userLoading() ? (
         <>
           <Title style={{ textAlign: 'left' }} level={4}>
             Buckets
@@ -186,6 +194,8 @@ const Buckets = () => {
             SkyTransfer.
           </p>
           <Button
+            loading={userState.status === UserStatus.Loading}
+            disabled={userState.status === UserStatus.Loading}
             onClick={() => dispatch(login())}
             type="primary"
             icon={<LoginOutlined />}

@@ -41,6 +41,12 @@ export const userSlice = createSlice({
     logout: (state) => {
       // TODO
     },
+    userLoading: (state, action: PayloadAction<void>) => {
+      state.status = UserStatus.Loading;
+    },
+    userLoadingFailed: (state, action: PayloadAction<void>) => {
+      state.status = UserStatus.NotLogged;
+    },
     userLoaded: (state, action: PayloadAction<IUser>) => {
       state.data = action.payload;
       state.status = UserStatus.Logged;
@@ -92,6 +98,8 @@ export const {
   readOnlyBucketRemoved,
   readWriteBucketAdded,
   readOnlyBucketAdded,
+  userLoading,
+  userLoadingFailed,
 } = userSlice.actions;
 
 export default userSlice.reducer;
@@ -123,30 +131,36 @@ const performLogin = async (dispatch, mySky: MySky) => {
 
 export const silentLogin = () => {
   return async (dispatch, getState) => {
+    dispatch(userLoading());
     try {
       const mySky = await getMySky();
       const loggedIn = await mySky.checkLogin();
       if (!loggedIn) {
+        dispatch(userLoadingFailed());
         return;
       }
 
       await performLogin(dispatch, mySky);
     } catch (err) {
       console.error(err);
+      dispatch(userLoadingFailed());
     }
   };
 };
 
 export const login = () => {
   return async (dispatch, getState) => {
+    dispatch(userLoading());
     try {
       const mySky = await getMySky();
       if (!(await mySky.requestLoginAccess())) {
+        dispatch(userLoadingFailed());
         throw Error('could not login');
       }
 
       await performLogin(dispatch, mySky);
     } catch (err) {
+      dispatch(userLoadingFailed());
       console.error(err);
     }
   };

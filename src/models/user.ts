@@ -8,6 +8,7 @@ export interface IUser {
 
 export enum UserStatus {
   NotLogged = 1,
+  Loading,
   Logged,
 }
 
