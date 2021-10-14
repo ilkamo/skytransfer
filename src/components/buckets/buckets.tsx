@@ -32,7 +32,11 @@ import { BucketModal } from '../common/bucket-modal';
 
 import { v4 as uuid } from 'uuid';
 import { BucketIcon } from '../common/icons';
-import { setUserKeys } from '../../features/bucket/bucket-slice';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
 
 const { Title } = Typography;
 
@@ -64,6 +68,8 @@ const Buckets = () => {
     useState<IBuckets>({});
 
   const userState: IUserState = useSelector(selectUser);
+  const bucketState: IBucketState = useSelector(selectBucket);
+
   const dispatch = useDispatch();
   const history = useHistory();
 
@@ -151,8 +157,8 @@ const Buckets = () => {
     Modal.confirm({
       title: 'Are you sure?',
       icon: <DeleteOutlined style={{ color: 'red' }} />,
-      content: `By deleting the bucket, all files you've uploaded into it will be lost.`,
-      okText: 'Delete',
+      content: `Once you unpin a bucket, you will lose access to all the files it contains (unless you have the link saved somewhere).`,
+      okText: 'Unpin',
       cancelText: 'Cancel',
       onOk: onDeleteBucketClick,
     });
@@ -244,7 +250,7 @@ const Buckets = () => {
           <Divider orientation="left">Read write buckets</Divider>
           <List
             style={{ textAlign: 'left' }}
-            loading={isloading}
+            loading={isloading || bucketState.bucketIsLoading}
             bordered
             itemLayout="horizontal"
             dataSource={Object.values(readWriteDecryptedBuckets)}
@@ -285,7 +291,7 @@ const Buckets = () => {
           <Divider orientation="left">Read only buckets</Divider>
           <List
             style={{ textAlign: 'left' }}
-            loading={isloading}
+            loading={isloading || bucketState.bucketIsLoading}
             bordered
             itemLayout="horizontal"
             dataSource={Object.values(readOnlyDecryptedBuckets)}
