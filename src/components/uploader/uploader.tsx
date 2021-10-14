@@ -424,7 +424,7 @@ const Uploader = () => {
     }
 
     const mySky = await getMySky();
-    const added = dispatch(
+    dispatch(
       addReadWriteBucket(mySky, {
         privateKey: bucketState.privateKey,
         encryptionKey: bucketState.encryptionKey,
