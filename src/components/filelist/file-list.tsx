@@ -4,10 +4,15 @@ import { useParams } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 
 import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
-import { DownloadOutlined, DownOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  DownOutlined,
+  FolderAddOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
-import { getDecryptedBucket } from '../../skynet/skynet';
+import { getDecryptedBucket, getMySky } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
 
@@ -15,9 +20,16 @@ import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-
 import { IBucket, DecryptedBucket } from '../../models/files/bucket';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { BucketInformation } from '../common/bucket-information';
-import { setUserKeys } from '../../features/bucket/bucket-slice';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
+import { ShareModal } from '../common/share-modal';
+import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
+import { IUserState, UserStatus } from '../../models/user';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -33,10 +45,14 @@ const useConstructor = (callBack = () => {}) => {
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
+  const [showShareBucketModal, setShowShareBucketModal] = useState(false);
   const history = useHistory();
   const dispatch = useDispatch();
 
   const [decryptedBucket, setDecryptedBucket] = useState<IBucket>();
+
+  const userState: IUserState = useSelector(selectUser);
+  const bucketState: IBucketState = useSelector(selectBucket);
 
   useConstructor(async () => {
     if (transferKey && transferKey.length === 128) {
@@ -125,11 +141,65 @@ const FileList = () => {
     decryptedBucket.files &&
     Object.keys(decryptedBucket.files).length > 0;
 
+  const closeShareBucketModal = () => {
+    setShowShareBucketModal(false);
+  };
+
+  const pinBucket = async (bucketID: string) => {
+    if (!bucketHasFiles) {
+      message.error('Could not pin an empty bucket. Please upload some files.');
+      return;
+    }
+
+    const mySky = await getMySky();
+    dispatch(
+      addReadOnlyBucket(mySky, {
+        publicKey: transferKey,
+        encryptionKey: encryptionKey,
+        bucketID,
+      })
+    );
+  };
+
+  const isBucketPinned = (bucketID: string): boolean => {
+    return bucketID in userState.buckets.readOnly;
+  };
+
   return (
     <div className="page">
       {decryptedBucket && decryptedBucket.files && (
         <BucketInformation bucket={decryptedBucket} />
       )}
+
+      <div style={{ textAlign: 'center' }}>
+        <Button
+          style={{ marginTop: '20px' }}
+          type="ghost"
+          size="middle"
+          onClick={() => setShowShareBucketModal(true)}
+          icon={<ShareAltOutlined />}
+        >
+          Share bucket
+        </Button>
+        {decryptedBucket && userState.status === UserStatus.Logged && (
+          <Button
+            style={{ marginTop: '20px' }}
+            disabled={
+              isBucketPinned(decryptedBucket.uuid) ||
+              bucketState.bucketIsLoading
+            }
+            loading={bucketState.bucketIsLoading}
+            type="ghost"
+            size="middle"
+            onClick={() => pinBucket(decryptedBucket.uuid)}
+            icon={<FolderAddOutlined />}
+          >
+            {isBucketPinned(decryptedBucket.uuid)} : 'Already pinned' ? 'Pin
+            Bucket'
+          </Button>
+        )}
+      </div>
+
       <Divider orientation="left">Shared files</Divider>
       {bucketHasFiles ? (
         <>
@@ -194,6 +264,16 @@ const FileList = () => {
           {loading ? <Spin /> : <span>No shared data found</span>}
         </Empty>
       )}
+      <ShareModal
+        title="Share bucket"
+        visible={showShareBucketModal}
+        onCancel={() => {
+          setShowShareBucketModal(false);
+        }}
+        header={<p>Copy the link and share the bucket.</p>}
+        shareLinkOnClick={closeShareBucketModal}
+        shareDraftLinkOnClick={closeShareBucketModal}
+      />
     </div>
   );
 };
