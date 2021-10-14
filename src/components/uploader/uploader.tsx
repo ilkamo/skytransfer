@@ -18,6 +18,7 @@ import {
   Empty,
   Divider,
   Modal,
+  Badge,
 } from 'antd';
 
 import {
@@ -433,13 +434,15 @@ const Uploader = () => {
     );
 
     // TODO: Add message on success pinning!
-    // TODO: Add loading on button
-    // TODO: Add pinning to read only
     // TODO: Handle errors from skynet methods
   };
 
+  const isUserLogged = (): boolean => {
+    return userState.status === UserStatus.Logged;
+  };
+
   const isBucketPinned = (bucketID: string): boolean => {
-    return bucketID in userState.buckets.readWrite;
+    return isUserLogged() && bucketID in userState.buckets.readWrite;
   };
 
   const isLoading = uploading || loading;
@@ -457,10 +460,15 @@ const Uploader = () => {
       )}
 
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation
-          bucket={decryptedBucket}
-          onEdit={() => setEditBucketModalVisible(true)}
-        />
+        <>
+          {isBucketPinned(decryptedBucket.uuid) && (
+            <Badge.Ribbon text="Pinned" color="green" />
+          )}
+          <BucketInformation
+            bucket={decryptedBucket}
+            onEdit={() => setEditBucketModalVisible(true)}
+          />
+        </>
       )}
 
       <TabsCards
@@ -518,7 +526,7 @@ const Uploader = () => {
         >
           Share bucket
         </Button>
-        {decryptedBucket && userState.status === UserStatus.Logged && (
+        {decryptedBucket && isUserLogged() && (
           <Button
             style={{ marginTop: '20px' }}
             disabled={
@@ -543,7 +551,7 @@ const Uploader = () => {
           bucketInfo={bucketInfo}
           visible={editBucketModalVisible}
           onCancel={() => setEditBucketModalVisible(false)}
-          isLoggedUser={userState.status === UserStatus.Logged}
+          isLoggedUser={isUserLogged()}
           modalTitle="Edit bucket"
           onDone={(bucketInfo, bucket) => {
             setBucketInfo(bucketInfo);

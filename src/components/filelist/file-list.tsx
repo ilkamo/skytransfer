@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { useHistory } from 'react-router-dom';
 
-import { Button, Empty, Divider, message, Tree, Spin } from 'antd';
+import { Button, Empty, Divider, message, Tree, Spin, Badge } from 'antd';
 import {
   DownloadOutlined,
   DownOutlined,
@@ -161,14 +161,23 @@ const FileList = () => {
     );
   };
 
+  const isUserLogged = (): boolean => {
+    return userState.status === UserStatus.Logged;
+  };
+
   const isBucketPinned = (bucketID: string): boolean => {
-    return bucketID in userState.buckets.readOnly;
+    return isUserLogged() && bucketID in userState.buckets.readOnly;
   };
 
   return (
     <div className="page">
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation bucket={decryptedBucket} />
+        <>
+          {isBucketPinned(decryptedBucket.uuid) && (
+            <Badge.Ribbon text="Pinned" color="green" />
+          )}
+          <BucketInformation bucket={decryptedBucket} />
+        </>
       )}
 
       <div style={{ textAlign: 'center' }}>
@@ -181,7 +190,7 @@ const FileList = () => {
         >
           Share bucket
         </Button>
-        {decryptedBucket && userState.status === UserStatus.Logged && (
+        {decryptedBucket && isUserLogged() && (
           <Button
             style={{ marginTop: '20px' }}
             disabled={
