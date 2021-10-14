@@ -16,8 +16,8 @@ import { IBucket, DecryptedBucket } from '../../models/files/bucket';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch } from 'react-redux';
-import { setUserKeys } from '../../features/user/user-slice';
 import { BucketInformation } from '../common/bucket-information';
+import { setUserKeys } from '../../features/bucket/bucket-slice';
 
 const { DownloadActivityBar } = ActivityBars;
 

@@ -8,7 +8,8 @@ import App from './app';
 import store from './app/store';
 import { Provider } from 'react-redux';
 import SessionManager from './session/session-manager';
-import { initUserKeys, silentLogin } from './features/user/user-slice';
+import { silentLogin } from './features/user/user-slice';
+import { initUserKeys } from './features/bucket/bucket-slice';
 
 const { bucketPrivateKey, bucketEncryptionKey } = SessionManager.sessionKeys;
 

@@ -14,7 +14,5 @@ export enum UserStatus {
 export interface IUserState {
   status: UserStatus;
   data: IUser;
-  activeBucketPrivateKey: string;
-  activeBucketEncryptionKey: string;
   buckets: IBucketsInfo;
 }

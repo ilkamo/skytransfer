@@ -16,7 +16,6 @@ import { User } from '../../features/user/user';
 import {
   selectUser,
   login,
-  setUserKeys,
   deleteReadWriteBucket,
   deleteReadOnlyBucket,
 } from '../../features/user/user-slice';
@@ -33,6 +32,7 @@ import { BucketModal } from '../common/bucket-modal';
 
 import { v4 as uuid } from 'uuid';
 import { BucketIcon } from '../common/icons';
+import { setUserKeys } from '../../features/bucket/bucket-slice';
 
 const { Title } = Typography;
 
@@ -63,7 +63,7 @@ const Buckets = () => {
   const [readWriteDecryptedBuckets, setReadWriteDecryptedBuckets] =
     useState<IBuckets>({});
 
-  const user: IUserState = useSelector(selectUser);
+  const userState: IUserState = useSelector(selectUser);
   const dispatch = useDispatch();
   const history = useHistory();
 
@@ -73,7 +73,7 @@ const Buckets = () => {
       const mySky: MySky = await getMySky();
       const allDecryptedBuckets = await getAllUserDecryptedBuckets(
         mySky,
-        user.buckets
+        userState.buckets
       );
 
       setReadOnlyDecryptedBuckets(allDecryptedBuckets.readOnly);
@@ -86,12 +86,12 @@ const Buckets = () => {
 
   useEffect(() => {
     if (
-      Object.values(user.buckets.readOnly).length > 0 ||
-      Object.values(user.buckets.readWrite).length > 0
+      Object.values(userState.buckets.readOnly).length > 0 ||
+      Object.values(userState.buckets.readWrite).length > 0
     ) {
       init();
     }
-  }, [user.buckets]);
+  }, [userState.buckets]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
@@ -103,8 +103,8 @@ const Buckets = () => {
   };
 
   const openReadWriteBucket = (bucketID: string) => {
-    if (bucketID in user.buckets.readWrite) {
-      const readWriteBucketInfo = user.buckets.readWrite[bucketID];
+    if (bucketID in userState.buckets.readWrite) {
+      const readWriteBucketInfo = userState.buckets.readWrite[bucketID];
 
       dispatch(
         setUserKeys({
@@ -118,8 +118,8 @@ const Buckets = () => {
   };
 
   const openReadOnlyBucket = (bucketID: string) => {
-    if (bucketID in user.buckets.readOnly) {
-      const readOnlyBucketInfo = user.buckets.readOnly[bucketID];
+    if (bucketID in userState.buckets.readOnly) {
+      const readOnlyBucketInfo = userState.buckets.readOnly[bucketID];
       history.push(
         `/v2/${readOnlyBucketInfo.publicKey}/${readOnlyBucketInfo.encryptionKey}`
       );
@@ -163,7 +163,7 @@ const Buckets = () => {
       className="default-margin buckets page"
       style={{ textAlign: 'center' }}
     >
-      {user.status === UserStatus.NotLogged ? (
+      {userState.status === UserStatus.NotLogged ? (
         <>
           <Title style={{ textAlign: 'left' }} level={4}>
             Buckets
@@ -328,7 +328,7 @@ const Buckets = () => {
         bucketInfo={newBucketInfo}
         visible={newBucketModalVisible}
         onCancel={() => setNewBucketModalVisible(false)}
-        isLoggedUser={user.status === UserStatus.Logged}
+        isLoggedUser={userState.status === UserStatus.Logged}
         modalTitle="Create new bucket"
         onDone={(bucketInfo) => {
           history.push('/');

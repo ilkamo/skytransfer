@@ -12,27 +12,21 @@ import {
   storeUserReadOnlyHiddenBucket,
   storeUserReadWriteHiddenBucket,
 } from '../../skynet/skynet';
-import SessionManager from '../../session/session-manager';
 import {
   IBucketsInfo,
   IReadOnlyBucketInfo,
   IReadWriteBucketInfo,
-  IReadWriteBucketsInfo,
 } from '../../models/files/bucket';
-
-type ActiveBucketKeys = {
-  bucketPrivateKey: string;
-  bucketEncryptionKey: string;
-};
+import {
+  bucketIsLoadingFinish,
+  bucketIsLoadingStart,
+} from '../bucket/bucket-slice';
 
 const userProfileRecord = new UserProfileDAC();
 
 const initialState: IUserState = {
   status: UserStatus.NotLogged,
   data: null,
-
-  activeBucketPrivateKey: null,
-  activeBucketEncryptionKey: null,
 
   buckets: {
     readOnly: {},
@@ -50,10 +44,6 @@ export const userSlice = createSlice({
     userLoaded: (state, action: PayloadAction<IUser>) => {
       state.data = action.payload;
       state.status = UserStatus.Logged;
-    },
-    keySet: (state, action: PayloadAction<ActiveBucketKeys>) => {
-      state.activeBucketPrivateKey = action.payload.bucketPrivateKey;
-      state.activeBucketEncryptionKey = action.payload.bucketEncryptionKey;
     },
     bucketsSet: (state, action: PayloadAction<IBucketsInfo>) => {
       state.buckets.readOnly = action.payload.readOnly;
@@ -97,7 +87,6 @@ export const userSlice = createSlice({
 export const {
   logout,
   userLoaded,
-  keySet,
   bucketsSet,
   readWriteBucketRemoved,
   readOnlyBucketRemoved,
@@ -163,46 +152,30 @@ export const login = () => {
   };
 };
 
-export const initUserKeys = ({
-  bucketPrivateKey,
-  bucketEncryptionKey,
-}: ActiveBucketKeys) => {
-  return async (dispatch, getState) => {
-    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
-  };
-};
-
-export const setUserKeys = ({
-  bucketPrivateKey,
-  bucketEncryptionKey,
-}: ActiveBucketKeys) => {
-  return async (dispatch, getState) => {
-    SessionManager.setSessionKeys({
-      bucketPrivateKey,
-      bucketEncryptionKey,
-    });
-    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
-  };
-};
-
 export const loadBuckets = (mySky: MySky) => {
   return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
     const { readOnly, readWrite } = await getAllUserHiddenBuckets(mySky);
     dispatch(bucketsSet({ readOnly, readWrite }));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
 export const deleteReadWriteBucket = (mySky: MySky, bucketID: string) => {
   return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
     await deleteUserReadWriteHiddenBucket(mySky, bucketID);
     dispatch(readWriteBucketRemoved({ bucketID }));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
 export const deleteReadOnlyBucket = (mySky: MySky, bucketID: string) => {
   return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
     await deleteUserReadOnlyHiddenBucket(mySky, bucketID);
     dispatch(readOnlyBucketRemoved({ bucketID }));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
@@ -211,8 +184,10 @@ export const addReadWriteBucket = (
   bucket: IReadWriteBucketInfo
 ) => {
   return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
     await storeUserReadWriteHiddenBucket(mySky, bucket);
     dispatch(readWriteBucketAdded(bucket));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
@@ -221,8 +196,10 @@ export const addReadOnlyBucket = (
   bucket: IReadOnlyBucketInfo
 ) => {
   return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
     await storeUserReadOnlyHiddenBucket(mySky, bucket);
     dispatch(readOnlyBucketRemoved(bucket));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 

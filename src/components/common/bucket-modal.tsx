@@ -3,7 +3,6 @@ import { Modal } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';
-import { setUserKeys } from '../../features/user/user-slice';
 import { IBucket, IReadWriteBucketInfo } from '../../models/files/bucket';
 import {
   encryptAndStoreBucket,
@@ -12,6 +11,7 @@ import {
 } from '../../skynet/skynet';
 
 import { LoadingOutlined } from '@ant-design/icons';
+import { setUserKeys } from '../../features/bucket/bucket-slice';
 
 type BucketModalProps = {
   bucketInfo: IReadWriteBucketInfo;
