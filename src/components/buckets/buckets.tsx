@@ -275,7 +275,7 @@ const Buckets = () => {
                     }}
                     key={`delete-${item.uuid}`}
                   >
-                    delete
+                    unpin
                   </Button>
                 </List.Item>
               </>
