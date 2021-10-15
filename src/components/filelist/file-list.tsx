@@ -146,11 +146,6 @@ const FileList = () => {
   };
 
   const pinBucket = async (bucketID: string) => {
-    if (!bucketHasFiles) {
-      message.error('Could not pin an empty bucket. Please upload some files.');
-      return;
-    }
-
     const mySky = await getMySky();
     dispatch(
       addReadOnlyBucket(mySky, {
