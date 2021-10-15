@@ -69,7 +69,11 @@ import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
-import { IBucketState, selectBucket } from '../../features/bucket/bucket-slice';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -129,6 +133,23 @@ const Uploader = () => {
     let decryptedBucket = generateRandomDecryptedBucket();
     if (bucket) {
       decryptedBucket = new DecryptedBucket(bucket);
+    } else {
+      /* 
+        Bucket can't be loaded and the reason could be a Skynet issue. 
+        Generate a new set of keys in order to create a new bucket and be sure that no existing
+        bucket will be overwritten.
+      */
+      dispatch(
+        setUserKeys({
+          bucketPrivateKey: genKeyPairAndSeed().privateKey,
+          bucketEncryptionKey: genKeyPairAndSeed().privateKey,
+        })
+      );
+      await encryptAndStoreBucket(
+        bucketState.privateKey,
+        bucketState.encryptionKey,
+        decryptedBucket
+      );
     }
 
     setBucketInfo({
@@ -419,11 +440,6 @@ const Uploader = () => {
     Object.keys(decryptedBucket.files).length > 0;
 
   const pinBucket = async (bucketID: string) => {
-    if (!bucketHasFiles) {
-      message.error('Could not pin an empty bucket. Please upload some files.');
-      return;
-    }
-
     const mySky = await getMySky();
     dispatch(
       addReadWriteBucket(mySky, {
