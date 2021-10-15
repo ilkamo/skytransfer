@@ -18,6 +18,7 @@ import {
   Empty,
   Divider,
   Modal,
+  Badge,
 } from 'antd';
 
 import {
@@ -26,6 +27,7 @@ import {
   LoadingOutlined,
   QuestionCircleOutlined,
   ShareAltOutlined,
+  FolderAddOutlined,
 } from '@ant-design/icons';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -46,22 +48,32 @@ import {
   getDecryptedBucket,
   encryptAndStoreBucket,
   uploadFile,
+  getMySky,
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
-import { EncryptedFile } from '../../models/files/encrypted-file';
-import { Bucket, BucketInfo, DecryptedBucket } from '../../models/files/bucket';
-import { FileData } from '../../models/files/file-data';
+import { IEncryptedFile } from '../../models/files/encrypted-file';
+import {
+  IBucket,
+  IReadWriteBucketInfo,
+  DecryptedBucket,
+} from '../../models/files/bucket';
+import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
 
-import { selectUser } from '../../features/user/user-slice';
-import { useSelector } from 'react-redux';
+import { addReadWriteBucket, selectUser } from '../../features/user/user-slice';
+import { useDispatch, useSelector } from 'react-redux';
 import { publicKeyFromPrivateKey } from '../../crypto/crypto';
-import { UserState, UserStatus } from '../../models/user';
+import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -101,40 +113,58 @@ const Uploader = () => {
   const [fileListToUpload, setFileListToUpload] = useState<UploadFile[]>([]);
 
   const [editBucketModalVisible, setEditBucketModalVisible] = useState(false);
-  const [bucketInfo, setBucketInfo] = useState<BucketInfo>();
+  const [bucketInfo, setBucketInfo] = useState<IReadWriteBucketInfo>();
 
-  const user: UserState = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  const userState: IUserState = useSelector(selectUser);
+  const bucketState: IBucketState = useSelector(selectBucket);
 
   const closeShareBucketModal = () => {
     setShowShareBucketModal(false);
   };
 
-  const initBucket = async () => {
-    let bucket: Bucket = await getDecryptedBucket(
-      publicKeyFromPrivateKey(user.bucketPrivateKey),
-      user.bucketEncryptionKey
+  const loadBucket = async () => {
+    let bucket: IBucket = await getDecryptedBucket(
+      publicKeyFromPrivateKey(bucketState.privateKey),
+      bucketState.encryptionKey
     );
 
     let decryptedBucket = generateRandomDecryptedBucket();
     if (bucket) {
       decryptedBucket = new DecryptedBucket(bucket);
+    } else {
+      /* 
+        Bucket can't be loaded and the reason could be a Skynet issue. 
+        Generate a new set of keys in order to create a new bucket and be sure that no existing
+        bucket will be overwritten.
+      */
+      const privateKey = genKeyPairAndSeed().privateKey;
+      const encryptionKey = genKeyPairAndSeed().privateKey;
+      await encryptAndStoreBucket(privateKey, encryptionKey, decryptedBucket);
+      dispatch(
+        setUserKeys({
+          bucketPrivateKey: privateKey,
+          bucketEncryptionKey: encryptionKey,
+        })
+      );
     }
 
-    setBucketInfo(
-      decryptedBucket.toBucketInfo(
-        user.bucketPrivateKey,
-        user.bucketEncryptionKey
-      )
-    );
+    setBucketInfo({
+      bucketID: decryptedBucket.uuid,
+      privateKey: bucketState.privateKey,
+      encryptionKey: bucketState.encryptionKey,
+    });
+
     setDecryptedBucket(new DecryptedBucket(decryptedBucket));
     setLoading(false);
   };
 
   useEffect(() => {
-    if (user.bucketPrivateKey !== null) {
-      initBucket();
+    if (bucketState.encryptionKey !== null) {
+      loadBucket();
     }
-  }, [user]);
+  }, [bucketState.encryptionKey]);
 
   const updateFilesInSkyDB = async () => {
     setLoading(true);
@@ -142,8 +172,8 @@ const Uploader = () => {
     try {
       message.loading('Syncing files in SkyDB...');
       await encryptAndStoreBucket(
-        user.bucketPrivateKey,
-        user.bucketEncryptionKey,
+        bucketState.privateKey,
+        bucketState.encryptionKey,
         decryptedBucket
       );
 
@@ -222,7 +252,7 @@ const Uploader = () => {
     }
   }, [encryptProgress]);
 
-  const downloadFile = async (encryptedFile: EncryptedFile) => {
+  const downloadFile = async (encryptedFile: IEncryptedFile) => {
     const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
 
     let file: File;
@@ -323,7 +353,7 @@ const Uploader = () => {
 
           const cr = new ChunkResolver(DEFAULT_ENCRYPTION_TYPE);
 
-          const tempFileData: FileData = {
+          const tempFileData: IFileData = {
             uuid: uuid(),
             size: info.file.size,
             chunkSize: cr.decryptChunkSize,
@@ -348,7 +378,7 @@ const Uploader = () => {
               return p;
             });
           } else {
-            const encryptedFile: EncryptedFile = {
+            const encryptedFile: IEncryptedFile = {
               uuid: uuid(),
               file: tempFileData,
               created: Date.now(),
@@ -394,7 +424,7 @@ const Uploader = () => {
     <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
 
-  const getFileBy = (key: string): EncryptedFile => {
+  const getFileBy = (key: string): IEncryptedFile => {
     for (let path in decryptedBucket.files) {
       if (decryptedBucket.files[path].uuid === key.split('_')[0]) {
         return decryptedBucket.files[path];
@@ -406,6 +436,27 @@ const Uploader = () => {
     decryptedBucket &&
     decryptedBucket.files &&
     Object.keys(decryptedBucket.files).length > 0;
+
+  const pinBucket = async (bucketID: string) => {
+    const mySky = await getMySky();
+    dispatch(
+      addReadWriteBucket(mySky, {
+        privateKey: bucketState.privateKey,
+        encryptionKey: bucketState.encryptionKey,
+        bucketID,
+      })
+    );
+
+    // TODO: Handle errors from skynet methods
+  };
+
+  const isUserLogged = (): boolean => {
+    return userState.status === UserStatus.Logged;
+  };
+
+  const isBucketPinned = (bucketID: string): boolean => {
+    return isUserLogged() && bucketID in userState.buckets.readWrite;
+  };
 
   const isLoading = uploading || loading;
   return (
@@ -422,10 +473,15 @@ const Uploader = () => {
       )}
 
       {decryptedBucket && decryptedBucket.files && (
-        <BucketInformation
-          bucket={decryptedBucket}
-          onEdit={() => setEditBucketModalVisible(true)}
-        />
+        <>
+          {isBucketPinned(decryptedBucket.uuid) && (
+            <Badge.Ribbon text="Pinned" color="green" />
+          )}
+          <BucketInformation
+            bucket={decryptedBucket}
+            onEdit={() => setEditBucketModalVisible(true)}
+          />
+        </>
       )}
 
       <TabsCards
@@ -473,8 +529,9 @@ const Uploader = () => {
         ]}
       />
 
-      <div className="default-margin" style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
         <Button
+          style={{ marginTop: '20px' }}
           type="ghost"
           size="middle"
           onClick={() => setShowShareBucketModal(true)}
@@ -482,6 +539,24 @@ const Uploader = () => {
         >
           Share bucket
         </Button>
+        {decryptedBucket && isUserLogged() && (
+          <Button
+            style={{ marginTop: '20px' }}
+            disabled={
+              isBucketPinned(decryptedBucket.uuid) ||
+              bucketState.bucketIsLoading
+            }
+            loading={bucketState.bucketIsLoading}
+            type="ghost"
+            size="middle"
+            onClick={() => pinBucket(decryptedBucket.uuid)}
+            icon={<FolderAddOutlined />}
+          >
+            {isBucketPinned(decryptedBucket.uuid)
+              ? 'Already pinned'
+              : 'Pin bucket'}
+          </Button>
+        )}
       </div>
 
       {bucketInfo && decryptedBucket && (
@@ -490,14 +565,14 @@ const Uploader = () => {
           bucketInfo={bucketInfo}
           visible={editBucketModalVisible}
           onCancel={() => setEditBucketModalVisible(false)}
-          isLoggedUser={user.status === UserStatus.Logged}
+          isLoggedUser={isUserLogged()}
           modalTitle="Edit bucket"
-          onDone={(bucketInfo) => {
+          onDone={(bucketInfo, bucket) => {
             setBucketInfo(bucketInfo);
             setDecryptedBucket((p) => {
-              p.description = bucketInfo.description;
-              p.name = bucketInfo.name;
-              p.modified = bucketInfo.modified;
+              p.description = bucket.description;
+              p.name = bucket.name;
+              p.modified = bucket.modified;
               return p;
             });
             setEditBucketModalVisible(false);

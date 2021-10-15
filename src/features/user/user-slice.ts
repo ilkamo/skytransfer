@@ -1,19 +1,37 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MySky } from 'skynet-js';
 import { getCurrentPortal } from '../../portals';
 
 import { UserProfileDAC } from '@skynethub/userprofile-library';
-import { User, UserState, UserStatus } from '../../models/user';
-import { getMySky } from '../../skynet/skynet';
-import SessionManager from '../../session/session-manager';
+import { IUser, IUserState, UserStatus } from '../../models/user';
+import {
+  deleteUserReadOnlyHiddenBucket,
+  deleteUserReadWriteHiddenBucket,
+  getAllUserHiddenBuckets,
+  getMySky,
+  storeUserReadOnlyHiddenBucket,
+  storeUserReadWriteHiddenBucket,
+} from '../../skynet/skynet';
+import {
+  IBucketsInfo,
+  IReadOnlyBucketInfo,
+  IReadWriteBucketInfo,
+} from '../../models/files/bucket';
+import {
+  bucketIsLoadingFinish,
+  bucketIsLoadingStart,
+} from '../bucket/bucket-slice';
 
 const userProfileRecord = new UserProfileDAC();
 
-const initialState: UserState = {
+const initialState: IUserState = {
   status: UserStatus.NotLogged,
   data: null,
-  bucketPrivateKey: null,
-  bucketEncryptionKey: null,
+
+  buckets: {
+    readOnly: {},
+    readWrite: {},
+  },
 };
 
 export const userSlice = createSlice({
@@ -23,18 +41,66 @@ export const userSlice = createSlice({
     logout: (state) => {
       // TODO
     },
-    userLoaded: (state, action) => {
+    userLoading: (state, action: PayloadAction<void>) => {
+      state.status = UserStatus.Loading;
+    },
+    userLoadingFailed: (state, action: PayloadAction<void>) => {
+      state.status = UserStatus.NotLogged;
+    },
+    userLoaded: (state, action: PayloadAction<IUser>) => {
       state.data = action.payload;
       state.status = UserStatus.Logged;
     },
-    keySet: (state, action) => {
-      state.bucketPrivateKey = action.payload.bucketPrivateKey;
-      state.bucketEncryptionKey = action.payload.bucketEncryptionKey;
+    bucketsSet: (state, action: PayloadAction<IBucketsInfo>) => {
+      state.buckets.readOnly = action.payload.readOnly;
+      state.buckets.readWrite = action.payload.readWrite;
+    },
+    readWriteBucketRemoved: (
+      state,
+      action: PayloadAction<{ bucketID: string }>
+    ) => {
+      const newState = { ...state.buckets.readWrite };
+      delete newState[action.payload.bucketID];
+      state.buckets.readWrite = newState;
+    },
+    readOnlyBucketRemoved: (
+      state,
+      action: PayloadAction<{ bucketID: string }>
+    ) => {
+      const newState = { ...state.buckets.readOnly };
+      delete newState[action.payload.bucketID];
+      state.buckets.readOnly = newState;
+    },
+    readWriteBucketAdded: (
+      state,
+      action: PayloadAction<IReadWriteBucketInfo>
+    ) => {
+      const newState = { ...state.buckets.readWrite };
+      newState[action.payload.bucketID] = action.payload;
+      state.buckets.readWrite = { ...newState };
+    },
+    readOnlyBucketAdded: (
+      state,
+      action: PayloadAction<IReadOnlyBucketInfo>
+    ) => {
+      const newState = { ...state.buckets.readOnly };
+      newState[action.payload.bucketID] = action.payload;
+      state.buckets.readOnly = { ...newState };
     },
   },
 });
 
-export const { logout, userLoaded, keySet } = userSlice.actions;
+export const {
+  logout,
+  userLoaded,
+  bucketsSet,
+  readWriteBucketRemoved,
+  readOnlyBucketRemoved,
+  readWriteBucketAdded,
+  readOnlyBucketAdded,
+  userLoading,
+  userLoadingFailed,
+} = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -45,7 +111,7 @@ const performLogin = async (dispatch, mySky: MySky) => {
   // @ts-ignore
   const userProfile = await userProfileRecord.getProfile(await mySky.userID());
 
-  const tempUser: User = {
+  const tempUser: IUser = {
     username: userProfile.username,
     description: userProfile.description,
     avatar: null,
@@ -60,58 +126,95 @@ const performLogin = async (dispatch, mySky: MySky) => {
   }
 
   dispatch(userLoaded(tempUser));
+  dispatch(loadBuckets(mySky));
 };
 
-export const checkLogin = () => {
-  // the inside "thunk function"
+export const silentLogin = () => {
   return async (dispatch, getState) => {
+    dispatch(userLoading());
     try {
       const mySky = await getMySky();
       const loggedIn = await mySky.checkLogin();
       if (!loggedIn) {
+        dispatch(userLoadingFailed());
         return;
       }
 
       await performLogin(dispatch, mySky);
     } catch (err) {
       console.error(err);
+      dispatch(userLoadingFailed());
     }
   };
 };
 
 export const login = () => {
-  // the inside "thunk function"
   return async (dispatch, getState) => {
+    dispatch(userLoading());
     try {
       const mySky = await getMySky();
       if (!(await mySky.requestLoginAccess())) {
+        dispatch(userLoadingFailed());
         throw Error('could not login');
       }
 
       await performLogin(dispatch, mySky);
     } catch (err) {
+      dispatch(userLoadingFailed());
       console.error(err);
     }
   };
 };
 
-export const initUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+export const loadBuckets = (mySky: MySky) => {
   return async (dispatch, getState) => {
-    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
+    dispatch(bucketIsLoadingStart());
+    const { readOnly, readWrite } = await getAllUserHiddenBuckets(mySky);
+    dispatch(bucketsSet({ readOnly, readWrite }));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
-export const setUserKeys = (bucketPrivateKey, bucketEncryptionKey: string) => {
+export const deleteReadWriteBucket = (mySky: MySky, bucketID: string) => {
   return async (dispatch, getState) => {
-    SessionManager.setSessionKeys({
-      bucketPrivateKey,
-      bucketEncryptionKey,
-    });
-    dispatch(keySet({ bucketPrivateKey, bucketEncryptionKey }));
+    dispatch(bucketIsLoadingStart());
+    await deleteUserReadWriteHiddenBucket(mySky, bucketID);
+    dispatch(readWriteBucketRemoved({ bucketID }));
+    dispatch(bucketIsLoadingFinish());
   };
 };
 
-// The function below is called a selector and allows us to select a value from
-// the state. Selectors can also be defined inline where they're used instead of
-// in the slice file. For example: `useSelector((state) => state.counter.value)`
+export const deleteReadOnlyBucket = (mySky: MySky, bucketID: string) => {
+  return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
+    await deleteUserReadOnlyHiddenBucket(mySky, bucketID);
+    dispatch(readOnlyBucketRemoved({ bucketID }));
+    dispatch(bucketIsLoadingFinish());
+  };
+};
+
+export const addReadWriteBucket = (
+  mySky: MySky,
+  bucket: IReadWriteBucketInfo
+) => {
+  return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
+    await storeUserReadWriteHiddenBucket(mySky, bucket);
+    dispatch(readWriteBucketAdded(bucket));
+    dispatch(bucketIsLoadingFinish());
+  };
+};
+
+export const addReadOnlyBucket = (
+  mySky: MySky,
+  bucket: IReadOnlyBucketInfo
+) => {
+  return async (dispatch, getState) => {
+    dispatch(bucketIsLoadingStart());
+    await storeUserReadOnlyHiddenBucket(mySky, bucket);
+    dispatch(readOnlyBucketAdded(bucket));
+    dispatch(bucketIsLoadingFinish());
+  };
+};
+
 export const selectUser = (state) => state.user;

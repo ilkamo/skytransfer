@@ -1,16 +1,16 @@
-import { FileData } from "./file-data";
+import { IFileData } from "./file-data";
 
-export interface EncryptedFiles {
-  [fileRelativePath: string]: EncryptedFile;
+export interface IEncryptedFiles {
+  [fileRelativePath: string]: IEncryptedFile;
 }
 
-export class EncryptedFile {
+export class IEncryptedFile {
   uuid: string;
-  file: FileData;
+  file: IFileData;
   created: number;
   name: string;
   modified: number;
   mimeType: string;
-  history: FileData[];
+  history: IFileData[];
   version: number;
 }

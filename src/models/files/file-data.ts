@@ -1,4 +1,4 @@
-export class FileData {
+export class IFileData {
   uuid: string;
   size: number;
   chunkSize: number;

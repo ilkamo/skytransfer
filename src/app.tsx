@@ -14,12 +14,7 @@ import { HomescreenIcon } from './components/common/icons';
 import { HeaderNotification } from './components/common/notification';
 import RedirectV1 from './components/redirect-v1/redirect-v1';
 
-import store from './app/store';
-import { checkLogin } from './features/user/user-slice';
-
 const { Content, Footer } = Layout;
-
-store.dispatch(checkLogin());
 
 const App = () => {
   return (

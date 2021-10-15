@@ -4,7 +4,7 @@ import { FileDecrypt } from './crypto';
 import { getEndpointInCurrentPortal } from '../portals';
 import { ChunkResolver } from './chunk-resolver';
 import { downloadFile } from '../skynet/skynet';
-import { EncryptedFile } from '../models/files/encrypted-file';
+import { IEncryptedFile } from '../models/files/encrypted-file';
 
 import _sodium from 'libsodium-wrappers';
 
@@ -21,7 +21,7 @@ export interface ICryptoMetadata {
 }
 
 export default class Xchacha20poly1305Decrypt implements FileDecrypt {
-  private encryptedFile: EncryptedFile;
+  private encryptedFile: IEncryptedFile;
   private encryptionKey: string;
   private chunkResolver: ChunkResolver;
   private stateIn: _sodium.StateAddress;
@@ -30,7 +30,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
   parts: BlobPart[] = [];
 
-  constructor(encryptedFile: EncryptedFile) {
+  constructor(encryptedFile: IEncryptedFile) {
     this.encryptedFile = encryptedFile;
     this.encryptionKey = encryptedFile.file.key;
     this.chunkResolver = new ChunkResolver(

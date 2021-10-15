@@ -3,26 +3,24 @@ import './buckets.css';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import {
-  deleteUserHiddenBucket,
-  getMySky,
-  getUserHiddenBuckets,
-} from '../../skynet/skynet';
+import { getMySky, getAllUserDecryptedBuckets } from '../../skynet/skynet';
 
 import { Button, Divider, List, message, Row, Col } from 'antd';
 import { Drawer, Typography, Modal } from 'antd';
 
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
-import {
-  BucketInfo,
-  Buckets as HiddenBuckets,
-} from '../../models/files/bucket';
+import { IBuckets, IReadWriteBucketInfo } from '../../models/files/bucket';
 
 import { User } from '../../features/user/user';
 
-import { selectUser, login, setUserKeys } from '../../features/user/user-slice';
+import {
+  selectUser,
+  login,
+  deleteReadWriteBucket,
+  deleteReadOnlyBucket,
+} from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
-import { UserState, UserStatus } from '../../models/user';
+import { IUserState, UserStatus } from '../../models/user';
 
 import {
   LoginOutlined,
@@ -34,21 +32,22 @@ import { BucketModal } from '../common/bucket-modal';
 
 import { v4 as uuid } from 'uuid';
 import { BucketIcon } from '../common/icons';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
 
 const { Title } = Typography;
 
-const generateNewBucketInfo = (): BucketInfo => {
+const generateNewBucketInfo = (): IReadWriteBucketInfo => {
   const tempBucketID = uuid();
 
   const bucketPrivateKey = genKeyPairAndSeed().privateKey;
   const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
 
-  const tempBucketInfo: BucketInfo = {
+  const tempBucketInfo: IReadWriteBucketInfo = {
     bucketID: tempBucketID,
-    name: '',
-    description: '',
-    created: Date.now(),
-    modified: Date.now(),
     privateKey: bucketPrivateKey,
     encryptionKey: bucketEncryptionKey,
   };
@@ -57,13 +56,20 @@ const generateNewBucketInfo = (): BucketInfo => {
 };
 
 const Buckets = () => {
-  const [userHiddenBuckets, setUserHiddenBuckets] = useState<HiddenBuckets>({});
   const [isloading, setIsLoading] = useState(false);
   const [newBucketModalVisible, setNewBucketModalVisible] = useState(false);
-  const [newBucketInfo, setNewBucketInfo] = useState<BucketInfo>(
+  const [newBucketInfo, setNewBucketInfo] = useState<IReadWriteBucketInfo>(
     generateNewBucketInfo()
   );
-  const user: UserState = useSelector(selectUser);
+
+  const [readOnlyDecryptedBuckets, setReadOnlyDecryptedBuckets] =
+    useState<IBuckets>({});
+  const [readWriteDecryptedBuckets, setReadWriteDecryptedBuckets] =
+    useState<IBuckets>({});
+
+  const userState: IUserState = useSelector(selectUser);
+  const bucketState: IBucketState = useSelector(selectBucket);
+
   const dispatch = useDispatch();
   const history = useHistory();
 
@@ -71,8 +77,13 @@ const Buckets = () => {
     setIsLoading(true);
     try {
       const mySky: MySky = await getMySky();
-      const hiddenBuckets = await getUserHiddenBuckets(mySky);
-      setUserHiddenBuckets(hiddenBuckets);
+      const allDecryptedBuckets = await getAllUserDecryptedBuckets(
+        mySky,
+        userState.buckets
+      );
+
+      setReadOnlyDecryptedBuckets(allDecryptedBuckets.readOnly);
+      setReadWriteDecryptedBuckets(allDecryptedBuckets.readWrite);
     } catch (error) {
       message.error(error.message);
     }
@@ -80,10 +91,13 @@ const Buckets = () => {
   };
 
   useEffect(() => {
-    if (user.status === UserStatus.Logged) {
+    if (
+      Object.values(userState.buckets.readOnly).length > 0 ||
+      Object.values(userState.buckets.readWrite).length > 0
+    ) {
       init();
     }
-  }, [user]);
+  }, [userState.buckets]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
   const showDrawer = () => {
@@ -94,19 +108,38 @@ const Buckets = () => {
     setVisibleDrawer(false);
   };
 
-  const openBucket = (b: BucketInfo) => {
-    dispatch(setUserKeys(b.privateKey, b.encryptionKey));
-    history.push('/');
+  const openReadWriteBucket = (bucketID: string) => {
+    if (bucketID in userState.buckets.readWrite) {
+      const readWriteBucketInfo = userState.buckets.readWrite[bucketID];
+
+      dispatch(
+        setUserKeys({
+          bucketPrivateKey: readWriteBucketInfo.privateKey,
+          bucketEncryptionKey: readWriteBucketInfo.encryptionKey,
+        })
+      );
+
+      history.push('/');
+    }
   };
 
-  const deleteBucket = async (b: BucketInfo) => {
+  const openReadOnlyBucket = (bucketID: string) => {
+    if (bucketID in userState.buckets.readOnly) {
+      const readOnlyBucketInfo = userState.buckets.readOnly[bucketID];
+      history.push(
+        `/v2/${readOnlyBucketInfo.publicKey}/${readOnlyBucketInfo.encryptionKey}`
+      );
+    }
+  };
+
+  const deleteReadWriteBucketUsingModal = async (bucketID: string) => {
     const mySky = await getMySky();
-    await deleteUserHiddenBucket(mySky, b);
-    setUserHiddenBuckets((p) => {
-      const copy = { ...p };
-      delete copy[b.bucketID];
-      return copy;
-    });
+    dispatch(deleteReadWriteBucket(mySky, bucketID));
+  };
+
+  const deleteReadOnlyBucketUsingModal = async (bucketID: string) => {
+    const mySky = await getMySky();
+    dispatch(deleteReadOnlyBucket(mySky, bucketID));
   };
 
   const newDraftConfirmModal = (onNewDraftClick: () => void) => {
@@ -124,11 +157,19 @@ const Buckets = () => {
     Modal.confirm({
       title: 'Are you sure?',
       icon: <DeleteOutlined style={{ color: 'red' }} />,
-      content: `By deleting the bucket, all files you've uploaded into it will be lost.`,
-      okText: 'Delete',
+      content: `Once you unpin a bucket, you will lose access to all the files it contains (unless you have the link saved somewhere).`,
+      okText: 'Unpin',
       cancelText: 'Cancel',
       onOk: onDeleteBucketClick,
     });
+  };
+
+  const userNotLogged = (): boolean => {
+    return userState.status === UserStatus.NotLogged;
+  };
+
+  const userLoading = (): boolean => {
+    return userState.status === UserStatus.Loading;
   };
 
   return (
@@ -136,7 +177,7 @@ const Buckets = () => {
       className="default-margin buckets page"
       style={{ textAlign: 'center' }}
     >
-      {user.status === UserStatus.NotLogged ? (
+      {userNotLogged() || userLoading() ? (
         <>
           <Title style={{ textAlign: 'left' }} level={4}>
             Buckets
@@ -153,6 +194,8 @@ const Buckets = () => {
             SkyTransfer.
           </p>
           <Button
+            loading={userState.status === UserStatus.Loading}
+            disabled={userState.status === UserStatus.Loading}
             onClick={() => dispatch(login())}
             type="primary"
             icon={<LoginOutlined />}
@@ -214,13 +257,13 @@ const Buckets = () => {
               Create bucket
             </Button>
           </div>
-          <Divider orientation="left">Your private buckets</Divider>
+          <Divider orientation="left">Read write buckets</Divider>
           <List
             style={{ textAlign: 'left' }}
-            loading={isloading}
+            loading={isloading || bucketState.bucketIsLoading}
             bordered
             itemLayout="horizontal"
-            dataSource={Object.values(userHiddenBuckets)}
+            dataSource={Object.values(readWriteDecryptedBuckets)}
             renderItem={(item) => (
               <>
                 <List.Item>
@@ -232,8 +275,8 @@ const Buckets = () => {
                     style={{ marginRight: '8px' }}
                     type="ghost"
                     size="middle"
-                    onClick={() => openBucket(item)}
-                    key={`opne-${item.bucketID}`}
+                    onClick={() => openReadWriteBucket(item.uuid)}
+                    key={`open-${item.uuid}`}
                   >
                     open
                   </Button>
@@ -242,11 +285,54 @@ const Buckets = () => {
                     type="ghost"
                     size="middle"
                     onClick={() => {
-                      deleteBucketConfirmModal(() => deleteBucket(item));
+                      deleteBucketConfirmModal(() =>
+                        deleteReadWriteBucketUsingModal(item.uuid)
+                      );
                     }}
-                    key={`delete-${item.bucketID}`}
+                    key={`delete-${item.uuid}`}
                   >
-                    delete
+                    unpin
+                  </Button>
+                </List.Item>
+              </>
+            )}
+          />
+
+          <Divider orientation="left">Read only buckets</Divider>
+          <List
+            style={{ textAlign: 'left' }}
+            loading={isloading || bucketState.bucketIsLoading}
+            bordered
+            itemLayout="horizontal"
+            dataSource={Object.values(readOnlyDecryptedBuckets)}
+            renderItem={(item) => (
+              <>
+                <List.Item>
+                  <List.Item.Meta
+                    title={item.name}
+                    description={item.description}
+                  />
+                  <Button
+                    style={{ marginRight: '8px' }}
+                    type="ghost"
+                    size="middle"
+                    onClick={() => openReadOnlyBucket(item.uuid)}
+                    key={`open-${item.uuid}`}
+                  >
+                    open
+                  </Button>
+                  <Button
+                    danger
+                    type="ghost"
+                    size="middle"
+                    onClick={() => {
+                      deleteBucketConfirmModal(() => {
+                        deleteReadOnlyBucketUsingModal(item.uuid);
+                      });
+                    }}
+                    key={`delete-${item.uuid}`}
+                  >
+                    unpin
                   </Button>
                 </List.Item>
               </>
@@ -258,7 +344,7 @@ const Buckets = () => {
         bucketInfo={newBucketInfo}
         visible={newBucketModalVisible}
         onCancel={() => setNewBucketModalVisible(false)}
-        isLoggedUser={user.status === UserStatus.Logged}
+        isLoggedUser={userState.status === UserStatus.Logged}
         modalTitle="Create new bucket"
         onDone={(bucketInfo) => {
           history.push('/');

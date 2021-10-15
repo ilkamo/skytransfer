@@ -3,25 +3,25 @@ import { Modal } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';
-import { setUserKeys } from '../../features/user/user-slice';
-import { Bucket, BucketInfo } from '../../models/files/bucket';
+import { IBucket, IReadWriteBucketInfo } from '../../models/files/bucket';
 import {
   encryptAndStoreBucket,
   getMySky,
-  storeUserHiddenBucket,
+  storeUserReadWriteHiddenBucket,
 } from '../../skynet/skynet';
 
 import { LoadingOutlined } from '@ant-design/icons';
+import { setUserKeys } from '../../features/bucket/bucket-slice';
 
 type BucketModalProps = {
-  bucketInfo: BucketInfo;
-  bucket?: Bucket;
+  bucketInfo: IReadWriteBucketInfo;
+  bucket?: IBucket;
   visible: boolean;
   isLoggedUser: boolean;
   modalTitle: string;
   onCancel: () => void;
   onError?: (err) => void;
-  onDone: (bucketInfo: BucketInfo) => void;
+  onDone: (bucketInfo: IReadWriteBucketInfo, decryptedBucket: IBucket) => void;
 };
 
 export const BucketModal = ({
@@ -32,7 +32,7 @@ export const BucketModal = ({
   modalTitle,
   onCancel = () => {},
   onError = (e) => {},
-  onDone = (bucketInfo: BucketInfo) => {},
+  onDone = (a, b) => {},
 }: BucketModalProps) => {
   const [isloading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -43,11 +43,8 @@ export const BucketModal = ({
     setIsLoading(true);
 
     const modalBucketInfo = { ...bucketInfo };
-    modalBucketInfo.name = values.bucketName;
-    modalBucketInfo.description = values.bucketDescription;
-    modalBucketInfo.modified = Date.now();
 
-    let bucketToStore: Bucket = {
+    let bucketToStore: IBucket = {
       uuid: bucketInfo.bucketID,
       name: values.bucketName,
       description: values.bucketDescription,
@@ -72,16 +69,21 @@ export const BucketModal = ({
 
       if (isLoggedUser) {
         const mySky: MySky = await getMySky();
-        await storeUserHiddenBucket(mySky, modalBucketInfo);
+        await storeUserReadWriteHiddenBucket(mySky, modalBucketInfo);
       }
     } catch (error) {
       onError(error);
     }
 
-    dispatch(setUserKeys(bucketInfo.privateKey, bucketInfo.encryptionKey));
+    dispatch(
+      setUserKeys({
+        bucketPrivateKey: bucketInfo.privateKey,
+        bucketEncryptionKey: bucketInfo.encryptionKey,
+      })
+    );
 
     setIsLoading(false);
-    onDone(modalBucketInfo);
+    onDone(modalBucketInfo, bucketToStore);
   };
 
   return (
@@ -96,8 +98,8 @@ export const BucketModal = ({
       <Form
         name="create-bucket"
         initialValues={{
-          bucketName: bucketInfo.name,
-          bucketDescription: bucketInfo.description,
+          bucketName: bucket?.name ? bucket?.name : '',
+          bucketDescription: bucket?.description ? bucket.description : '',
         }}
         onFinish={onSubmit}
         layout="vertical"

@@ -1,8 +1,8 @@
-import { FileNode } from '../models/file-tree';
-import { EncryptedFiles } from '../models/files/encrypted-file';
+import { IFileNode } from '../models/file-tree';
+import { IEncryptedFiles } from '../models/files/encrypted-file';
 
-export function renderTree(paths: EncryptedFiles): FileNode[] {
-  let result: FileNode[] = [];
+export function renderTree(paths: IEncryptedFiles): IFileNode[] {
+  let result: IFileNode[] = [];
   let level = { result };
 
   for (let path in paths) {
@@ -29,7 +29,7 @@ export function renderTree(paths: EncryptedFiles): FileNode[] {
   return result;
 }
 
-function calculateLeaf(fileNode: FileNode[]) {
+function calculateLeaf(fileNode: IFileNode[]) {
   fileNode.forEach((e) => {
     if (e.children.length > 0) {
       calculateLeaf(e.children);
