@@ -124,7 +124,7 @@ const Uploader = () => {
     setShowShareBucketModal(false);
   };
 
-  const initBucket = async () => {
+  const loadBucket = async () => {
     let bucket: IBucket = await getDecryptedBucket(
       publicKeyFromPrivateKey(bucketState.privateKey),
       bucketState.encryptionKey
@@ -139,16 +139,14 @@ const Uploader = () => {
         Generate a new set of keys in order to create a new bucket and be sure that no existing
         bucket will be overwritten.
       */
+      const privateKey = genKeyPairAndSeed().privateKey;
+      const encryptionKey = genKeyPairAndSeed().privateKey;
+      await encryptAndStoreBucket(privateKey, encryptionKey, decryptedBucket);
       dispatch(
         setUserKeys({
-          bucketPrivateKey: genKeyPairAndSeed().privateKey,
-          bucketEncryptionKey: genKeyPairAndSeed().privateKey,
+          bucketPrivateKey: privateKey,
+          bucketEncryptionKey: encryptionKey,
         })
-      );
-      await encryptAndStoreBucket(
-        bucketState.privateKey,
-        bucketState.encryptionKey,
-        decryptedBucket
       );
     }
 
@@ -164,7 +162,7 @@ const Uploader = () => {
 
   useEffect(() => {
     if (bucketState.encryptionKey !== null) {
-      initBucket();
+      loadBucket();
     }
   }, [bucketState.encryptionKey]);
 
