@@ -73,7 +73,7 @@ const Buckets = () => {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  const init = async () => {
+  const loadBuckets = async () => {
     setIsLoading(true);
     try {
       const mySky: MySky = await getMySky();
@@ -91,12 +91,7 @@ const Buckets = () => {
   };
 
   useEffect(() => {
-    if (
-      Object.values(userState.buckets.readOnly).length > 0 ||
-      Object.values(userState.buckets.readWrite).length > 0
-    ) {
-      init();
-    }
+    loadBuckets();
   }, [userState.buckets]);
 
   const [visibleDrawer, setVisibleDrawer] = useState(false);
