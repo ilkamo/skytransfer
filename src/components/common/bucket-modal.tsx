@@ -12,6 +12,7 @@ import {
 
 import { LoadingOutlined } from '@ant-design/icons';
 import { setUserKeys } from '../../features/bucket/bucket-slice';
+import { readWriteBucketAdded } from '../../features/user/user-slice';
 
 type BucketModalProps = {
   bucketInfo: IReadWriteBucketInfo;
@@ -75,6 +76,7 @@ export const BucketModal = ({
       onError(error);
     }
 
+    dispatch(readWriteBucketAdded(modalBucketInfo));
     dispatch(
       setUserKeys({
         bucketPrivateKey: bucketInfo.privateKey,
