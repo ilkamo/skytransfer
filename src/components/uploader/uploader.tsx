@@ -256,7 +256,7 @@ const Uploader = () => {
   }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(new URL(workerURL));
+    const worker = new Worker(new URL(workerURL, import.meta.url));
     const service = wrap<WorkerApi>(worker);
 
     const url = await service.decryptFile(
@@ -291,7 +291,7 @@ const Uploader = () => {
         await uploadFile(f, fileKey, onProgress, onSuccess, onError);
       };
 
-      const worker = new Worker(new URL(workerURL));
+      const worker = new Worker(new URL(workerURL, import.meta.url));
       const service = wrap<WorkerApi>(worker);
 
       const fileKey = genKeyPairAndSeed().privateKey;
