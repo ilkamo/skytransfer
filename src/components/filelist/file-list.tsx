@@ -27,7 +27,7 @@ import {
 import { ShareModal } from '../common/share-modal';
 import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
-import { downloadFile } from "../common/helpers";
+import { downloadFile } from '../common/helpers';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -208,7 +208,11 @@ const FileList = () => {
                       }
                       if (encryptedFile) {
                         message.loading(`Download and decryption started`);
-                        downloadFile(encryptedFile, setDecryptProgress, setDownloadProgress);
+                        downloadFile(
+                          encryptedFile,
+                          setDecryptProgress,
+                          setDownloadProgress
+                        );
                       }
                     }}
                   />
@@ -226,7 +230,11 @@ const FileList = () => {
                 message.loading(`Download and decryption started`);
                 for (const encyptedFile in decryptedBucket.files) {
                   const file = decryptedBucket.files[encyptedFile];
-                  await downloadFile(file, setDecryptProgress, setDownloadProgress);
+                  await downloadFile(
+                    file,
+                    setDecryptProgress,
+                    setDownloadProgress
+                  );
                 }
               }}
             >

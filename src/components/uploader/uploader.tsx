@@ -8,7 +8,18 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import { Alert, Badge, Button, Divider, Empty, message, Modal, Spin, Tree, Upload, } from 'antd';
+import {
+  Alert,
+  Badge,
+  Button,
+  Divider,
+  Empty,
+  message,
+  Modal,
+  Spin,
+  Tree,
+  Upload,
+} from 'antd';
 
 import {
   DownloadOutlined,
@@ -22,16 +33,29 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import { DEFAULT_ENCRYPTION_TYPE, MAX_PARALLEL_UPLOAD, MIN_SKYDB_SYNC_FACTOR, SKYDB_SYNC_FACTOR, } from '../../config';
+import {
+  DEFAULT_ENCRYPTION_TYPE,
+  MAX_PARALLEL_UPLOAD,
+  MIN_SKYDB_SYNC_FACTOR,
+  SKYDB_SYNC_FACTOR,
+} from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import { encryptAndStoreBucket, getDecryptedBucket, getMySky, } from '../../skynet/skynet';
+import {
+  encryptAndStoreBucket,
+  getDecryptedBucket,
+  getMySky,
+} from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
-import { DecryptedBucket, IBucket, IReadWriteBucketInfo, } from '../../models/files/bucket';
+import {
+  DecryptedBucket,
+  IBucket,
+  IReadWriteBucketInfo,
+} from '../../models/files/bucket';
 import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
@@ -42,8 +66,16 @@ import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
-import { IBucketState, selectBucket, setUserKeys, } from '../../features/bucket/bucket-slice';
-import { downloadFile, simpleUploader, webWorkerUploader } from "../common/helpers";
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
+import {
+  downloadFile,
+  simpleUploader,
+  webWorkerUploader,
+} from '../common/helpers';
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -234,10 +266,10 @@ const Uploader = () => {
 
       let uploadFunc;
       if (window.Worker) {
-        console.log("[Using web-workers]")
-        uploadFunc = webWorkerUploader
+        console.log('[Using web-workers]');
+        uploadFunc = webWorkerUploader;
       } else {
-        uploadFunc = simpleUploader
+        uploadFunc = simpleUploader;
       }
 
       resolve(uploadFunc(options, fileKey, setEncryptProgress));
@@ -562,7 +594,11 @@ const Uploader = () => {
                     }
                     if (encryptedFile) {
                       message.loading(`Download and decryption started`);
-                      downloadFile(encryptedFile, setDecryptProgress, setDownloadProgress);
+                      downloadFile(
+                        encryptedFile,
+                        setDecryptProgress,
+                        setDownloadProgress
+                      );
                     }
                   }}
                   onDeleteClick={() => {
@@ -604,7 +640,11 @@ const Uploader = () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile in decryptedBucket.files) {
                 const file = decryptedBucket.files[encyptedFile];
-                await downloadFile(file, setDecryptProgress, setDownloadProgress);
+                await downloadFile(
+                  file,
+                  setDecryptProgress,
+                  setDownloadProgress
+                );
               }
             }}
           >
