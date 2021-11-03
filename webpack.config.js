@@ -2,12 +2,19 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+
 module.exports = {
-  entry: './src/index.tsx',
+  entry: {
+    index: './src/index.tsx',
+    webworker: './src/workers/worker.ts',
+  },
   output: {
-    publicPath: "build/",
+    publicPath: ASSET_PATH,
     path: path.join(__dirname, 'build'),
-    filename: 'index.bundle.js',
+    filename: (pathData) => {
+      return pathData.chunk.name === 'index' ? '[name].[contenthash].bundle.js' : '[name].bundle.js';
+    },
   },
   mode: process.env.NODE_ENV || 'development',
   resolve: {
@@ -89,6 +96,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'public', 'index.html'),
+      excludeChunks: ['webworker'],
     }),
     new CopyPlugin({
       patterns: [

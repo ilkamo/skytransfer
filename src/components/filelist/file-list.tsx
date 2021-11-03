@@ -29,6 +29,7 @@ import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
 import { proxy, wrap } from 'comlink';
 import { WorkerApi } from '../../workers/worker';
+import { WEB_WORKER_URL } from "../../config";
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -40,8 +41,6 @@ const useConstructor = (callBack = () => {}) => {
   callBack();
   hasBeenCalled.current = true;
 };
-
-const workerURL = '../../workers/worker.ts';
 
 const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
@@ -100,7 +99,7 @@ const FileList = () => {
   }, [decryptProgress]);
 
   const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(new URL(workerURL, import.meta.url));
+    const worker = new Worker(WEB_WORKER_URL);
     const service = wrap<WorkerApi>(worker);
 
     const url = await service.decryptFile(

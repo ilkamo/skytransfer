@@ -37,7 +37,7 @@ import {
   DEFAULT_ENCRYPTION_TYPE,
   MAX_PARALLEL_UPLOAD,
   MIN_SKYDB_SYNC_FACTOR,
-  SKYDB_SYNC_FACTOR,
+  SKYDB_SYNC_FACTOR, WEB_WORKER_URL,
 } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
@@ -99,8 +99,6 @@ const generateRandomDecryptedBucket = (): DecryptedBucket => {
     modified: Date.now(),
   });
 };
-
-const workerURL = '../../workers/worker.ts';
 
 const Uploader = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -256,7 +254,7 @@ const Uploader = () => {
   }, [encryptProgress]);
 
   const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(new URL(workerURL, import.meta.url));
+    const worker = new Worker(WEB_WORKER_URL);
     const service = wrap<WorkerApi>(worker);
 
     const url = await service.decryptFile(
@@ -291,7 +289,7 @@ const Uploader = () => {
         await uploadFile(f, fileKey, onProgress, onSuccess, onError);
       };
 
-      const worker = new Worker(new URL(workerURL, import.meta.url));
+      const worker = new Worker(WEB_WORKER_URL);
       const service = wrap<WorkerApi>(worker);
 
       const fileKey = genKeyPairAndSeed().privateKey;

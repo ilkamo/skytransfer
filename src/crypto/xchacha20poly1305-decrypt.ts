@@ -90,8 +90,6 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
       const url = this.encryptedFile.file.url;
 
-      console.log(url);
-
       try {
         const response = await this.downloadFile(
           url,
@@ -158,6 +156,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
       retryCondition: (_e) => true, // retry no matter what
     });
 
+    // TODO: use the portal url
     const url = skylink.replace('sia://', 'https://siasky.net/');
 
     return axios({
