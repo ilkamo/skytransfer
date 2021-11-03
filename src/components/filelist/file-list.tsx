@@ -27,9 +27,7 @@ import {
 import { ShareModal } from '../common/share-modal';
 import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
-import { proxy, wrap } from 'comlink';
-import { WorkerApi } from '../../workers/worker';
-import { WEB_WORKER_URL } from "../../config";
+import { downloadFile } from "../common/helpers";
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -97,28 +95,6 @@ const FileList = () => {
       }, 500);
     }
   }, [decryptProgress]);
-
-  const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(WEB_WORKER_URL);
-    const service = wrap<WorkerApi>(worker);
-
-    const url = await service.decryptFile(
-      encryptedFile,
-      proxy(setDecryptProgress),
-      proxy(setDownloadProgress)
-    );
-    if (url.startsWith('error')) {
-      message.error(url);
-      return;
-    }
-
-    const elem = window.document.createElement('a');
-    elem.href = url;
-    elem.download = encryptedFile.name;
-    document.body.appendChild(elem);
-    elem.click();
-    document.body.removeChild(elem);
-  };
 
   const getFileBy = (key: string): IEncryptedFile => {
     for (let path in decryptedBucket.files) {
@@ -232,7 +208,7 @@ const FileList = () => {
                       }
                       if (encryptedFile) {
                         message.loading(`Download and decryption started`);
-                        downloadFile(encryptedFile);
+                        downloadFile(encryptedFile, setDecryptProgress, setDownloadProgress);
                       }
                     }}
                   />
@@ -250,7 +226,7 @@ const FileList = () => {
                 message.loading(`Download and decryption started`);
                 for (const encyptedFile in decryptedBucket.files) {
                   const file = decryptedBucket.files[encyptedFile];
-                  await downloadFile(file);
+                  await downloadFile(file, setDecryptProgress, setDownloadProgress);
                 }
               }}
             >

@@ -8,18 +8,7 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import {
-  Alert,
-  Badge,
-  Button,
-  Divider,
-  Empty,
-  message,
-  Modal,
-  Spin,
-  Tree,
-  Upload,
-} from 'antd';
+import { Alert, Badge, Button, Divider, Empty, message, Modal, Spin, Tree, Upload, } from 'antd';
 
 import {
   DownloadOutlined,
@@ -33,30 +22,16 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import {
-  DEFAULT_ENCRYPTION_TYPE,
-  MAX_PARALLEL_UPLOAD,
-  MIN_SKYDB_SYNC_FACTOR,
-  SKYDB_SYNC_FACTOR, WEB_WORKER_URL,
-} from '../../config';
+import { DEFAULT_ENCRYPTION_TYPE, MAX_PARALLEL_UPLOAD, MIN_SKYDB_SYNC_FACTOR, SKYDB_SYNC_FACTOR, } from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import {
-  encryptAndStoreBucket,
-  getDecryptedBucket,
-  getMySky,
-  uploadFile,
-} from '../../skynet/skynet';
+import { encryptAndStoreBucket, getDecryptedBucket, getMySky, } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
-import {
-  DecryptedBucket,
-  IBucket,
-  IReadWriteBucketInfo,
-} from '../../models/files/bucket';
+import { DecryptedBucket, IBucket, IReadWriteBucketInfo, } from '../../models/files/bucket';
 import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
@@ -67,14 +42,8 @@ import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
-import {
-  IBucketState,
-  selectBucket,
-  setUserKeys,
-} from '../../features/bucket/bucket-slice';
-
-import { proxy, wrap } from 'comlink';
-import type { WorkerApi } from '../../workers/worker';
+import { IBucketState, selectBucket, setUserKeys, } from '../../features/bucket/bucket-slice';
+import { downloadFile, simpleUploader, webWorkerUploader } from "../common/helpers";
 
 const { DirectoryTree } = Tree;
 const { Dragger } = Upload;
@@ -253,28 +222,6 @@ const Uploader = () => {
     }
   }, [encryptProgress]);
 
-  const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(WEB_WORKER_URL);
-    const service = wrap<WorkerApi>(worker);
-
-    const url = await service.decryptFile(
-      encryptedFile,
-      proxy(setDecryptProgress),
-      proxy(setDownloadProgress)
-    );
-    if (url.startsWith('error')) {
-      message.error(url);
-      return;
-    }
-
-    const elem = window.document.createElement('a');
-    elem.href = url;
-    elem.download = encryptedFile.name;
-    document.body.appendChild(elem);
-    elem.click();
-    document.body.removeChild(elem);
-  };
-
   const queueParallelEncryption = (options): Promise<File> => {
     return new Promise(async (resolve) => {
       while (uploadCount > MAX_PARALLEL_UPLOAD) {
@@ -283,24 +230,17 @@ const Uploader = () => {
 
       uploadCount++;
 
-      const { onSuccess, onError, file, onProgress } = options;
-
-      const uploadFileFunc = async (f) => {
-        await uploadFile(f, fileKey, onProgress, onSuccess, onError);
-      };
-
-      const worker = new Worker(WEB_WORKER_URL);
-      const service = wrap<WorkerApi>(worker);
-
       const fileKey = genKeyPairAndSeed().privateKey;
-      resolve(
-        service.encryptFile(
-          file,
-          fileKey,
-          proxy(uploadFileFunc),
-          proxy(setEncryptProgress)
-        )
-      );
+
+      let uploadFunc;
+      if (window.Worker) {
+        console.log("[Using web-workers]")
+        uploadFunc = webWorkerUploader
+      } else {
+        uploadFunc = simpleUploader
+      }
+
+      resolve(uploadFunc(options, fileKey, setEncryptProgress));
     });
   };
 
@@ -622,7 +562,7 @@ const Uploader = () => {
                     }
                     if (encryptedFile) {
                       message.loading(`Download and decryption started`);
-                      downloadFile(encryptedFile);
+                      downloadFile(encryptedFile, setDecryptProgress, setDownloadProgress);
                     }
                   }}
                   onDeleteClick={() => {
@@ -664,7 +604,7 @@ const Uploader = () => {
               message.loading(`Download and decryption started`);
               for (const encyptedFile in decryptedBucket.files) {
                 const file = decryptedBucket.files[encyptedFile];
-                await downloadFile(file);
+                await downloadFile(file, setDecryptProgress, setDownloadProgress);
               }
             }}
           >
