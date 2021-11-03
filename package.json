@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "webpack serve",
-    "build": "NODE_ENV=production webpack",
+    "build": "webpack",
     "test": "SKIP_PREFLIGHT_CHECK=true react-scripts test",
     "eject": "react-scripts eject",
     "fmt": "prettier  --config .prettierrc.json --write src/**/*.ts{,x}",

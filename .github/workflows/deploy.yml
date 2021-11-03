@@ -22,6 +22,7 @@ jobs:
         run: yarn build
         env:
           REACT_APP_GIT_SHA: ${{ github.sha }}
+          NODE_ENV: production
 
       - name: Test
         run: yarn test
