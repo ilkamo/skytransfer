@@ -100,7 +100,7 @@ const FileList = () => {
   }, [decryptProgress]);
 
   const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const worker = new Worker(new URL(workerURL, import.meta.url));
+    const worker = new Worker(new URL(workerURL));
     const service = wrap<WorkerApi>(worker);
 
     const url = await service.decryptFile(
