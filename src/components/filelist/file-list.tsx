@@ -1,49 +1,42 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
-import { useHistory } from 'react-router-dom';
-
-import { Button, Empty, Divider, message, Tree, Spin, Badge } from 'antd';
-import {
-  DownloadOutlined,
-  DownOutlined,
-  FolderAddOutlined,
-  ShareAltOutlined,
-} from '@ant-design/icons';
+import { Badge, Button, Divider, Empty, message, Spin, Tree } from 'antd';
+import { DownloadOutlined, DownOutlined, FolderAddOutlined, ShareAltOutlined, } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import { getDecryptedBucket, getMySky } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
 
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
-import { IBucket, DecryptedBucket } from '../../models/files/bucket';
+import { DecryptedBucket, IBucket } from '../../models/files/bucket';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { BucketInformation } from '../common/bucket-information';
-import {
-  IBucketState,
-  selectBucket,
-  setUserKeys,
-} from '../../features/bucket/bucket-slice';
+import { IBucketState, selectBucket, setUserKeys, } from '../../features/bucket/bucket-slice';
 import { ShareModal } from '../common/share-modal';
 import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
+import { proxy, wrap } from "comlink";
+import { WorkerApi } from "../../workers/worker";
 
-const { DownloadActivityBar } = ActivityBars;
+const {DownloadActivityBar} = ActivityBars;
 
-const { DirectoryTree } = Tree;
+const {DirectoryTree} = Tree;
 
-const useConstructor = (callBack = () => {}) => {
+const useConstructor = (callBack = () => {
+}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
   hasBeenCalled.current = true;
 };
 
+const workerURL = '../../workers/worker.ts';
+
 const FileList = () => {
-  const { transferKey, encryptionKey } = useParams();
+  const {transferKey, encryptionKey} = useParams();
   const [loading, setlLoading] = useState(true);
   const [showShareBucketModal, setShowShareBucketModal] = useState(false);
   const history = useHistory();
@@ -99,28 +92,18 @@ const FileList = () => {
   }, [decryptProgress]);
 
   const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
-    let file: File;
-    try {
-      file = await decrypt.decrypt(
-        (completed, eProgress) => {
-          setDecryptProgress(eProgress);
-        },
-        (completed, dProgress) => {
-          setDownloadProgress(dProgress);
-        }
-      );
-    } catch (error) {
-      message.error(error.message);
-    }
+    const worker = new Worker(new URL(workerURL, import.meta.url));
+    const service = wrap<WorkerApi>(worker);
 
-    if (!file) {
+    const url = await service.decryptFile(encryptedFile, proxy(setDecryptProgress), proxy(setDownloadProgress));
+    if (url.startsWith("error")) {
+      message.error(url);
       return;
     }
 
-    var elem = window.document.createElement('a');
-    elem.href = window.URL.createObjectURL(file);
-    elem.download = file.name;
+    const elem = window.document.createElement('a');
+    elem.href = url;
+    elem.download = encryptedFile.name;
     document.body.appendChild(elem);
     elem.click();
     document.body.removeChild(elem);
@@ -169,25 +152,25 @@ const FileList = () => {
       {decryptedBucket && decryptedBucket.files && (
         <>
           {isBucketPinned(decryptedBucket.uuid) && (
-            <Badge.Ribbon text="Pinned" color="green" />
+            <Badge.Ribbon text="Pinned" color="green"/>
           )}
-          <BucketInformation bucket={decryptedBucket} />
+          <BucketInformation bucket={decryptedBucket}/>
         </>
       )}
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{textAlign: 'center'}}>
         <Button
-          style={{ marginTop: '20px' }}
+          style={{marginTop: '20px'}}
           type="ghost"
           size="middle"
           onClick={() => setShowShareBucketModal(true)}
-          icon={<ShareAltOutlined />}
+          icon={<ShareAltOutlined/>}
         >
           Share bucket
         </Button>
         {decryptedBucket && isUserLogged() && (
           <Button
-            style={{ marginTop: '20px' }}
+            style={{marginTop: '20px'}}
             disabled={
               isBucketPinned(decryptedBucket.uuid) ||
               bucketState.bucketIsLoading
@@ -196,7 +179,7 @@ const FileList = () => {
             type="ghost"
             size="middle"
             onClick={() => pinBucket(decryptedBucket.uuid)}
-            icon={<FolderAddOutlined />}
+            icon={<FolderAddOutlined/>}
           >
             {isBucketPinned(decryptedBucket.uuid)
               ? 'Already pinned'
@@ -220,7 +203,7 @@ const FileList = () => {
               showLine
               className="file-tree default-margin"
               defaultExpandAll={true}
-              switcherIcon={<DownOutlined className="directory-switcher" />}
+              switcherIcon={<DownOutlined className="directory-switcher"/>}
               treeData={renderTree(decryptedBucket.files)}
               selectable={false}
               titleRender={(node) => {
@@ -248,9 +231,9 @@ const FileList = () => {
               }}
             />
           </div>
-          <div className="default-margin" style={{ textAlign: 'center' }}>
+          <div className="default-margin" style={{textAlign: 'center'}}>
             <Button
-              icon={<DownloadOutlined />}
+              icon={<DownloadOutlined/>}
               size="middle"
               onClick={async () => {
                 message.loading(`Download and decryption started`);
@@ -266,7 +249,7 @@ const FileList = () => {
         </>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-          {loading ? <Spin /> : <span>No shared data found</span>}
+          {loading ? <Spin/> : <span>No shared data found</span>}
         </Empty>
       )}
       <ShareModal

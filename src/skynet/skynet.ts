@@ -1,13 +1,8 @@
-import {
-  getEndpointInCurrentPortal,
-  getEndpointInDefaultPortal,
-} from './../portals';
+import { getEndpointInCurrentPortal, getEndpointInDefaultPortal, } from './../portals';
 import { MySky, SkynetClient } from 'skynet-js';
-import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
+import { SKYTRANSFER_BUCKET } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
-import axiosRetry from 'axios-retry';
-import axios from 'axios';
 import {
   IAllBuckets,
   IBucket,
@@ -51,7 +46,7 @@ export const uploadFile = async (
       encryptedFile,
       {
         onUploadProgress: (p) => {
-          onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
+          onProgress({percent: Math.floor(p * 100)}, encryptedFile);
         },
       }
     );
@@ -63,30 +58,6 @@ export const uploadFile = async (
   } catch (e) {
     onError(e);
   }
-};
-
-export const downloadFile = async (
-  skylink: string,
-  onProgress,
-  bytesRange?: string
-): Promise<any> => {
-  const url = await getSkynetFileClientBasedOnPortal().getSkylinkUrl(skylink);
-
-  axiosRetry(axios, {
-    retries: MAX_AXIOS_RETRIES,
-    retryCondition: (_e) => true, // retry no matter what
-  });
-
-  return axios({
-    method: 'get',
-    url: url,
-    headers: {
-      Range: bytesRange,
-    },
-    responseType: 'blob',
-    onDownloadProgress: onProgress,
-    withCredentials: true,
-  });
 };
 
 export const encryptAndStoreBucket = async (
@@ -118,7 +89,7 @@ export const getDecryptedBucket = async (
     let bucket: IBucket;
 
     try {
-      const { data } = await skynetSkyDBClient.db.getJSON(
+      const {data} = await skynetSkyDBClient.db.getJSON(
         publicKey,
         SKYTRANSFER_BUCKET
       );
@@ -143,7 +114,7 @@ export const getMySky = async (): Promise<MySky> => {
   }
 
   const client = new SkynetClient(getMySkyDomain());
-  return await client.loadMySky(dataDomain, { debug: true });
+  return await client.loadMySky(dataDomain, {debug: true});
 };
 
 export async function getUserReadWriteHiddenBuckets(
@@ -151,7 +122,7 @@ export async function getUserReadWriteHiddenBuckets(
 ): Promise<IReadWriteBucketsInfo> {
   let buckets: IReadWriteBucketsInfo = {};
 
-  const { data } = await mySky.getJSONEncrypted(
+  const {data} = await mySky.getJSONEncrypted(
     privateReadWriteUserBucketsPath
   );
 
@@ -172,7 +143,7 @@ export async function getAllUserHiddenBuckets(
     mySky
   );
 
-  return { readOnly, readWrite };
+  return {readOnly, readWrite};
 }
 
 export async function getAllUserDecryptedBuckets(
@@ -209,7 +180,7 @@ export async function getAllUserDecryptedBuckets(
     })
   );
 
-  return { readOnly, readWrite };
+  return {readOnly, readWrite};
 }
 
 export async function getUserReadOnlyHiddenBuckets(
@@ -217,7 +188,7 @@ export async function getUserReadOnlyHiddenBuckets(
 ): Promise<IReadOnlyBucketsInfo> {
   let buckets: IReadOnlyBucketsInfo = {};
 
-  const { data } = await mySky.getJSONEncrypted(privateReadOnlyUserBucketsPath);
+  const {data} = await mySky.getJSONEncrypted(privateReadOnlyUserBucketsPath);
 
   if (data && 'buckets' in data) {
     buckets = data.buckets as IReadOnlyBucketsInfo;
@@ -234,7 +205,7 @@ export async function storeUserReadWriteHiddenBucket(
 
   buckets[newBucket.bucketID] = newBucket;
   try {
-    await mySky.setJSONEncrypted(privateReadWriteUserBucketsPath, { buckets });
+    await mySky.setJSONEncrypted(privateReadWriteUserBucketsPath, {buckets});
   } catch (error) {
     throw Error('could not storeUserReadWriteHiddenBucket: ' + error.message);
   }
@@ -248,7 +219,7 @@ export async function storeUserReadOnlyHiddenBucket(
 
   buckets[newBucket.bucketID] = newBucket;
   try {
-    await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, { buckets });
+    await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, {buckets});
   } catch (error) {
     throw Error('could not storeUserReadOnlyHiddenBucket: ' + error.message);
   }
@@ -281,7 +252,7 @@ export async function deleteUserReadOnlyHiddenBucket(
   if (bucketID in buckets) {
     delete buckets[bucketID];
     try {
-      await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, { buckets });
+      await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, {buckets});
     } catch (error) {
       throw Error('could not deleteUserReadOnlyHiddenBucket: ' + error.message);
     }
