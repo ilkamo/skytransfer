@@ -4,9 +4,9 @@ import { ChunkResolver } from './chunk-resolver';
 import { IEncryptedFile } from '../models/files/encrypted-file';
 
 import _sodium from 'libsodium-wrappers';
-import axiosRetry from "axios-retry";
-import axios from "axios";
-import { MAX_AXIOS_RETRIES } from "../config";
+import axiosRetry from 'axios-retry';
+import axios from 'axios';
+import { MAX_AXIOS_RETRIES } from '../config';
 
 /* 
   salt and header are appended to each file as Uint8Array
@@ -34,7 +34,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     this.chunkResolver = new ChunkResolver(
       EncryptionType[
         encryptedFile.file.encryptionType as keyof typeof EncryptionType
-        ]
+      ]
     );
   }
 
@@ -46,13 +46,11 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     onDecryptProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => {
-    },
+    ) => void = () => {},
     onFileDownloadProgress: (
       completed: boolean,
       percentage: number
-    ) => void = () => {
-    }
+    ) => void = () => {}
   ): Promise<File> {
     await _sodium.ready;
     const sodium = _sodium;
@@ -75,7 +73,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
     const totalChunks = Math.ceil(
       (this.encryptedFile.file.encryptedSize - METADATA_SIZE) /
-      this.decryptChunkSize
+        this.decryptChunkSize
     );
 
     let rangeEnd = 0;
@@ -134,8 +132,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     const headerAndSaltBytesRange = `bytes=${0}-${39}`;
     const response = await this.downloadFile(
       this.encryptedFile.file.url,
-      () => {
-      },
+      () => {},
       headerAndSaltBytesRange
     );
 
@@ -155,11 +152,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     };
   }
 
-  private async downloadFile(
-    skylink: string,
-    onProgress,
-    bytesRange?: string
-  ) {
+  private async downloadFile(skylink: string, onProgress, bytesRange?: string) {
     axiosRetry(axios, {
       retries: MAX_AXIOS_RETRIES,
       retryCondition: (_e) => true, // retry no matter what

@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { Badge, Button, Divider, Empty, message, Spin, Tree } from 'antd';
-import { DownloadOutlined, DownOutlined, FolderAddOutlined, ShareAltOutlined, } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  DownOutlined,
+  FolderAddOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
 import { getDecryptedBucket, getMySky } from '../../skynet/skynet';
 
@@ -14,19 +19,22 @@ import { IEncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { BucketInformation } from '../common/bucket-information';
-import { IBucketState, selectBucket, setUserKeys, } from '../../features/bucket/bucket-slice';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
 import { ShareModal } from '../common/share-modal';
 import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
-import { proxy, wrap } from "comlink";
-import { WorkerApi } from "../../workers/worker";
+import { proxy, wrap } from 'comlink';
+import { WorkerApi } from '../../workers/worker';
 
-const {DownloadActivityBar} = ActivityBars;
+const { DownloadActivityBar } = ActivityBars;
 
-const {DirectoryTree} = Tree;
+const { DirectoryTree } = Tree;
 
-const useConstructor = (callBack = () => {
-}) => {
+const useConstructor = (callBack = () => {}) => {
   const hasBeenCalled = useRef(false);
   if (hasBeenCalled.current) return;
   callBack();
@@ -36,7 +44,7 @@ const useConstructor = (callBack = () => {
 const workerURL = '../../workers/worker.ts';
 
 const FileList = () => {
-  const {transferKey, encryptionKey} = useParams();
+  const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const [showShareBucketModal, setShowShareBucketModal] = useState(false);
   const history = useHistory();
@@ -95,8 +103,12 @@ const FileList = () => {
     const worker = new Worker(new URL(workerURL, import.meta.url));
     const service = wrap<WorkerApi>(worker);
 
-    const url = await service.decryptFile(encryptedFile, proxy(setDecryptProgress), proxy(setDownloadProgress));
-    if (url.startsWith("error")) {
+    const url = await service.decryptFile(
+      encryptedFile,
+      proxy(setDecryptProgress),
+      proxy(setDownloadProgress)
+    );
+    if (url.startsWith('error')) {
       message.error(url);
       return;
     }
@@ -152,25 +164,25 @@ const FileList = () => {
       {decryptedBucket && decryptedBucket.files && (
         <>
           {isBucketPinned(decryptedBucket.uuid) && (
-            <Badge.Ribbon text="Pinned" color="green"/>
+            <Badge.Ribbon text="Pinned" color="green" />
           )}
-          <BucketInformation bucket={decryptedBucket}/>
+          <BucketInformation bucket={decryptedBucket} />
         </>
       )}
 
-      <div style={{textAlign: 'center'}}>
+      <div style={{ textAlign: 'center' }}>
         <Button
-          style={{marginTop: '20px'}}
+          style={{ marginTop: '20px' }}
           type="ghost"
           size="middle"
           onClick={() => setShowShareBucketModal(true)}
-          icon={<ShareAltOutlined/>}
+          icon={<ShareAltOutlined />}
         >
           Share bucket
         </Button>
         {decryptedBucket && isUserLogged() && (
           <Button
-            style={{marginTop: '20px'}}
+            style={{ marginTop: '20px' }}
             disabled={
               isBucketPinned(decryptedBucket.uuid) ||
               bucketState.bucketIsLoading
@@ -179,7 +191,7 @@ const FileList = () => {
             type="ghost"
             size="middle"
             onClick={() => pinBucket(decryptedBucket.uuid)}
-            icon={<FolderAddOutlined/>}
+            icon={<FolderAddOutlined />}
           >
             {isBucketPinned(decryptedBucket.uuid)
               ? 'Already pinned'
@@ -203,7 +215,7 @@ const FileList = () => {
               showLine
               className="file-tree default-margin"
               defaultExpandAll={true}
-              switcherIcon={<DownOutlined className="directory-switcher"/>}
+              switcherIcon={<DownOutlined className="directory-switcher" />}
               treeData={renderTree(decryptedBucket.files)}
               selectable={false}
               titleRender={(node) => {
@@ -231,9 +243,9 @@ const FileList = () => {
               }}
             />
           </div>
-          <div className="default-margin" style={{textAlign: 'center'}}>
+          <div className="default-margin" style={{ textAlign: 'center' }}>
             <Button
-              icon={<DownloadOutlined/>}
+              icon={<DownloadOutlined />}
               size="middle"
               onClick={async () => {
                 message.loading(`Download and decryption started`);
@@ -249,7 +261,7 @@ const FileList = () => {
         </>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-          {loading ? <Spin/> : <span>No shared data found</span>}
+          {loading ? <Spin /> : <span>No shared data found</span>}
         </Empty>
       )}
       <ShareModal

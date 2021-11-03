@@ -1,18 +1,18 @@
 import { expose } from 'comlink';
-import Xchacha20poly1305Encrypt from "../crypto/xchacha20poly1305-encrypt";
-import { IEncryptedFile } from "../models/files/encrypted-file";
-import Xchacha20poly1305Decrypt from "../crypto/xchacha20poly1305-decrypt";
+import Xchacha20poly1305Encrypt from '../crypto/xchacha20poly1305-encrypt';
+import { IEncryptedFile } from '../models/files/encrypted-file';
+import Xchacha20poly1305Decrypt from '../crypto/xchacha20poly1305-decrypt';
 
 const encryptFile = async (
   file: File,
   fileKey: string,
   uploadCallback,
-  setEncryptProgressCallback,
+  setEncryptProgressCallback
 ): Promise<File> => {
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
   const encryptedFile = await fe.encrypt((completed, eProgress) => {
     setEncryptProgressCallback(eProgress);
-  })
+  });
 
   return Promise.resolve(uploadCallback(encryptedFile));
 };
@@ -20,7 +20,7 @@ const encryptFile = async (
 const decryptFile = async (
   encryptedFile: IEncryptedFile,
   setDecryptProgressCallback,
-  setDownloadProgressCallback,
+  setDownloadProgressCallback
 ): Promise<string> => {
   const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
 
@@ -39,7 +39,7 @@ const decryptFile = async (
   }
 
   if (!file) {
-    return "error: no file";
+    return 'error: no file';
   }
 
   return Promise.resolve(URL.createObjectURL(file));
@@ -47,7 +47,7 @@ const decryptFile = async (
 
 const workerApi = {
   encryptFile,
-  decryptFile
+  decryptFile,
 };
 
 export type WorkerApi = typeof workerApi;
