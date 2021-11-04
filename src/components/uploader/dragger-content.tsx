@@ -14,7 +14,7 @@ export const DraggerContent = ({
       <p className="ant-upload-drag-icon">
         <SkyTransferLogo />
         <br />
-        <span className="ant-upload-drag-icon version">SkyTransfer v2.0.1</span>
+        <span className="ant-upload-drag-icon version">SkyTransfer v2.0.2</span>
       </p>
       <p className="ant-upload-text">
         {onlyClickable ? (
