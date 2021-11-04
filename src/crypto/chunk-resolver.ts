@@ -8,11 +8,6 @@ interface Encryption {
 
 const MBSize = 1048576;
 
-// https://blog.jim-nielsen.com/2020/export-to-html-from-javascript-using-blob-urls/
-// There are different types of chunk size encryptChunkSize/decryptChunkSize because of how js works with bytes.
-// During encryption, file is splitted in chunks of encryptChunkSize.
-// Once the file is encrypted, its size is bigger (additional 33%) of overhead.
-// During the decription, this information if needed to correctly decrypt the chunks.
 const encryptions: Encryption[] = [
   {
     encryptChunkSize: MBSize * 4,
@@ -38,6 +33,21 @@ const encryptions: Encryption[] = [
     encryptChunkSize: MBSize * 64,
     decryptChunkSize: MBSize * 64 + 17,
     encryptionType: EncryptionType.Xchacha20poly1305_64MB,
+  },
+  {
+    encryptChunkSize: MBSize * 128,
+    decryptChunkSize: MBSize * 128 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_128MB,
+  },
+  {
+    encryptChunkSize: MBSize * 256,
+    decryptChunkSize: MBSize * 256 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_256MB,
+  },
+  {
+    encryptChunkSize: MBSize * 512,
+    decryptChunkSize: MBSize * 512 + 17,
+    encryptionType: EncryptionType.Xchacha20poly1305_512MB,
   },
 ];
 
