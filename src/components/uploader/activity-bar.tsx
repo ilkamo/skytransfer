@@ -12,7 +12,12 @@ type DownloadActivityBarProps = {
 };
 
 const progressBadge = (progress) => {
-  return <Badge status={progress === 0 ? 'default' : 'processing'} color={progress === 0 ? '#fafafa' : '#20bf6b'} />;
+  return (
+    <Badge
+      status={progress === 0 ? 'default' : 'processing'}
+      color={progress === 0 ? '#fafafa' : '#20bf6b'}
+    />
+  );
 };
 
 const progressMaxWidth = 100;
