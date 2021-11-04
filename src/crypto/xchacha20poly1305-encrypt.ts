@@ -50,6 +50,8 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
 
     const totalChunks = Math.ceil(this.file.size / this.encryptChunkSize);
 
+    onEncryptProgress(false, 1);
+
     for (let i = 0; i < totalChunks; i++) {
       let chunkPart: BlobPart;
 

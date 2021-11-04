@@ -3,11 +3,9 @@ import {
   getEndpointInDefaultPortal,
 } from './../portals';
 import { MySky, SkynetClient } from 'skynet-js';
-import { SKYTRANSFER_BUCKET, MAX_AXIOS_RETRIES } from '../config';
+import { SKYTRANSFER_BUCKET } from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
-import axiosRetry from 'axios-retry';
-import axios from 'axios';
 import {
   IAllBuckets,
   IBucket,
@@ -63,30 +61,6 @@ export const uploadFile = async (
   } catch (e) {
     onError(e);
   }
-};
-
-export const downloadFile = async (
-  skylink: string,
-  onProgress,
-  bytesRange?: string
-): Promise<any> => {
-  const url = await getSkynetFileClientBasedOnPortal().getSkylinkUrl(skylink);
-
-  axiosRetry(axios, {
-    retries: MAX_AXIOS_RETRIES,
-    retryCondition: (_e) => true, // retry no matter what
-  });
-
-  return axios({
-    method: 'get',
-    url: url,
-    headers: {
-      Range: bytesRange,
-    },
-    responseType: 'blob',
-    onDownloadProgress: onProgress,
-    withCredentials: true,
-  });
 };
 
 export const encryptAndStoreBucket = async (

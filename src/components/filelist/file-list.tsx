@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
-import { useHistory } from 'react-router-dom';
-
-import { Button, Empty, Divider, message, Tree, Spin, Badge } from 'antd';
+import { Badge, Button, Divider, Empty, message, Spin, Tree } from 'antd';
 import {
   DownloadOutlined,
   DownOutlined,
@@ -11,13 +9,12 @@ import {
   ShareAltOutlined,
 } from '@ant-design/icons';
 import { renderTree } from '../../utils/walker';
-import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import { getDecryptedBucket, getMySky } from '../../skynet/skynet';
 
 import { ActivityBars } from '../uploader/activity-bar';
 
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
-import { IBucket, DecryptedBucket } from '../../models/files/bucket';
+import { DecryptedBucket, IBucket } from '../../models/files/bucket';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,6 +27,7 @@ import {
 import { ShareModal } from '../common/share-modal';
 import { addReadOnlyBucket, selectUser } from '../../features/user/user-slice';
 import { IUserState, UserStatus } from '../../models/user';
+import { downloadFile } from '../common/helpers';
 
 const { DownloadActivityBar } = ActivityBars;
 
@@ -97,34 +95,6 @@ const FileList = () => {
       }, 500);
     }
   }, [decryptProgress]);
-
-  const downloadFile = async (encryptedFile: IEncryptedFile) => {
-    const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
-    let file: File;
-    try {
-      file = await decrypt.decrypt(
-        (completed, eProgress) => {
-          setDecryptProgress(eProgress);
-        },
-        (completed, dProgress) => {
-          setDownloadProgress(dProgress);
-        }
-      );
-    } catch (error) {
-      message.error(error.message);
-    }
-
-    if (!file) {
-      return;
-    }
-
-    var elem = window.document.createElement('a');
-    elem.href = window.URL.createObjectURL(file);
-    elem.download = file.name;
-    document.body.appendChild(elem);
-    elem.click();
-    document.body.removeChild(elem);
-  };
 
   const getFileBy = (key: string): IEncryptedFile => {
     for (let path in decryptedBucket.files) {
@@ -238,7 +208,11 @@ const FileList = () => {
                       }
                       if (encryptedFile) {
                         message.loading(`Download and decryption started`);
-                        downloadFile(encryptedFile);
+                        downloadFile(
+                          encryptedFile,
+                          setDecryptProgress,
+                          setDownloadProgress
+                        );
                       }
                     }}
                   />
@@ -256,7 +230,11 @@ const FileList = () => {
                 message.loading(`Download and decryption started`);
                 for (const encyptedFile in decryptedBucket.files) {
                   const file = decryptedBucket.files[encyptedFile];
-                  await downloadFile(file);
+                  await downloadFile(
+                    file,
+                    setDecryptProgress,
+                    setDownloadProgress
+                  );
                 }
               }}
             >

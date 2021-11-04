@@ -1,12 +1,12 @@
-import { SkynetClient } from 'skynet-js';
 import { EncryptionType } from '../models/encryption';
 import { FileDecrypt } from './crypto';
-import { getEndpointInCurrentPortal } from '../portals';
 import { ChunkResolver } from './chunk-resolver';
-import { downloadFile } from '../skynet/skynet';
 import { IEncryptedFile } from '../models/files/encrypted-file';
 
 import _sodium from 'libsodium-wrappers';
+import axiosRetry from 'axios-retry';
+import axios from 'axios';
+import { MAX_AXIOS_RETRIES } from '../config';
 
 /* 
   salt and header are appended to each file as Uint8Array
@@ -23,15 +23,15 @@ export interface ICryptoMetadata {
 export default class Xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: IEncryptedFile;
   private encryptionKey: string;
+  private portalUrl: string;
   private chunkResolver: ChunkResolver;
   private stateIn: _sodium.StateAddress;
 
-  skynetClient = new SkynetClient(getEndpointInCurrentPortal());
-
   parts: BlobPart[] = [];
 
-  constructor(encryptedFile: IEncryptedFile) {
+  constructor(encryptedFile: IEncryptedFile, portalUrl: string) {
     this.encryptedFile = encryptedFile;
+    this.portalUrl = portalUrl;
     this.encryptionKey = encryptedFile.file.key;
     this.chunkResolver = new ChunkResolver(
       EncryptionType[
@@ -81,6 +81,8 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     let rangeEnd = 0;
     let index = METADATA_SIZE;
 
+    onFileDownloadProgress(false, 0.1);
+
     for (let i = 0; i < totalChunks; i++) {
       if (i === totalChunks - 1) {
         rangeEnd = this.encryptedFile.file.encryptedSize;
@@ -90,9 +92,11 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
       const bytesRange = `bytes=${index}-${rangeEnd}`;
 
+      const url = this.encryptedFile.file.url;
+
       try {
-        const response = await downloadFile(
-          this.encryptedFile.file.url,
+        const response = await this.downloadFile(
+          url,
           (progressEvent) => {
             const progress = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
@@ -128,7 +132,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
   private async cryptoMetadata(): Promise<ICryptoMetadata> {
     const headerAndSaltBytesRange = `bytes=${0}-${39}`;
-    const response = await downloadFile(
+    const response = await this.downloadFile(
       this.encryptedFile.file.url,
       () => {},
       headerAndSaltBytesRange
@@ -148,6 +152,26 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
       salt: uSalt,
       header: uHeader,
     };
+  }
+
+  private async downloadFile(skylink: string, onProgress, bytesRange?: string) {
+    axiosRetry(axios, {
+      retries: MAX_AXIOS_RETRIES,
+      retryCondition: (_e) => true, // retry no matter what
+    });
+
+    const url = skylink.replace('sia://', `${this.portalUrl}/`);
+
+    return axios({
+      method: 'get',
+      url: url,
+      headers: {
+        Range: bytesRange,
+      },
+      responseType: 'blob',
+      onDownloadProgress: onProgress,
+      withCredentials: true,
+    });
   }
 
   private async decryptBlob(

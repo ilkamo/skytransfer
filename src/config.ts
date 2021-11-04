@@ -14,4 +14,5 @@ export const MAX_AXIOS_RETRIES = 3;
 export const SKYDB_SYNC_FACTOR = 10;
 export const MIN_SKYDB_SYNC_FACTOR = 5;
 
-export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.Xchacha20poly1305_64MB;
+export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.Xchacha20poly1305_256MB;
+export const WEB_WORKER_URL = './webworker.bundle.js';
