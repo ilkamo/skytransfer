@@ -81,7 +81,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
     let rangeEnd = 0;
     let index = METADATA_SIZE;
 
-    onFileDownloadProgress(false, 1);
+    onFileDownloadProgress(false, 0.1);
 
     for (let i = 0; i < totalChunks; i++) {
       if (i === totalChunks - 1) {

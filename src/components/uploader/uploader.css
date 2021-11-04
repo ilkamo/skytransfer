@@ -78,3 +78,7 @@
 .activity-bar .label {
   margin-right: 5px;
 }
+
+.ant-upload-text {
+  font-size: 16px !important;
+}

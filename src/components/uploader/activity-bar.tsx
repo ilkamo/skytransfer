@@ -1,4 +1,4 @@
-import { Badge, Progress, Tooltip } from 'antd';
+import { Badge, Divider, Progress, Tooltip } from 'antd';
 
 import { CloudDownloadOutlined, SecurityScanOutlined } from '@ant-design/icons';
 
@@ -12,8 +12,10 @@ type DownloadActivityBarProps = {
 };
 
 const progressBadge = (progress) => {
-  return <Badge status={progress === 0 ? 'default' : 'processing'} />;
+  return <Badge status={progress === 0 ? 'default' : 'processing'} color={progress === 0 ? '#fafafa' : '#20bf6b'} />;
 };
+
+const progressMaxWidth = 100;
 
 const UploadActivityBar = ({ encryptProgress }: UploadActivityBarProps) => {
   return (
@@ -35,7 +37,7 @@ const UploadActivityBar = ({ encryptProgress }: UploadActivityBarProps) => {
         status={encryptProgress === 0 ? 'normal' : 'active'}
         percent={encryptProgress}
         showInfo={false}
-        style={{ maxWidth: 120 }}
+        style={{ maxWidth: progressMaxWidth }}
         strokeWidth={6}
       />
     </div>
@@ -54,7 +56,7 @@ const DownloadActivityBar = ({
         title="Active when a download is in progress."
       >
         <CloudDownloadOutlined style={{ marginRight: '4px' }} />
-        <span className="label progress">Download chunk(s)</span>
+        <span className="label progress">Download</span>
         {progressBadge(downloadProgress)}
       </Tooltip>
       <Progress
@@ -65,7 +67,7 @@ const DownloadActivityBar = ({
         status={downloadProgress === 0 ? 'normal' : 'active'}
         percent={downloadProgress}
         showInfo={false}
-        style={{ maxWidth: 120 }}
+        style={{ maxWidth: progressMaxWidth }}
         strokeWidth={6}
       />
       <br />
@@ -86,7 +88,7 @@ const DownloadActivityBar = ({
         status={decryptProgress === 0 ? 'normal' : 'active'}
         percent={decryptProgress}
         showInfo={false}
-        style={{ maxWidth: 120 }}
+        style={{ maxWidth: progressMaxWidth }}
         strokeWidth={6}
       />
     </div>
