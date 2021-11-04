@@ -23,13 +23,15 @@ export interface ICryptoMetadata {
 export default class Xchacha20poly1305Decrypt implements FileDecrypt {
   private encryptedFile: IEncryptedFile;
   private encryptionKey: string;
+  private portalUrl: string;
   private chunkResolver: ChunkResolver;
   private stateIn: _sodium.StateAddress;
 
   parts: BlobPart[] = [];
 
-  constructor(encryptedFile: IEncryptedFile) {
+  constructor(encryptedFile: IEncryptedFile, portalUrl: string) {
     this.encryptedFile = encryptedFile;
+    this.portalUrl = portalUrl;
     this.encryptionKey = encryptedFile.file.key;
     this.chunkResolver = new ChunkResolver(
       EncryptionType[
@@ -78,6 +80,8 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
 
     let rangeEnd = 0;
     let index = METADATA_SIZE;
+
+    onFileDownloadProgress(false, 1);
 
     for (let i = 0; i < totalChunks; i++) {
       if (i === totalChunks - 1) {
@@ -156,8 +160,7 @@ export default class Xchacha20poly1305Decrypt implements FileDecrypt {
       retryCondition: (_e) => true, // retry no matter what
     });
 
-    // TODO: use the portal url
-    const url = skylink.replace('sia://', 'https://siasky.net/');
+    const url = skylink.replace('sia://', `${this.portalUrl}/`);
 
     return axios({
       method: 'get',

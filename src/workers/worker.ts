@@ -19,10 +19,11 @@ const encryptFile = async (
 
 const decryptFile = async (
   encryptedFile: IEncryptedFile,
+  portalUrl: string,
   setDecryptProgressCallback,
   setDownloadProgressCallback
 ): Promise<string> => {
-  const decrypt = new Xchacha20poly1305Decrypt(encryptedFile);
+  const decrypt = new Xchacha20poly1305Decrypt(encryptedFile, portalUrl);
 
   let file: File;
   try {
