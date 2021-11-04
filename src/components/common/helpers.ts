@@ -58,7 +58,7 @@ export const simpleDownload = async (
   return window.URL.createObjectURL(file);
 }
 
-export const webWorkerUploader = async (options, fileKey, setEncryptProgress): Promise<File> => {
+export const webWorkerUploader = async (options, fileKey, setEncryptProgress): Promise<void> => {
   const {onSuccess, onError, file, onProgress} = options;
 
   const uploadFileFunc = async (f) => {
@@ -76,7 +76,7 @@ export const webWorkerUploader = async (options, fileKey, setEncryptProgress): P
   )
 }
 
-export const simpleUploader = async (options, fileKey, setEncryptProgress): Promise<File> => {
+export const simpleUploader = async (options, fileKey, setEncryptProgress): Promise<void> => {
   const {onSuccess, onError, file, onProgress} = options;
 
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
@@ -85,8 +85,6 @@ export const simpleUploader = async (options, fileKey, setEncryptProgress): Prom
   })
 
   await uploadFile(encryptedFile, fileKey, onProgress, onSuccess, onError);
-
-  return encryptedFile;
 }
 
 export const downloadFile = async (

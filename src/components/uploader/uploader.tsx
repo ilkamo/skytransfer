@@ -223,7 +223,7 @@ const Uploader = () => {
     }
   }, [encryptProgress]);
 
-  const queueParallelEncryption = (options): Promise<File> => {
+  const queueParallelEncryption = (options): Promise<void> => {
     return new Promise(async (resolve) => {
       while (uploadCount > MAX_PARALLEL_UPLOAD) {
         await sleep(1000);

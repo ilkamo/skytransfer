@@ -8,7 +8,7 @@ const encryptFile = async (
   fileKey: string,
   uploadCallback,
   setEncryptProgressCallback
-): Promise<File> => {
+): Promise<void> => {
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
   const encryptedFile = await fe.encrypt((completed, eProgress) => {
     setEncryptProgressCallback(eProgress);
