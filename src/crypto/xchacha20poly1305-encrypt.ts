@@ -2,7 +2,6 @@ import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
 import { FileEncrypt } from './crypto';
 import _sodium from 'libsodium-wrappers';
-import { delimiter } from 'path/posix';
 
 export default class Xchacha20poly1305Encrypt implements FileEncrypt {
   private file: File;
@@ -12,8 +11,6 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
   private totalChunks: number = 0;
 
   private counter = 0;
-
-  parts: BlobPart[] = [];
 
   constructor(file: File, encryptionKey: string) {
     this.file = file;
@@ -48,9 +45,6 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
     let res = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
     let [state_out, header] = [res.state, res.header];
     this.stateOut = state_out;
-
-    this.parts.push(salt);
-    this.parts.push(header);
 
     onEncryptProgress(false, 1);
 
@@ -94,10 +88,14 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
         if (that.hasNextChunkDelimiter()) {
           const delimiters = that.nextChunkDelimiters();
           const buffer = await that.file
-          .slice(delimiters[0], delimiters[1])
-          .arrayBuffer();
+            .slice(delimiters[0], delimiters[1])
+            .arrayBuffer();
 
-          const encryptedChunk= await that.encryptBlob(buffer, sodium, !that.hasNextChunkDelimiter());
+          const encryptedChunk = await that.encryptBlob(
+            buffer,
+            sodium,
+            !that.hasNextChunkDelimiter()
+          );
           controller.enqueue(encryptedChunk);
           onEncryptProgress(false, that.progress());
         } else {

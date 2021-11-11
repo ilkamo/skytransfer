@@ -59,7 +59,9 @@ export async function uploadFileFromStream(
   };
 
   return new Promise((resolve, reject) => {
-    const upload = new tus.Upload(fileReader.getReader(), {
+    const reader = fileReader.getReader();
+
+    const upload = new tus.Upload(reader, {
       endpoint: getTusUploadEndpoint(),
       chunkSize: TUS_CHUNK_SIZE,
       retryDelays: DEFAULT_TUS_RETRY_DELAYS,
@@ -68,11 +70,17 @@ export async function uploadFileFromStream(
         filetype: 'text/plain',
       },
       onProgress: onProgressTus,
+      onChunkComplete: (s, b) => {
+        console.log(s);
+        console.log(b);
+      },
       onBeforeRequest: function (req) {
         const xhr = req.getUnderlyingObject();
         xhr.withCredentials = true;
       },
       onError: (error) => {
+        console.log("error");
+        console.log(error);
         reject(error);
       },
       onSuccess: async () => {
@@ -86,6 +94,7 @@ export async function uploadFileFromStream(
       },
       uploadSize,
     });
+
     upload.start();
   });
 }

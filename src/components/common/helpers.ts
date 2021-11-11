@@ -1,5 +1,5 @@
 import { IEncryptedFile } from '../../models/files/encrypted-file';
-import { WEB_WORKER_URL } from '../../config';
+import { TUS_CHUNK_SIZE, WEB_WORKER_URL } from '../../config';
 import { proxy, wrap } from 'comlink';
 import { WorkerApi } from '../../workers/worker';
 import { message } from 'antd';
@@ -77,13 +77,10 @@ export const webWorkerUploader = async (
   let closed = false;
   const rr = new ReadableStream({
     async start(controller) {
-      console.log('read from encrypt');
-      
       const enc = await service.encrypt();
       controller.enqueue(enc.value);
     },
     async pull(controller) {
-      console.log('read from encrypt');
       const enc = await service.encrypt();
       if (!enc.done) {
         controller.enqueue(enc.value);
