@@ -8,3 +8,8 @@ export enum EncryptionType {
   Xchacha20poly1305_256MB,
   Xchacha20poly1305_512MB,
 }
+
+export interface IEncryptionReaderResult {
+  value: BlobPart;
+  done: boolean;
+}

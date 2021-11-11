@@ -16,3 +16,13 @@ export const MIN_SKYDB_SYNC_FACTOR = 5;
 
 export const DEFAULT_ENCRYPTION_TYPE = EncryptionType.Xchacha20poly1305_256MB;
 export const WEB_WORKER_URL = './webworker.bundle.js';
+
+/**
+ * The tus chunk size is (4MiB - encryptionOverhead) * dataPieces, set in skyd.
+ */
+ export const TUS_CHUNK_SIZE = (1 << 22) * 10;
+ /**
+  * The retry delays, in ms. Data is stored in skyd for up to 20 minutes, so the
+  * total delays should not exceed that length of time.
+  */
+  export const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];

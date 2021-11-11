@@ -13825,7 +13825,7 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tus-js-client@^2.2.0:
+tus-js-client@^2.2.0, tus-js-client@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/tus-js-client/-/tus-js-client-2.3.0.tgz#5d76145476cea46a4e7c045a0054637cddf8dc39"
   integrity sha512-I4cSwm6N5qxqCmBqenvutwSHe9ntf81lLrtf6BmLpG2v4wTl89atCQKqGgqvkodE6Lx+iKIjMbaXmfvStTg01g==
