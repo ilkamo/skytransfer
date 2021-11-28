@@ -1,8 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MySky } from 'skynet-js';
-import { getCurrentPortal } from '../../portals';
-
-import { UserProfileDAC } from '@skynethub/userprofile-library';
 import { IUser, IUserState, UserStatus } from '../../models/user';
 import {
   deleteUserReadOnlyHiddenBucket,
@@ -21,8 +18,6 @@ import {
   bucketIsLoadingFinish,
   bucketIsLoadingStart,
 } from '../bucket/bucket-slice';
-
-const userProfileRecord = new UserProfileDAC();
 
 const initialState: IUserState = {
   status: UserStatus.NotLogged,
@@ -105,25 +100,36 @@ export const {
 export default userSlice.reducer;
 
 const performLogin = async (dispatch, mySky: MySky) => {
-  // @ts-ignore
-  await mySky.loadDacs(userProfileRecord);
+  // const userProfileRecord = new UserProfileDAC();
+  //
+  // // @ts-ignore
+  // await mySky.loadDacs(userProfileRecord);
 
   // @ts-ignore
-  const userProfile = await userProfileRecord.getProfile(await mySky.userID());
+  // const userProfile = await userProfileRecord.getProfile(userID);
 
+  // const tempUser: IUser = {
+  //   username: userProfile.username,
+  //   description: userProfile.description,
+  //   avatar: null,
+  // };
+
+  // if (userProfile.avatar && userProfile.avatar.length > 0) {
+  //   const avatarPrefix = getCurrentPortal().domain;
+  //   tempUser['avatar'] = userProfile.avatar[0].url.replace(
+  //     'sia://',
+  //     `https://${avatarPrefix}/`
+  //   );
+  // }
+
+  await mySky.userID();
+
+  // TODO: uncomment the code above once the UserProfileDAC is fixed!
   const tempUser: IUser = {
-    username: userProfile.username,
-    description: userProfile.description,
+    username: 'Welcome!',
+    description: '',
     avatar: null,
   };
-
-  if (userProfile.avatar && userProfile.avatar.length > 0) {
-    const avatarPrefix = getCurrentPortal().domain;
-    tempUser['avatar'] = userProfile.avatar[0].url.replace(
-      'sia://',
-      `https://${avatarPrefix}/`
-    );
-  }
 
   dispatch(userLoaded(tempUser));
   dispatch(loadBuckets(mySky));
