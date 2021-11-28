@@ -1,11 +1,11 @@
 import './app.less';
 
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 
 import Uploader from './components/uploader/uploader';
 import FileList from './components/filelist/file-list';
 
-import { Layout, Divider } from 'antd';
+import { Divider, Layout } from 'antd';
 import AppHeader from './components/header/header';
 import Buckets from './components/buckets/buckets';
 import About from './components/about/about';
@@ -14,7 +14,7 @@ import { HomescreenIcon } from './components/common/icons';
 import { HeaderNotification } from './components/common/notification';
 import RedirectV1 from './components/redirect-v1/redirect-v1';
 
-const { Content, Footer } = Layout;
+const {Content, Footer} = Layout;
 
 const App = () => {
   return (
@@ -42,42 +42,30 @@ const App = () => {
             </>
           }
         />
-        <AppHeader />
+        <AppHeader/>
         <Content className="container">
-          <Switch>
-            <Route path="/v2/:transferKey/:encryptionKey">
-              <Content>
-                <FileList />
-              </Content>
-            </Route>
-            <Route path="/:transferKey/:encryptionKey">
-              <Content>
-                <RedirectV1 />
-              </Content>
-            </Route>
-            <Route path="/buckets">
-              <Content>
-                <Buckets />
-              </Content>
-            </Route>
-            <Route path="/about">
-              <Content>
-                <About />
-              </Content>
-            </Route>
-            <Route path="/support-us">
-              <Content>
-                <SupportUs />
-              </Content>
-            </Route>
-            <Route path="/">
-              <Content>
-                <Uploader />
-              </Content>
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/v2/:transferKey/:encryptionKey" element={<Content>
+              <FileList/>
+            </Content>}/>
+            <Route path="/:transferKey/:encryptionKey" element={<Content>
+              <RedirectV1/>
+            </Content>}/>
+            <Route path="/buckets" element={<Content>
+              <Buckets/>
+            </Content>}/>
+            <Route path="/about" element={<Content>
+              <About/>
+            </Content>}/>
+            <Route path="/support-us" element={<Content>
+              <SupportUs/>
+            </Content>}/>
+            <Route path="/" element={<Content>
+              <Uploader/>
+            </Content>}/>
+          </Routes>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>
+        <Footer style={{textAlign: 'center'}}>
           <a
             rel="noreferrer"
             target="_blank"
@@ -102,13 +90,13 @@ const App = () => {
             Skynet
           </a>
           .
-          <Divider />
+          <Divider/>
           <a
             target="_blank"
             href="https://homescreen.hns.siasky.net/#/skylink/AQAJGCmM4njSUoFx-YNm64Zgea8QYRo-kHHf3Vht04mYBQ"
             rel="noreferrer"
           >
-            <HomescreenIcon />
+            <HomescreenIcon/>
           </a>
         </Footer>
       </Layout>
