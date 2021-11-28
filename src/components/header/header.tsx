@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 
 import SessionManager from '../../session/session-manager';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ChangePortalIcon } from '../common/icons';
 
@@ -25,7 +25,7 @@ const { Header } = Layout;
 const { SubMenu } = Menu;
 
 const AppHeader = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   let location = useLocation();
 
   const [canResumeSession, setCanResumeSession] = useState(false);
@@ -63,7 +63,7 @@ const AppHeader = () => {
         <Menu.Item
           key="resume-draft"
           onClick={() => {
-            history.push('/');
+            navigate('/');
           }}
           disabled={!canResumeSession}
           icon={<RedoOutlined />}
@@ -73,7 +73,7 @@ const AppHeader = () => {
         <Menu.Item
           key="buckets"
           onClick={() => {
-            history.push('/buckets');
+            navigate('/buckets');
           }}
           disabled={!canPublishSession}
           icon={<UnorderedListOutlined />}
@@ -83,7 +83,7 @@ const AppHeader = () => {
         <Menu.Item
           key="about-us"
           onClick={() => {
-            history.push('/about');
+            navigate('/about');
           }}
           icon={<CopyOutlined />}
         >
@@ -92,7 +92,7 @@ const AppHeader = () => {
         <Menu.Item
           key="support-us"
           onClick={() => {
-            history.push('/support-us');
+            navigate('/support-us');
           }}
           icon={<HeartOutlined />}
         >
