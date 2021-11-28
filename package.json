@@ -29,7 +29,7 @@
     "react-redux": "^7.2.5",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.3",
-    "skynet-js": "4.0.14-beta",
+    "skynet-js": "4.0.20-beta",
     "typescript": "^4.3.5",
     "web-vitals": "^2.0.1"
   },
