@@ -8,7 +8,18 @@ import { isMobile } from 'react-device-detect';
 
 import { v4 as uuid } from 'uuid';
 
-import { Alert, Badge, Button, Divider, Empty, message, Modal, Spin, Tree, Upload, } from 'antd';
+import {
+  Alert,
+  Badge,
+  Button,
+  Divider,
+  Empty,
+  message,
+  Modal,
+  Spin,
+  Tree,
+  Upload,
+} from 'antd';
 
 import {
   DownloadOutlined,
@@ -22,16 +33,29 @@ import {
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { renderTree } from '../../utils/walker';
-import { DEFAULT_ENCRYPTION_TYPE, MAX_PARALLEL_UPLOAD, MIN_SKYDB_SYNC_FACTOR, SKYDB_SYNC_FACTOR, } from '../../config';
+import {
+  DEFAULT_ENCRYPTION_TYPE,
+  MAX_PARALLEL_UPLOAD,
+  MIN_SKYDB_SYNC_FACTOR,
+  SKYDB_SYNC_FACTOR,
+} from '../../config';
 import { TabsCards } from '../common/tabs-cards';
 import { ActivityBars } from './activity-bar';
 
-import { encryptAndStoreBucket, getDecryptedBucket, getMySky, } from '../../skynet/skynet';
+import {
+  encryptAndStoreBucket,
+  getDecryptedBucket,
+  getMySky,
+} from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
 import { DirectoryTreeLine } from '../common/directory-tree-line/directory-tree-line';
 import { IEncryptedFile } from '../../models/files/encrypted-file';
-import { DecryptedBucket, IBucket, IReadWriteBucketInfo, } from '../../models/files/bucket';
+import {
+  DecryptedBucket,
+  IBucket,
+  IReadWriteBucketInfo,
+} from '../../models/files/bucket';
 import { IFileData } from '../../models/files/file-data';
 import { genKeyPairAndSeed } from 'skynet-js';
 import { ChunkResolver } from '../../crypto/chunk-resolver';
@@ -42,12 +66,20 @@ import { publicKeyFromPrivateKey } from '../../crypto/crypto';
 import { IUserState, UserStatus } from '../../models/user';
 import { BucketModal } from '../common/bucket-modal';
 import { BucketInformation } from '../common/bucket-information';
-import { IBucketState, selectBucket, setUserKeys, } from '../../features/bucket/bucket-slice';
-import { downloadFile, simpleUploader, webWorkerUploader, } from '../common/helpers';
+import {
+  IBucketState,
+  selectBucket,
+  setUserKeys,
+} from '../../features/bucket/bucket-slice';
+import {
+  downloadFile,
+  simpleUploader,
+  webWorkerUploader,
+} from '../common/helpers';
 
-const {DirectoryTree} = Tree;
-const {Dragger} = Upload;
-const {DownloadActivityBar, UploadActivityBar} = ActivityBars;
+const { DirectoryTree } = Tree;
+const { Dragger } = Upload;
+const { DownloadActivityBar, UploadActivityBar } = ActivityBars;
 
 const sleep = (ms): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -141,14 +173,17 @@ const Uploader = () => {
     skydbSyncInProgress = true;
     const skyDbMessageKey = 'skydbMessageKey';
     try {
-      message.loading({content:'Syncing files in SkyDB...', key: skyDbMessageKey});
+      message.loading({
+        content: 'Syncing files in SkyDB...',
+        key: skyDbMessageKey,
+      });
       await encryptAndStoreBucket(
         bucketState.privateKey,
         bucketState.encryptionKey,
         decryptedBucket
       );
 
-      message.success({content:'Sync completed', key: skyDbMessageKey});
+      message.success({ content: 'Sync completed', key: skyDbMessageKey });
       setToStoreInSkyDBCount(0);
       setToRemoveFromSkyDBCount(0);
     } catch (error) {
@@ -265,7 +300,7 @@ const Uploader = () => {
 
       setFileListToUpload(info.fileList.map((x) => x)); // Note: A new object must be used here!!!
 
-      const {status} = info.file;
+      const { status } = info.file;
 
       // error | success | done | uploading | removed
       switch (status) {
@@ -337,7 +372,10 @@ const Uploader = () => {
             });
           }
 
-          message.success({content:`${info.file.name} file uploaded successfully.`, key:'uploadMessageKey'});
+          message.success({
+            content: `${info.file.name} file uploaded successfully.`,
+            key: 'uploadMessageKey',
+          });
 
           setToStoreInSkyDBCount((prev) => prev + 1);
           uploadCount--;
@@ -353,7 +391,7 @@ const Uploader = () => {
   const deleteConfirmModal = (filename: string, onDeleteClick: () => void) => {
     Modal.confirm({
       title: 'Warning',
-      icon: <QuestionCircleOutlined/>,
+      icon: <QuestionCircleOutlined />,
       content: `File ${filename} will be deleted. Are you sure?`,
       okText: 'Delete',
       cancelText: 'Cancel',
@@ -362,7 +400,7 @@ const Uploader = () => {
   };
 
   const loaderIcon = (
-    <LoadingOutlined style={{fontSize: 24, color: '#20bf6b'}} spin/>
+    <LoadingOutlined style={{ fontSize: 24, color: '#20bf6b' }} spin />
   );
 
   const getFileBy = (key: string): IEncryptedFile => {
@@ -416,7 +454,7 @@ const Uploader = () => {
       {decryptedBucket && decryptedBucket.files && (
         <>
           {isBucketPinned(decryptedBucket.uuid) && (
-            <Badge.Ribbon text="Pinned" color="green"/>
+            <Badge.Ribbon text="Pinned" color="green" />
           )}
           <BucketInformation
             bucket={decryptedBucket}
@@ -431,7 +469,7 @@ const Uploader = () => {
           {
             name: 'Upload file(s)',
             content: (
-              <div style={{paddingBottom: '4px'}}>
+              <div style={{ paddingBottom: '4px' }}>
                 <Dragger
                   className="drop-container"
                   {...draggerConfig}
@@ -443,7 +481,7 @@ const Uploader = () => {
                     onlyClickable={isMobile}
                     draggableMessage="Drag & Drop file(s) to upload"
                   />
-                  <UploadActivityBar encryptProgress={encryptProgress}/>
+                  <UploadActivityBar encryptProgress={encryptProgress} />
                 </Dragger>
               </div>
             ),
@@ -451,7 +489,7 @@ const Uploader = () => {
           {
             name: 'Upload directory',
             content: (
-              <div style={{paddingBottom: '4px'}}>
+              <div style={{ paddingBottom: '4px' }}>
                 <Dragger
                   className="drop-container"
                   {...draggerConfig}
@@ -462,7 +500,7 @@ const Uploader = () => {
                     onlyClickable={isMobile}
                     draggableMessage="Drag & Drop directory here to upload"
                   />
-                  <UploadActivityBar encryptProgress={encryptProgress}/>
+                  <UploadActivityBar encryptProgress={encryptProgress} />
                 </Dragger>
               </div>
             ),
@@ -470,19 +508,19 @@ const Uploader = () => {
         ]}
       />
 
-      <div style={{textAlign: 'center'}}>
+      <div style={{ textAlign: 'center' }}>
         <Button
-          style={{marginTop: '20px'}}
+          style={{ marginTop: '20px' }}
           type="ghost"
           size="middle"
           onClick={() => setShowShareBucketModal(true)}
-          icon={<ShareAltOutlined/>}
+          icon={<ShareAltOutlined />}
         >
           Share bucket
         </Button>
         {decryptedBucket && isUserLogged() && (
           <Button
-            style={{marginTop: '20px'}}
+            style={{ marginTop: '20px' }}
             disabled={
               isBucketPinned(decryptedBucket.uuid) ||
               bucketState.bucketIsLoading
@@ -491,7 +529,7 @@ const Uploader = () => {
             type="ghost"
             size="middle"
             onClick={() => pinBucket(decryptedBucket.uuid)}
-            icon={<FolderAddOutlined/>}
+            icon={<FolderAddOutlined />}
           >
             {isBucketPinned(decryptedBucket.uuid)
               ? 'Already pinned'
@@ -532,8 +570,8 @@ const Uploader = () => {
             downloadProgress={downloadProgress}
           />
           {isLoading && (
-            <div style={{textAlign: 'center'}}>
-              <Spin style={{marginRight: '8px'}} indicator={loaderIcon}/>
+            <div style={{ textAlign: 'center' }}>
+              <Spin style={{ marginRight: '8px' }} indicator={loaderIcon} />
               Sync in progress...
             </div>
           )}
@@ -545,7 +583,7 @@ const Uploader = () => {
             className="file-tree default-margin"
             disabled={isLoading}
             defaultExpandAll={true}
-            switcherIcon={<DownOutlined className="directory-switcher"/>}
+            switcherIcon={<DownOutlined className="directory-switcher" />}
             treeData={renderTree(decryptedBucket.files)}
             selectable={false}
             titleRender={(node) => {
@@ -595,18 +633,21 @@ const Uploader = () => {
         </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="">
-          {loading ? <Spin/> : <span>No uploaded data</span>}
+          {loading ? <Spin /> : <span>No uploaded data</span>}
         </Empty>
       )}
 
       {!isLoading && bucketHasFiles && (
-        <div style={{textAlign: 'center'}}>
+        <div style={{ textAlign: 'center' }}>
           <Button
-            icon={<DownloadOutlined/>}
+            icon={<DownloadOutlined />}
             size="middle"
             type="primary"
             onClick={async () => {
-              message.loading({content: `Download and decryption started`, key: 'loadingMessageKey'});
+              message.loading({
+                content: `Download and decryption started`,
+                key: 'loadingMessageKey',
+              });
               for (const encyptedFile in decryptedBucket.files) {
                 const file = decryptedBucket.files[encyptedFile];
                 await downloadFile(
