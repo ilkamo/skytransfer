@@ -1,5 +1,5 @@
 export interface FileEncrypt {
-  encrypt(): Promise<File>;
+  encrypt(): Promise<ReadableStream>;
   encryptChunkSize: number;
 }
 

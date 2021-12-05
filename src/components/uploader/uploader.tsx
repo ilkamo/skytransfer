@@ -334,7 +334,7 @@ const Uploader = () => {
             size: info.file.size,
             chunkSize: cr.decryptChunkSize,
             encryptionType: EncryptionType[DEFAULT_ENCRYPTION_TYPE],
-            url: info.file.response.data.skylink,
+            url: info.file.response.skylink,
             key: info.file.response.fileKey,
             hash: '', // TODO: add hash
             ts: Date.now(),
