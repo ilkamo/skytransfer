@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Badge, Button, Divider, Empty, message, Spin, Tree } from 'antd';
 import {
@@ -44,7 +44,7 @@ const FileList = () => {
   const { transferKey, encryptionKey } = useParams();
   const [loading, setlLoading] = useState(true);
   const [showShareBucketModal, setShowShareBucketModal] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [decryptedBucket, setDecryptedBucket] = useState<IBucket>();
@@ -60,7 +60,7 @@ const FileList = () => {
           bucketEncryptionKey: encryptionKey,
         })
       );
-      history.push('/');
+      navigate('/');
     }
 
     // transferKey is a publicKey

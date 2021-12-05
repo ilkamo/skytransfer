@@ -1,7 +1,7 @@
 import './buckets.css';
 
 import { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { getMySky, getAllUserDecryptedBuckets } from '../../skynet/skynet';
 
@@ -71,7 +71,7 @@ const Buckets = () => {
   const bucketState: IBucketState = useSelector(selectBucket);
 
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const loadBuckets = async () => {
     setIsLoading(true);
@@ -114,14 +114,14 @@ const Buckets = () => {
         })
       );
 
-      history.push('/');
+      navigate('/');
     }
   };
 
   const openReadOnlyBucket = (bucketID: string) => {
     if (bucketID in userState.buckets.readOnly) {
       const readOnlyBucketInfo = userState.buckets.readOnly[bucketID];
-      history.push(
+      navigate(
         `/v2/${readOnlyBucketInfo.publicKey}/${readOnlyBucketInfo.encryptionKey}`
       );
     }
@@ -342,7 +342,7 @@ const Buckets = () => {
         isLoggedUser={userState.status === UserStatus.Logged}
         modalTitle="Create new bucket"
         onDone={(bucketInfo) => {
-          history.push('/');
+          navigate('/');
         }}
         onError={(e) => {
           console.error(e);
