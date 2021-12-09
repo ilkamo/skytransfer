@@ -14,7 +14,7 @@
     "@ant-design/icons": "^4.7.0",
     "@reduxjs/toolkit": "^1.6.2",
     "@types/uuid": "^8.3.0",
-    "antd": "^4.16.13",
+    "antd": "^4.17.3",
     "axios": "^0.24.0",
     "axios-retry": "^3.1.9",
     "babel-plugin-inline-react-svg": "^2.0.1",
