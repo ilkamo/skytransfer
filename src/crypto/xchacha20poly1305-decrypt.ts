@@ -1,5 +1,5 @@
 import { EncryptionType } from '../models/encryption';
-import { FileDecrypt } from './crypto';
+import { FileDecoder } from './crypto';
 import { ChunkResolver } from './chunk-resolver';
 import { IEncryptedFile } from '../models/files/encrypted-file';
 
@@ -20,7 +20,7 @@ export interface ICryptoMetadata {
   header: Uint8Array;
 }
 
-export default class Xchacha20poly1305Decrypt implements FileDecrypt {
+export default class Xchacha20poly1305Decrypt implements FileDecoder {
   private encryptedFile: IEncryptedFile;
   private encryptionKey: string;
   private portalUrl: string;

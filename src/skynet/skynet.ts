@@ -55,7 +55,7 @@ export async function uploadFileFromStream(
 ) {
   const onProgressTus = function (bytesSent, bytesTotal) {
     const progress = bytesSent / bytesTotal;
-    onProgress(progress * 100);
+    onProgress({ percent: Math.floor(progress * 100) });
   };
 
   return new Promise((resolve, reject) => {
@@ -71,16 +71,15 @@ export async function uploadFileFromStream(
       },
       onProgress: onProgressTus,
       onChunkComplete: (s, b) => {
-        console.log(s);
-        console.log(b);
+        console.log('[tus upload] -> chunk completed!');
+        console.log(`[tus upload] -> chunk size ${s}`);
+        console.log(`[tus upload] -> bytes accepted ${b}`);
       },
       onBeforeRequest: function (req) {
         const xhr = req.getUnderlyingObject();
         xhr.withCredentials = true;
       },
       onError: (error) => {
-        console.log("error");
-        console.log(error);
         reject(error);
       },
       onSuccess: async () => {
@@ -89,7 +88,7 @@ export async function uploadFileFromStream(
           return;
         }
 
-        propagateMetadata(fileKey, upload, onSuccess, onError);
+        await propagateMetadata(fileKey, upload, onSuccess, onError);
         resolve(upload);
       },
       uploadSize,

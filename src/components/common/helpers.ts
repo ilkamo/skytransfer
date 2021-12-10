@@ -77,11 +77,11 @@ export const webWorkerUploader = async (
   let closed = false;
   const rr = new ReadableStream({
     async start(controller) {
-      const enc = await service.encrypt();
+      const enc = await service.readChunk();
       controller.enqueue(enc.value);
     },
     async pull(controller) {
-      const enc = await service.encrypt();
+      const enc = await service.readChunk();
       if (!enc.done) {
         controller.enqueue(enc.value);
       } else {
@@ -94,7 +94,16 @@ export const webWorkerUploader = async (
     },
   });
 
-  await uploadFileFromStream(fileKey, file.size + 57, rr, onProgress, onSuccess, onError);
+  const streamSize = await service.getStreamSize();
+
+  await uploadFileFromStream(
+    fileKey,
+    streamSize,
+    rr,
+    onProgress,
+    onSuccess,
+    onError
+  );
 
   worker.terminate();
 };
@@ -107,11 +116,20 @@ export const simpleUploader = async (
   const { onSuccess, onError, file, onProgress } = options;
 
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
-  const encryptedFile = await fe.encrypt((completed, eProgress) => {
+  await fe.encryptAndStream((completed, eProgress) => {
     setEncryptProgress(eProgress);
   });
 
-  // await uploadFile(encryptedFile, fileKey, onProgress, onSuccess, onError);
+  const stream = await fe.getStream(TUS_CHUNK_SIZE);
+
+  await uploadFileFromStream(
+    fileKey,
+    fe.getStreamSize(),
+    stream,
+    onProgress,
+    onSuccess,
+    onError
+  );
 };
 
 export const downloadFile = async (

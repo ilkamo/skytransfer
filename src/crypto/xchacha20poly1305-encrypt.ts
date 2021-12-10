@@ -1,14 +1,20 @@
 import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
-import { FileEncrypt } from './crypto';
+import { FileEncoder } from './crypto';
 import _sodium from 'libsodium-wrappers';
+import { v4 as uuid } from 'uuid';
 
-export default class Xchacha20poly1305Encrypt implements FileEncrypt {
+export default class Xchacha20poly1305Encrypt implements FileEncoder {
   private file: File;
-  private encryptionKey: string;
+  readonly encryptionKey: string;
   private chunkResolver: ChunkResolver;
   private stateOut: _sodium.StateAddress;
-  private totalChunks: number = 0;
+  readonly totalChunks: number = 0;
+  private _isStreamReady: boolean = false;
+
+  private streamSize: number = 0;
+
+  parts: BlobPart[] = [];
 
   private counter = 0;
 
@@ -23,12 +29,12 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
     return this.chunkResolver.encryptChunkSize;
   }
 
-  async encrypt(
+  async encryptAndStream(
     onEncryptProgress: (
       completed: boolean,
       percentage: number
     ) => void = () => {}
-  ): Promise<ReadableStream> {
+  ): Promise<void> {
     await _sodium.ready;
     const sodium = _sodium;
     const salt = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
@@ -46,59 +52,92 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
     let [state_out, header] = [res.state, res.header];
     this.stateOut = state_out;
 
+    this.parts.push(salt);
+    this.parts.push(header);
+
+    this.streamSize += salt.byteLength;
+    this.streamSize += header.byteLength;
+
     onEncryptProgress(false, 1);
 
-    // for (let i = 0; i < totalChunks; i++) {
-    //   let chunkPart: BlobPart;
+    while (this.hasNextChunkDelimiter()) {
+      const delimiters = this.nextChunkDelimiters();
+      const buffer = await this.file
+        .slice(delimiters[0], delimiters[1])
+        .arrayBuffer();
 
-    //   if (i === totalChunks - 1) {
-    //     const buff = await this.file
-    //       .slice(i * this.encryptChunkSize, this.file.size)
-    //       .arrayBuffer();
-    //     chunkPart = await this.encryptBlob(buff, sodium, true);
-    //   } else {
-    //     const buff = await this.file
-    //       .slice(i * this.encryptChunkSize, (i + 1) * this.encryptChunkSize)
-    //       .arrayBuffer();
-    //     chunkPart = await this.encryptBlob(buff, sodium);
-    //   }
+      const encryptedChunk = await this.encryptBlob(
+        buffer,
+        sodium,
+        !this.hasNextChunkDelimiter()
+      );
 
-    //   const progress = Math.floor(((i + 1) / totalChunks) * 100);
-    //   onEncryptProgress(false, progress);
+      this.parts.push(encryptedChunk);
+      this.streamSize += encryptedChunk.byteLength;
+      onEncryptProgress(false, this.progress());
+    }
 
-    //   this.parts.push(chunkPart);
-    // }
+    onEncryptProgress(true, 100);
 
-    // onEncryptProgress(true, 100);
+    this._isStreamReady = true;
+  }
 
-    // The returned file name is a random uuid() in order to not expose the file name to the portal.
-    // The correct information is stored in the EncryptedFileReference.
-    // return new File(this.parts, `skytransfer-${uuid()}`, {
-    //   type: 'text/plain',
-    // });
+  isStreamReady(): boolean {
+    return this._isStreamReady;
+  }
 
-    const that = this;
+  async getStream(streamChunkSize: number): Promise<ReadableStream> {
+    if (streamChunkSize > this.chunkResolver.encryptChunkSize) {
+      throw new Error(
+        'streamChunkSize should be less or equal to encryptChunkSize'
+      );
+    }
+
+    if (!this.isStreamReady()) {
+      throw new Error('stream is not ready');
+    }
+
+    const file = new File(this.parts, `skytransfer-${uuid()}`, {
+      type: 'text/plain',
+    });
+
+    const totalChunks = Math.ceil(this.file.size / streamChunkSize);
+    let streamCounter = 0;
+    let endStream: boolean;
+
+    function getEndDelimiterAndSetEndStream(): number {
+      let endDelimiter;
+
+      if (streamCounter === totalChunks - 1) {
+        endDelimiter = file.size;
+        endStream = true;
+      } else {
+        endDelimiter = (streamCounter + 1) * streamChunkSize;
+      }
+
+      return endDelimiter;
+    }
 
     return new ReadableStream({
       async start(controller) {
-        controller.enqueue(salt);
-        controller.enqueue(header);
+        controller.enqueue(
+          file.slice(
+            streamChunkSize * streamCounter,
+            getEndDelimiterAndSetEndStream()
+          )
+        );
+        streamCounter++;
       },
       async pull(controller) {
-        if (that.hasNextChunkDelimiter()) {
-          const delimiters = that.nextChunkDelimiters();
-          const buffer = await that.file
-            .slice(delimiters[0], delimiters[1])
-            .arrayBuffer();
+        controller.enqueue(
+          file.slice(
+            streamChunkSize * streamCounter,
+            getEndDelimiterAndSetEndStream()
+          )
+        );
+        streamCounter++;
 
-          const encryptedChunk = await that.encryptBlob(
-            buffer,
-            sodium,
-            !that.hasNextChunkDelimiter()
-          );
-          controller.enqueue(encryptedChunk);
-          onEncryptProgress(false, that.progress());
-        } else {
+        if (endStream) {
           controller.close();
           return;
         }
@@ -112,7 +151,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
 
   private nextChunkDelimiters(): number[] {
     const startDelimiter = this.counter * this.encryptChunkSize;
-    let endDelimiter = 0;
+    let endDelimiter: number;
 
     if (this.counter === this.totalChunks - 1) {
       endDelimiter = this.file.size;
@@ -129,11 +168,15 @@ export default class Xchacha20poly1305Encrypt implements FileEncrypt {
     return this.counter <= this.totalChunks - 1;
   }
 
+  getStreamSize(): number {
+    return this.streamSize;
+  }
+
   private async encryptBlob(
     chunk: ArrayBuffer,
     sodium: typeof _sodium,
     last: boolean = false
-  ): Promise<BlobPart> {
+  ): Promise<Uint8Array> {
     let tag = last
       ? sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
       : sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;

@@ -1,9 +1,13 @@
-export interface FileEncrypt {
-  encrypt(): Promise<ReadableStream>;
+export interface FileEncoder {
+  encryptAndStream(): Promise<void>;
   encryptChunkSize: number;
+
+  isStreamReady(): boolean;
+  getStream(streamChunkSize: number): Promise<ReadableStream>;
+  getStreamSize(): number;
 }
 
-export interface FileDecrypt {
+export interface FileDecoder {
   decrypt(): Promise<File>;
   decryptChunkSize: number;
 }
