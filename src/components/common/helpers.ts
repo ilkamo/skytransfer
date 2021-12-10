@@ -73,9 +73,7 @@ export const webWorkerUploader = async (
 
   await service.initEncryptionReader(file, fileKey, proxy(setEncryptProgress));
 
-  // TODO: fix this shit!!
-  let closed = false;
-  const rr = new ReadableStream({
+  const rs = new ReadableStream({
     async start(controller) {
       const enc = await service.readChunk();
       controller.enqueue(enc.value);
@@ -85,11 +83,7 @@ export const webWorkerUploader = async (
       if (!enc.done) {
         controller.enqueue(enc.value);
       } else {
-        if (closed) {
-          return;
-        }
         controller.close();
-        closed = true;
       }
     },
   });
@@ -99,7 +93,7 @@ export const webWorkerUploader = async (
   await uploadFileFromStream(
     fileKey,
     streamSize,
-    rr,
+    rs,
     onProgress,
     onSuccess,
     onError

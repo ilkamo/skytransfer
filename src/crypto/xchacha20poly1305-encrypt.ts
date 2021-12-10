@@ -7,16 +7,16 @@ import { v4 as uuid } from 'uuid';
 export default class Xchacha20poly1305Encrypt implements FileEncoder {
   private file: File;
   readonly encryptionKey: string;
-  private chunkResolver: ChunkResolver;
-  private stateOut: _sodium.StateAddress;
   readonly totalChunks: number = 0;
-  private _isStreamReady: boolean = false;
+  private chunkResolver: ChunkResolver;
 
+  private stateOut: _sodium.StateAddress;
+
+  private isStreamReadyToBeConsumed: boolean = false;
   private streamSize: number = 0;
 
+  private chunkCounter = 0;
   parts: BlobPart[] = [];
-
-  private counter = 0;
 
   constructor(file: File, encryptionKey: string) {
     this.file = file;
@@ -79,11 +79,11 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
 
     onEncryptProgress(true, 100);
 
-    this._isStreamReady = true;
+    this.isStreamReadyToBeConsumed = true;
   }
 
   isStreamReady(): boolean {
-    return this._isStreamReady;
+    return this.isStreamReadyToBeConsumed;
   }
 
   async getStream(streamChunkSize: number): Promise<ReadableStream> {
@@ -146,26 +146,30 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
   }
 
   private progress(): number {
-    return Math.floor(((this.counter + 1) / this.totalChunks) * 100);
+    if (this.chunkCounter === 0) {
+      return 0;
+    }
+
+    return Math.floor((this.chunkCounter / this.totalChunks) * 100);
   }
 
   private nextChunkDelimiters(): number[] {
-    const startDelimiter = this.counter * this.encryptChunkSize;
+    const startDelimiter = this.chunkCounter * this.encryptChunkSize;
     let endDelimiter: number;
 
-    if (this.counter === this.totalChunks - 1) {
+    if (this.chunkCounter === this.totalChunks - 1) {
       endDelimiter = this.file.size;
     } else {
-      endDelimiter = (this.counter + 1) * this.encryptChunkSize;
+      endDelimiter = (this.chunkCounter + 1) * this.encryptChunkSize;
     }
 
-    this.counter++;
+    this.chunkCounter++;
 
     return [startDelimiter, endDelimiter];
   }
 
   private hasNextChunkDelimiter(): boolean {
-    return this.counter <= this.totalChunks - 1;
+    return this.chunkCounter <= this.totalChunks - 1;
   }
 
   getStreamSize(): number {
