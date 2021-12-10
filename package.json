@@ -7,8 +7,7 @@
     "test": "SKIP_PREFLIGHT_CHECK=true react-scripts test",
     "eject": "react-scripts eject",
     "fmt": "prettier  --config .prettierrc.json --write src/**/*.ts{,x}",
-    "lint": "tsc --noEmit && eslint src/**/*.ts{,x} --fix",
-    "prepare": "husky install"
+    "lint": "tsc --noEmit && eslint src/**/*.ts{,x} --fix"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
