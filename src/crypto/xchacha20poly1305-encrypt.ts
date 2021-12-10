@@ -2,7 +2,6 @@ import { DEFAULT_ENCRYPTION_TYPE } from '../config';
 import { ChunkResolver } from './chunk-resolver';
 import { FileEncoder } from './crypto';
 import _sodium from 'libsodium-wrappers';
-import { v4 as uuid } from 'uuid';
 
 export default class Xchacha20poly1305Encrypt implements FileEncoder {
   private file: File;
@@ -97,19 +96,17 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
       throw new Error('stream is not ready');
     }
 
-    const file = new File(this.parts, `skytransfer-${uuid()}`, {
-      type: 'text/plain',
-    });
-
     const totalChunks = Math.ceil(this.file.size / streamChunkSize);
     let streamCounter = 0;
     let endStream: boolean;
+
+    const that = this;
 
     function getEndDelimiterAndSetEndStream(): number {
       let endDelimiter;
 
       if (streamCounter === totalChunks - 1) {
-        endDelimiter = file.size;
+        endDelimiter = that.streamSize;
         endStream = true;
       } else {
         endDelimiter = (streamCounter + 1) * streamChunkSize;
@@ -121,7 +118,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
     return new ReadableStream({
       async start(controller) {
         controller.enqueue(
-          file.slice(
+          that.parts.slice(
             streamChunkSize * streamCounter,
             getEndDelimiterAndSetEndStream()
           )
@@ -130,7 +127,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
       },
       async pull(controller) {
         controller.enqueue(
-          file.slice(
+          that.parts.slice(
             streamChunkSize * streamCounter,
             getEndDelimiterAndSetEndStream()
           )
