@@ -1,9 +1,14 @@
 import {
   getEndpointInCurrentPortal,
   getEndpointInDefaultPortal,
+  getTusUploadEndpoint,
 } from './../portals';
 import { MySky, SkynetClient } from 'skynet-js';
-import { SKYTRANSFER_BUCKET } from '../config';
+import {
+  DEFAULT_TUS_RETRY_DELAYS,
+  SKYTRANSFER_BUCKET,
+  TUS_CHUNK_SIZE,
+} from '../config';
 import { JsonCrypto } from '../crypto/json';
 import { getMySkyDomain } from '../portals';
 import {
@@ -17,6 +22,9 @@ import {
   IReadWriteBucketsInfo,
 } from '../models/files/bucket';
 import { publicKeyFromPrivateKey } from '../crypto/crypto';
+import * as tus from 'tus-js-client';
+import { v4 as uuid } from 'uuid';
+import axios from 'axios';
 
 const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
 
@@ -36,6 +44,84 @@ const dataDomain = 'skytransfer.hns';
 const privateReadWriteUserBucketsPath = 'skytransfer.hns/userBuckets.json';
 const privateReadOnlyUserBucketsPath =
   'skytransfer.hns/userReadOnlyBuckets.json';
+
+export async function uploadFileFromStream(
+  fileKey: string,
+  uploadSize: number,
+  fileReader: ReadableStream,
+  onProgress,
+  onSuccess,
+  onError
+) {
+  const onProgressTus = function (bytesSent, bytesTotal) {
+    const progress = bytesSent / bytesTotal;
+    onProgress({ percent: Math.floor(progress * 100) });
+  };
+
+  return new Promise((resolve, reject) => {
+    const reader = fileReader.getReader();
+
+    const upload = new tus.Upload(reader, {
+      endpoint: getTusUploadEndpoint(),
+      chunkSize: TUS_CHUNK_SIZE,
+      retryDelays: DEFAULT_TUS_RETRY_DELAYS,
+      metadata: {
+        filename: `skytransfer-${uuid()}`,
+        filetype: 'text/plain',
+      },
+      onProgress: onProgressTus,
+      onChunkComplete: (s, b) => {
+        console.log('[tus upload] -> chunk completed!');
+        console.log(`[tus upload] -> chunk size ${s}`);
+        console.log(`[tus upload] -> bytes accepted ${b}`);
+      },
+      onBeforeRequest: function (req) {
+        const xhr = req.getUnderlyingObject();
+        xhr.withCredentials = true;
+      },
+      onError: (error) => {
+        reject(error);
+      },
+      onSuccess: async () => {
+        if (!upload.url) {
+          reject(new Error("'upload.url' was not set"));
+          return;
+        }
+
+        await propagateMetadata(fileKey, upload, onSuccess, onError);
+        resolve(upload);
+      },
+      uploadSize,
+    });
+
+    upload.start();
+  });
+}
+
+const propagateMetadata = async (fileKey, upload, onSuccess, onError) => {
+  try {
+    const resp = await axios.head(upload.url, {
+      headers: {
+        'Tus-Resumable': '1.0.0',
+      },
+    });
+    if (!resp.headers) {
+      onError(new Error('response.headers field missing'));
+    }
+
+    onSuccess({
+      skylink: `sia://${resp.headers['skynet-skylink']}`,
+      encryptedFileSize: resp.headers['upload-length'],
+      fileKey: fileKey,
+    });
+  } catch (err) {
+    onError(
+      new Error(
+        `Did not get a complete upload response despite a successful request. Please try again and report this issue to the devs if it persists. Error: ${err}`
+      )
+    );
+  }
+};
 
 export const uploadFile = async (
   encryptedFile: File,

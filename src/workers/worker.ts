@@ -2,19 +2,39 @@ import { expose } from 'comlink';
 import Xchacha20poly1305Encrypt from '../crypto/xchacha20poly1305-encrypt';
 import { IEncryptedFile } from '../models/files/encrypted-file';
 import Xchacha20poly1305Decrypt from '../crypto/xchacha20poly1305-decrypt';
+import { IEncryptionReaderResult } from '../models/encryption';
+import { TUS_CHUNK_SIZE } from '../config';
 
-const encryptFile = async (
+let fileStream: ReadableStream;
+let streamSize: number = 0;
+
+const initEncryptionReader = async (
   file: File,
   fileKey: string,
-  uploadCallback,
   setEncryptProgressCallback
-): Promise<File> => {
+): Promise<void> => {
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
-  const encryptedFile = await fe.encrypt((completed, eProgress) => {
+  await fe.encryptAndStream((completed, eProgress) => {
     setEncryptProgressCallback(eProgress);
   });
 
-  return Promise.resolve(uploadCallback(encryptedFile));
+  streamSize = fe.getStreamSize();
+  fileStream = await fe.getStream(TUS_CHUNK_SIZE);
+};
+
+const readChunk = async (): Promise<IEncryptionReaderResult> => {
+  const reader = fileStream.getReader();
+  const r = await reader.read();
+  reader.releaseLock();
+
+  return {
+    value: r.value,
+    done: r.done,
+  };
+};
+
+const getStreamSize = (): number => {
+  return streamSize;
 };
 
 const decryptFile = async (
@@ -47,8 +67,10 @@ const decryptFile = async (
 };
 
 const workerApi = {
-  encryptFile,
+  initEncryptionReader,
+  readChunk,
   decryptFile,
+  getStreamSize,
 };
 
 export type WorkerApi = typeof workerApi;

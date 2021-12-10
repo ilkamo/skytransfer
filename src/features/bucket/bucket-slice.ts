@@ -20,7 +20,7 @@ const initialState: IBucketState = {
 };
 
 export const bucketSlice = createSlice({
-  name: 'bicket',
+  name: 'bucket',
   initialState: initialState,
   reducers: {
     keySet: (state, action: PayloadAction<IActiveBucketKeys>) => {
@@ -36,11 +36,8 @@ export const bucketSlice = createSlice({
   },
 });
 
-export const { 
-    keySet, 
-    bucketIsLoadingStart, 
-    bucketIsLoadingFinish 
-} = bucketSlice.actions;
+export const { keySet, bucketIsLoadingStart, bucketIsLoadingFinish } =
+  bucketSlice.actions;
 
 export default bucketSlice.reducer;
 

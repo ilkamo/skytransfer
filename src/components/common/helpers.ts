@@ -1,17 +1,17 @@
-import { IEncryptedFile } from "../../models/files/encrypted-file";
-import { WEB_WORKER_URL } from "../../config";
-import { proxy, wrap } from "comlink";
-import { WorkerApi } from "../../workers/worker";
-import { message } from "antd";
-import Xchacha20poly1305Decrypt from "../../crypto/xchacha20poly1305-decrypt";
-import { uploadFile } from "../../skynet/skynet";
-import Xchacha20poly1305Encrypt from "../../crypto/xchacha20poly1305-encrypt";
-import { getEndpointInDefaultPortal } from "../../portals";
+import { IEncryptedFile } from '../../models/files/encrypted-file';
+import { TUS_CHUNK_SIZE, WEB_WORKER_URL } from '../../config';
+import { proxy, wrap } from 'comlink';
+import { WorkerApi } from '../../workers/worker';
+import { message } from 'antd';
+import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
+import { uploadFileFromStream } from '../../skynet/skynet';
+import Xchacha20poly1305Encrypt from '../../crypto/xchacha20poly1305-encrypt';
+import { getEndpointInDefaultPortal } from '../../portals';
 
 export const webWorkerDownload = async (
   encryptedFile: IEncryptedFile,
   setDecryptProgress,
-  setDownloadProgress,
+  setDownloadProgress
 ): Promise<string> => {
   const worker = new Worker(WEB_WORKER_URL);
   const service = wrap<WorkerApi>(worker);
@@ -28,14 +28,17 @@ export const webWorkerDownload = async (
   }
 
   return url;
-}
+};
 
 export const simpleDownload = async (
   encryptedFile: IEncryptedFile,
   setDecryptProgress,
-  setDownloadProgress,
+  setDownloadProgress
 ): Promise<string> => {
-  const decrypt = new Xchacha20poly1305Decrypt(encryptedFile, getEndpointInDefaultPortal());
+  const decrypt = new Xchacha20poly1305Decrypt(
+    encryptedFile,
+    getEndpointInDefaultPortal()
+  );
 
   let file: File;
   try {
@@ -56,52 +59,94 @@ export const simpleDownload = async (
   }
 
   return window.URL.createObjectURL(file);
-}
+};
 
-export const webWorkerUploader = async (options, fileKey, setEncryptProgress): Promise<File> => {
-  const {onSuccess, onError, file, onProgress} = options;
-
-  const uploadFileFunc = async (f) => {
-    await uploadFile(f, fileKey, onProgress, onSuccess, onError);
-  };
+export const webWorkerUploader = async (
+  options,
+  fileKey,
+  setEncryptProgress
+): Promise<void> => {
+  const { onSuccess, onError, file, onProgress } = options;
 
   const worker = new Worker(WEB_WORKER_URL);
   const service = wrap<WorkerApi>(worker);
 
-  return service.encryptFile(
-    file,
-    fileKey,
-    proxy(uploadFileFunc),
-    proxy(setEncryptProgress)
-  )
-}
+  await service.initEncryptionReader(file, fileKey, proxy(setEncryptProgress));
 
-export const simpleUploader = async (options, fileKey, setEncryptProgress): Promise<File> => {
-  const {onSuccess, onError, file, onProgress} = options;
+  const rs = new ReadableStream({
+    async start(controller) {
+      const enc = await service.readChunk();
+      controller.enqueue(enc.value);
+    },
+    async pull(controller) {
+      const enc = await service.readChunk();
+      if (!enc.done) {
+        controller.enqueue(enc.value);
+      } else {
+        controller.close();
+      }
+    },
+  });
+
+  const streamSize = await service.getStreamSize();
+
+  await uploadFileFromStream(
+    fileKey,
+    streamSize,
+    rs,
+    onProgress,
+    onSuccess,
+    onError
+  );
+
+  worker.terminate();
+};
+
+export const simpleUploader = async (
+  options,
+  fileKey,
+  setEncryptProgress
+): Promise<void> => {
+  const { onSuccess, onError, file, onProgress } = options;
 
   const fe = new Xchacha20poly1305Encrypt(file, fileKey);
-  const encryptedFile = await fe.encrypt((completed, eProgress) => {
+  await fe.encryptAndStream((completed, eProgress) => {
     setEncryptProgress(eProgress);
-  })
+  });
 
-  await uploadFile(encryptedFile, fileKey, onProgress, onSuccess, onError);
+  const stream = await fe.getStream(TUS_CHUNK_SIZE);
 
-  return encryptedFile;
-}
+  await uploadFileFromStream(
+    fileKey,
+    fe.getStreamSize(),
+    stream,
+    onProgress,
+    onSuccess,
+    onError
+  );
+};
 
 export const downloadFile = async (
   encryptedFile: IEncryptedFile,
   setDecryptProgress,
-  setDownloadProgress,
+  setDownloadProgress
 ) => {
   const fileName: string = encryptedFile.name;
   let fileUrl: string;
 
   if (window.Worker) {
-    console.log("[Using web-workers]")
-    fileUrl = await webWorkerDownload(encryptedFile, setDecryptProgress, setDownloadProgress);
+    console.log('[Using web-workers]');
+    fileUrl = await webWorkerDownload(
+      encryptedFile,
+      setDecryptProgress,
+      setDownloadProgress
+    );
   } else {
-    fileUrl = await simpleDownload(encryptedFile, setDecryptProgress, setDownloadProgress);
+    fileUrl = await simpleDownload(
+      encryptedFile,
+      setDecryptProgress,
+      setDownloadProgress
+    );
   }
 
   const elem = window.document.createElement('a');

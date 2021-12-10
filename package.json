@@ -7,8 +7,7 @@
     "test": "SKIP_PREFLIGHT_CHECK=true react-scripts test",
     "eject": "react-scripts eject",
     "fmt": "prettier  --config .prettierrc.json --write src/**/*.ts{,x}",
-    "lint": "tsc --noEmit && eslint src/**/*.ts{,x} --fix",
-    "prepare": "husky install"
+    "lint": "tsc --noEmit && eslint src/**/*.ts{,x} --fix"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
@@ -52,7 +51,6 @@
     "css-loader": "^6.1.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.2",
-    "husky": "^7.0.2",
     "i": "^0.3.7",
     "less": "^4.1.1",
     "less-loader": "^10.0.1",
@@ -65,6 +63,7 @@
     "source-map-loader": "^3.0.0",
     "style-loader": "^3.3.0",
     "ts-loader": "^9.2.6",
+    "tus-js-client": "^2.3.0",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.4.0"
