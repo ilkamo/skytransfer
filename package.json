@@ -58,7 +58,7 @@
     "libsodium-wrappers": "^0.7.9",
     "npm": "^8.2.0",
     "path": "^0.12.7",
-    "prettier": "2.5.0",
+    "prettier": "2.5.1",
     "react-svg-loader": "^3.0.3",
     "source-map-loader": "^3.0.0",
     "style-loader": "^3.3.0",
