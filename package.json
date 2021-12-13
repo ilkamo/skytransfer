@@ -26,7 +26,7 @@
     "react-dom": "^17.0.2",
     "react-qr-svg": "^2.4.0",
     "react-redux": "^7.2.5",
-    "react-router-dom": "^6.0.2",
+    "react-router-dom": "^6.1.1",
     "react-scripts": "^4.0.3",
     "skynet-js": "4.0.20-beta",
     "typescript": "^4.5.3",
