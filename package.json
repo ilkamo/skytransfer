@@ -19,7 +19,7 @@
     "babel-plugin-inline-react-svg": "^2.0.1",
     "crypto-js": "^4.0.0",
     "react": "^17.0.2",
-    "react-app-polyfill": "^2.0.0",
+    "react-app-polyfill": "^3.0.0",
     "react-bootstrap": "^2.0.3",
     "react-colorful": "^5.2.2",
     "react-device-detect": "^2.0.1",
