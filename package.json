@@ -12,7 +12,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@reduxjs/toolkit": "^1.7.1",
-    "@types/uuid": "^8.3.0",
+    "@types/uuid": "^8.3.4",
     "antd": "^4.18.2",
     "axios": "^0.24.0",
     "axios-retry": "^3.1.9",
