@@ -7,7 +7,7 @@ import {
   getEndpointInDefaultPortal,
   getEndpointInCurrentPortal,
   getPortals,
-  getMySkyDomain
+  getMySkyDomain,
 } from './portals';
 
 const realLocation = window.location.href;
@@ -17,7 +17,7 @@ const setLocation = (location: string) => {
   delete window.location;
   // @ts-ignore
   window.location = new URL(location);
-}
+};
 
 describe('Portals', () => {
   describe('getCurrentPortal()', () => {
@@ -25,22 +25,20 @@ describe('Portals', () => {
       const result = getCurrentPortal();
       const expected: Portal = {
         domain: 'siasky.net',
-        displayName: 'Siasky.net'
-      }
-
+        displayName: 'siasky.net',
+      };
 
       expect(result).toEqual(expected);
     });
 
     test('returns returns correct portal based on localstorage', () => {
-      setPortalWithDomain('skydrain.net');
+      setPortalWithDomain('fileportal.org');
       const expected: Portal = {
-        domain: 'skydrain.net',
-        displayName: 'Skydrain.net'
-      }
+        domain: 'fileportal.org',
+        displayName: 'fileportal.org',
+      };
 
       const result = getCurrentPortal();
-
 
       expect(result).toEqual(expected);
     });
@@ -51,23 +49,22 @@ describe('Portals', () => {
       const expected: Portal[] = [
         {
           domain: 'siasky.net',
-          displayName: 'Siasky.net'
+          displayName: 'siasky.net',
         },
         {
-          domain: 'skyportal.xyz',
-          displayName: 'SkyPortal.xyz'
+          domain: 'fileportal.org',
+          displayName: 'fileportal.org',
         },
         {
-          domain: 'skydrain.net',
-          displayName: 'Skydrain.net'
+          domain: 'skynetfree.net',
+          displayName: 'skynetfree.net',
         },
         {
-          domain: 'siasky.dev',
-          displayName: 'Siasky.dev'
+          domain: 'skynetpro.net',
+          displayName: 'skynetpro.net',
         },
       ];
       const result = getPortals();
-
 
       expect(result).toEqual(expected);
     });
@@ -75,8 +72,8 @@ describe('Portals', () => {
 
   describe('getUploadEndpoint()', () => {
     test('returns endpoint based on current portal', () => {
-      setPortalWithDomain('skyportal.xyz');
-      const expected = 'https://skyportal.xyz/skynet/skyfile';
+      setPortalWithDomain('fileportal.org');
+      const expected = 'https://fileportal.org/skynet/skyfile';
       const result = getUploadEndpoint();
 
       expect(result).toEqual(expected);
@@ -85,7 +82,7 @@ describe('Portals', () => {
 
   describe('getEndpointInDefaultPortal()', () => {
     test('returns endpoint based on default portal', () => {
-      setPortalWithDomain('skyportal.xyz');
+      setPortalWithDomain('fileportal.org');
       const expected = 'https://siasky.net';
       const result = getEndpointInDefaultPortal();
 
@@ -95,8 +92,8 @@ describe('Portals', () => {
 
   describe('getEndpointInCurrentPortal()', () => {
     test('returns endpoint based on default portal', () => {
-      setPortalWithDomain('skyportal.xyz');
-      const expected = 'https://skyportal.xyz';
+      setPortalWithDomain('fileportal.org');
+      const expected = 'https://fileportal.org';
       const result = getEndpointInCurrentPortal();
 
       expect(result).toEqual(expected);

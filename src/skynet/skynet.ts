@@ -60,6 +60,7 @@ export async function uploadFileFromStream(
 
   return new Promise((resolve, reject) => {
     const reader = fileReader.getReader();
+    const headers = {};
 
     const upload = new tus.Upload(reader, {
       endpoint: getTusUploadEndpoint(),
@@ -82,6 +83,7 @@ export async function uploadFileFromStream(
       onError: (error) => {
         reject(error);
       },
+      headers,
       onSuccess: async () => {
         if (!upload.url) {
           reject(new Error("'upload.url' was not set"));
