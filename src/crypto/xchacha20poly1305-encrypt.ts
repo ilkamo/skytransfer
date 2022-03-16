@@ -16,7 +16,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
   private streamSize: number = 0;
 
   private chunkCounter = 0;
-  parts: BlobPart[] = [];
+  fileChunks: BlobPart[] = [];
 
   constructor(file: File, encryptionKey: string) {
     this.file = file;
@@ -52,8 +52,8 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
     let [state_out, header] = [res.state, res.header];
     this.stateOut = state_out;
 
-    this.parts.push(salt);
-    this.parts.push(header);
+    this.fileChunks.push(salt);
+    this.fileChunks.push(header);
 
     this.streamSize += salt.byteLength;
     this.streamSize += header.byteLength;
@@ -72,7 +72,7 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
         !this.hasNextChunkDelimiter()
       );
 
-      this.parts.push(encryptedChunk);
+      this.fileChunks.push(encryptedChunk);
       this.streamSize += encryptedChunk.byteLength;
       onEncryptProgress(false, this.progress());
     }
@@ -97,19 +97,21 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
       throw new Error('stream is not ready');
     }
 
-    const file = new File(this.parts, `skytransfer-${uuid()}`, {
+    const file = new File(this.fileChunks, `skytransfer-${uuid()}`, {
       type: 'text/plain',
     });
 
-    const totalChunks = Math.ceil(this.file.size / streamChunkSize);
+    const totalChunks = Math.ceil(this.streamSize / streamChunkSize);
     let streamCounter = 0;
     let endStream: boolean;
+
+    const that = this;
 
     function getEndDelimiterAndSetEndStream(): number {
       let endDelimiter;
 
       if (streamCounter === totalChunks - 1) {
-        endDelimiter = file.size;
+        endDelimiter = that.streamSize;
         endStream = true;
       } else {
         endDelimiter = (streamCounter + 1) * streamChunkSize;
