@@ -6,7 +6,7 @@ import { message } from 'antd';
 import Xchacha20poly1305Decrypt from '../../crypto/xchacha20poly1305-decrypt';
 import { uploadFileFromStream } from '../../skynet/skynet';
 import Xchacha20poly1305Encrypt from '../../crypto/xchacha20poly1305-encrypt';
-import { getEndpointInDefaultPortal } from '../../portals';
+import { getEndpointInCurrentPortal } from '../../portals';
 
 export const webWorkerDownload = async (
   encryptedFile: IEncryptedFile,
@@ -18,7 +18,7 @@ export const webWorkerDownload = async (
 
   const url = await service.decryptFile(
     encryptedFile,
-    getEndpointInDefaultPortal(),
+    getEndpointInCurrentPortal(),
     proxy(setDecryptProgress),
     proxy(setDownloadProgress)
   );
@@ -37,7 +37,7 @@ export const simpleDownload = async (
 ): Promise<string> => {
   const decrypt = new Xchacha20poly1305Decrypt(
     encryptedFile,
-    getEndpointInDefaultPortal()
+    getEndpointInCurrentPortal()
   );
 
   let file: File;

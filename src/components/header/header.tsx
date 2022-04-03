@@ -2,12 +2,7 @@ import './header.css';
 
 import { Menu, Layout } from 'antd';
 
-import { useReducer } from 'react';
-import {
-  getCurrentPortal,
-  getPortals,
-  setPortalWithDomain,
-} from '../../portals';
+import { getCurrentPortal, getPortals } from '../../portals';
 
 import {
   CopyOutlined,
@@ -38,12 +33,9 @@ const AppHeader = () => {
     setCanPublishSession(SessionManager.canResume());
   }, [location]);
 
-  // https://reactjs.org/docs/hooks-faq.html#is-there-something-like-forceupdate
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const portals = getPortals().map((x) => {
     const changePortal = () => {
-      setPortalWithDomain(x.domain);
-      forceUpdate();
+      window.open(`https://skytransfer.hns.${x.domain}/`, '_self');
     };
 
     return (

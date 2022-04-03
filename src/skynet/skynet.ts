@@ -1,8 +1,4 @@
-import {
-  getEndpointInCurrentPortal,
-  getEndpointInDefaultPortal,
-  getTusUploadEndpoint,
-} from './../portals';
+import { getEndpointInCurrentPortal, getTusUploadEndpoint } from './../portals';
 import { MySky, SkynetClient } from 'skynet-js';
 import {
   DEFAULT_TUS_RETRY_DELAYS,
@@ -10,7 +6,6 @@ import {
   TUS_CHUNK_SIZE,
 } from '../config';
 import { JsonCrypto } from '../crypto/json';
-import { getMySkyDomain } from '../portals';
 import {
   IAllBuckets,
   IBucket,
@@ -26,19 +21,7 @@ import * as tus from 'tus-js-client';
 import { v4 as uuid } from 'uuid';
 import axios from 'axios';
 
-const skynetSkyDBClient = new SkynetClient(getEndpointInDefaultPortal());
-
-let endpointInCurrentPortal = getEndpointInCurrentPortal();
-let skynetFileClient = new SkynetClient(getEndpointInCurrentPortal());
-
-const getSkynetFileClientBasedOnPortal = (): SkynetClient => {
-  if (endpointInCurrentPortal !== getEndpointInCurrentPortal()) {
-    endpointInCurrentPortal = getEndpointInCurrentPortal();
-    skynetFileClient = new SkynetClient(endpointInCurrentPortal);
-  }
-
-  return skynetFileClient;
-};
+const skynetClient = new SkynetClient(getEndpointInCurrentPortal());
 
 const dataDomain = 'skytransfer.hns';
 const privateReadWriteUserBucketsPath = 'skytransfer.hns/userBuckets.json';
@@ -133,14 +116,11 @@ export const uploadFile = async (
   onError
 ) => {
   try {
-    const fileSkylink = await getSkynetFileClientBasedOnPortal().uploadFile(
-      encryptedFile,
-      {
-        onUploadProgress: (p) => {
-          onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
-        },
-      }
-    );
+    const fileSkylink = await skynetClient.uploadFile(encryptedFile, {
+      onUploadProgress: (p) => {
+        onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
+      },
+    });
     onSuccess({
       data: fileSkylink,
       encryptedFileSize: encryptedFile.size,
@@ -161,7 +141,7 @@ export const encryptAndStoreBucket = async (
     const encryptedBucket = jsonCrypto.encrypt(bucket);
 
     try {
-      await skynetSkyDBClient.db.setJSON(privateKey, SKYTRANSFER_BUCKET, {
+      await skynetClient.db.setJSON(privateKey, SKYTRANSFER_BUCKET, {
         data: encryptedBucket,
       });
       return resolve(true);
@@ -180,7 +160,7 @@ export const getDecryptedBucket = async (
     let bucket: IBucket;
 
     try {
-      const { data } = await skynetSkyDBClient.db.getJSON(
+      const { data } = await skynetClient.db.getJSON(
         publicKey,
         SKYTRANSFER_BUCKET
       );
@@ -204,8 +184,7 @@ export const getMySky = async (): Promise<MySky> => {
     return mySkyInstance;
   }
 
-  const client = new SkynetClient(getMySkyDomain());
-  return await client.loadMySky(dataDomain, { debug: true });
+  return await skynetClient.loadMySky(dataDomain, { debug: true });
 };
 
 export async function getUserReadWriteHiddenBuckets(
