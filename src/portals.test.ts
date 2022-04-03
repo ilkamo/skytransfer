@@ -1,14 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
-import { getMySkyDomain, getPortals, Portal } from './portals';
-
-const realLocation = window.location.href;
-
-const setLocation = (location: string) => {
-  // @ts-ignore
-  delete window.location;
-  // @ts-ignore
-  window.location = new URL(location);
-};
+import { getPortals, Portal } from './portals';
 
 describe('Portals', () => {
   describe('getPortals()', () => {
@@ -34,30 +25,6 @@ describe('Portals', () => {
       const result = getPortals();
 
       expect(result).toEqual(expected);
-    });
-  });
-
-  describe('getMySkyDomain()', () => {
-    test('returns dev mySky domain', () => {
-      setLocation('http://localhost:3000');
-
-      const expected = 'https://siasky.net';
-      const result = getMySkyDomain();
-      expect(result).toEqual(expected);
-
-      setLocation(realLocation);
-    });
-  });
-
-  describe('getMySkyDomain()_empty', () => {
-    test('returns mySky domain', () => {
-      setLocation('https://skynetfree.net');
-
-      const expected = 'https://skynetfree.net'; // https://github.com/SkynetLabs/skynet-js/issues/89
-      const result = getMySkyDomain();
-      expect(result).toEqual(expected);
-
-      setLocation(realLocation);
     });
   });
 });

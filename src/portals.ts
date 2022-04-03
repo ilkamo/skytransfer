@@ -5,7 +5,7 @@ export interface Portal {
 
 const knownPortals: readonly Portal[] = [
   {
-    domain: 'siasky.net', // https://github.com/SkynetLabs/skynet-js/issues/89
+    domain: 'siasky.net',
     displayName: 'siasky.net',
   },
   {
@@ -44,25 +44,6 @@ export const getTusUploadEndpoint = (): string => {
 
 export const getEndpointInCurrentPortal = (): string => {
   return `https://${getCurrentPortal().domain}`;
-};
-
-export const getEndpointInDefaultPortal = (): string => {
-  return `https://${getDefaultPortal().domain}`;
-};
-
-export const getMySkyDomain = (): string => {
-  let mySkyPortal = `https://${window.location.hostname.replace(
-    'skytransfer.hns.',
-    ''
-  )}`;
-  if (
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
-  ) {
-    mySkyPortal = `https://${getDefaultPortal().domain}`;
-  }
-
-  return mySkyPortal;
 };
 
 export const getPortals = (): readonly Portal[] => knownPortals;
