@@ -51,9 +51,9 @@ describe('Portals', () => {
 
   describe('getMySkyDomain()_empty', () => {
     test('returns mySky domain', () => {
-      setLocation('https://siasky.net');
+      setLocation('https://skynetfree.net');
 
-      const expected = ''; // https://github.com/SkynetLabs/skynet-js/issues/89
+      const expected = 'https://skynetfree.net'; // https://github.com/SkynetLabs/skynet-js/issues/89
       const result = getMySkyDomain();
       expect(result).toEqual(expected);
 
