@@ -1,6 +1,7 @@
 name: build and deploy
 
 on:
+  pull_request:
   push:
     branches: [main]
 
@@ -22,10 +23,6 @@ jobs:
         with:
           current_version: ${{ steps.get-latest-tag.outputs.tag }}
           level: patch
-
-      - uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: ${{ steps.bump-semver.outputs.new_version }}
 
       - name: Bump version before build
         run: ./scripts/version-bump.sh ${{ steps.bump-semver.outputs.new_version }}

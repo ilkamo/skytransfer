@@ -1,0 +1,1 @@
+echo "export const APP_VERSION = '$1';" > src/version.ts
