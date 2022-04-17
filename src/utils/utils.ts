@@ -5,3 +5,20 @@ export const fileSize = (size: number): string => {
   const i = Math.floor(Math.log(size) / Math.log(k));
   return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+export const fromStreamToFile = async (stream: ReadableStream, filename: string): Promise<File> => {
+  const reader = stream.getReader();
+  const chunks: BlobPart[] = [];
+
+  const readFile = async () => {
+    const { done, value } = await reader.read();
+    if (done) {
+      return;
+    }
+    chunks.push(value);
+    return readFile();
+  };
+
+  await readFile();
+  return new File(chunks, filename, {type: 'text/plain'});
+}

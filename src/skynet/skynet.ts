@@ -1,6 +1,7 @@
 import { getEndpointInCurrentPortal, getTusUploadEndpoint } from './../portals';
 import { MySky, SkynetClient } from 'skynet-js';
 import {
+  DEFAULT_FILE_OBJECT_LIMIT,
   DEFAULT_TUS_RETRY_DELAYS,
   SKYTRANSFER_BUCKET,
   TUS_CHUNK_SIZE,
@@ -20,6 +21,7 @@ import { publicKeyFromPrivateKey } from '../crypto/crypto';
 import * as tus from 'tus-js-client';
 import { v4 as uuid } from 'uuid';
 import axios from 'axios';
+import { fromStreamToFile } from "../utils/utils";
 
 const skynetClient = new SkynetClient(getEndpointInCurrentPortal());
 
@@ -36,9 +38,22 @@ export async function uploadFileFromStream(
   onSuccess,
   onError
 ) {
+  const tempFilename = `skytransfer-${uuid()}`;
+
+  if (uploadSize <= DEFAULT_FILE_OBJECT_LIMIT) {
+    const fileToUpload = await fromStreamToFile(fileReader, tempFilename);
+    return uploadFile(
+      fileToUpload,
+      fileKey,
+      onProgress,
+      onSuccess,
+      onError,
+    );
+  }
+
   const onProgressTus = function (bytesSent, bytesTotal) {
     const progress = bytesSent / bytesTotal;
-    onProgress({ percent: Math.floor(progress * 100) });
+    onProgress({percent: Math.floor(progress * 100)});
   };
 
   return new Promise((resolve, reject) => {
@@ -50,7 +65,7 @@ export async function uploadFileFromStream(
       chunkSize: TUS_CHUNK_SIZE,
       retryDelays: DEFAULT_TUS_RETRY_DELAYS,
       metadata: {
-        filename: `skytransfer-${uuid()}`,
+        filename: tempFilename,
         filetype: 'text/plain',
       },
       onProgress: onProgressTus,
@@ -116,18 +131,21 @@ export const uploadFile = async (
   onError
 ) => {
   try {
-    const fileSkylink = await skynetClient.uploadFile(encryptedFile, {
+    const { skylink } = await skynetClient.uploadFile(encryptedFile, {
       onUploadProgress: (p) => {
-        onProgress({ percent: Math.floor(p * 100) }, encryptedFile);
+        onProgress({percent: Math.floor(p * 100)}, encryptedFile);
       },
     });
+
     onSuccess({
-      data: fileSkylink,
+      skylink: skylink,
       encryptedFileSize: encryptedFile.size,
       fileKey: fileKey,
     });
   } catch (e) {
-    onError(e);
+    onError(new Error(
+      `Could not complete upload: ${e}`
+    ));
   }
 };
 
@@ -160,7 +178,7 @@ export const getDecryptedBucket = async (
     let bucket: IBucket;
 
     try {
-      const { data } = await skynetClient.db.getJSON(
+      const {data} = await skynetClient.db.getJSON(
         publicKey,
         SKYTRANSFER_BUCKET
       );
@@ -184,7 +202,7 @@ export const getMySky = async (): Promise<MySky> => {
     return mySkyInstance;
   }
 
-  return await skynetClient.loadMySky(dataDomain, { debug: true });
+  return await skynetClient.loadMySky(dataDomain, {debug: true});
 };
 
 export async function getUserReadWriteHiddenBuckets(
@@ -192,7 +210,7 @@ export async function getUserReadWriteHiddenBuckets(
 ): Promise<IReadWriteBucketsInfo> {
   let buckets: IReadWriteBucketsInfo = {};
 
-  const { data } = await mySky.getJSONEncrypted(
+  const {data} = await mySky.getJSONEncrypted(
     privateReadWriteUserBucketsPath
   );
 
@@ -213,7 +231,7 @@ export async function getAllUserHiddenBuckets(
     mySky
   );
 
-  return { readOnly, readWrite };
+  return {readOnly, readWrite};
 }
 
 export async function getAllUserDecryptedBuckets(
@@ -250,7 +268,7 @@ export async function getAllUserDecryptedBuckets(
     })
   );
 
-  return { readOnly, readWrite };
+  return {readOnly, readWrite};
 }
 
 export async function getUserReadOnlyHiddenBuckets(
@@ -258,7 +276,7 @@ export async function getUserReadOnlyHiddenBuckets(
 ): Promise<IReadOnlyBucketsInfo> {
   let buckets: IReadOnlyBucketsInfo = {};
 
-  const { data } = await mySky.getJSONEncrypted(privateReadOnlyUserBucketsPath);
+  const {data} = await mySky.getJSONEncrypted(privateReadOnlyUserBucketsPath);
 
   if (data && 'buckets' in data) {
     buckets = data.buckets as IReadOnlyBucketsInfo;
@@ -275,7 +293,7 @@ export async function storeUserReadWriteHiddenBucket(
 
   buckets[newBucket.bucketID] = newBucket;
   try {
-    await mySky.setJSONEncrypted(privateReadWriteUserBucketsPath, { buckets });
+    await mySky.setJSONEncrypted(privateReadWriteUserBucketsPath, {buckets});
   } catch (error) {
     throw Error('could not storeUserReadWriteHiddenBucket: ' + error.message);
   }
@@ -289,7 +307,7 @@ export async function storeUserReadOnlyHiddenBucket(
 
   buckets[newBucket.bucketID] = newBucket;
   try {
-    await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, { buckets });
+    await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, {buckets});
   } catch (error) {
     throw Error('could not storeUserReadOnlyHiddenBucket: ' + error.message);
   }
@@ -322,7 +340,7 @@ export async function deleteUserReadOnlyHiddenBucket(
   if (bucketID in buckets) {
     delete buckets[bucketID];
     try {
-      await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, { buckets });
+      await mySky.setJSONEncrypted(privateReadOnlyUserBucketsPath, {buckets});
     } catch (error) {
       throw Error('could not deleteUserReadOnlyHiddenBucket: ' + error.message);
     }
