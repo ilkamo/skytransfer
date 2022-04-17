@@ -28,7 +28,7 @@
     "react-redux": "^7.2.8",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.0",
-    "skynet-js": "4.0.20-beta",
+    "skynet-js": "4.0.27-beta",
     "typescript": "^4.6.3",
     "web-vitals": "^2.1.4"
   },

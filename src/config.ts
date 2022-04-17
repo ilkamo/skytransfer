@@ -23,3 +23,5 @@ export const TUS_CHUNK_SIZE = (1 << 22) * 10;
  * total delays should not exceed that length of time.
  */
 export const DEFAULT_TUS_RETRY_DELAYS = [0, 5000, 15000, 60000, 300000, 600000];
+
+export const DEFAULT_FILE_OBJECT_LIMIT = 805306368; // 768 MB
