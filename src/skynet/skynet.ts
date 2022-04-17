@@ -131,7 +131,7 @@ export const uploadFile = async (
   onError
 ) => {
   try {
-    const { skylink } = await skynetClient.uploadFile(encryptedFile, {
+    const {skylink} = await skynetClient.uploadFile(encryptedFile, {
       onUploadProgress: (p) => {
         onProgress({percent: Math.floor(p * 100)}, encryptedFile);
       },
@@ -345,4 +345,10 @@ export async function deleteUserReadOnlyHiddenBucket(
       throw Error('could not deleteUserReadOnlyHiddenBucket: ' + error.message);
     }
   }
+}
+
+export async function pinFile(
+  skylink: string,
+): Promise<void> {
+  await skynetClient.pinSkylink(skylink);
 }
