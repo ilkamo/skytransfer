@@ -1,5 +1,5 @@
 import { Button, Tooltip } from 'antd';
-import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 
 import { isDesktop } from 'react-device-detect';
 

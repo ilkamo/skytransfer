@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, message } from 'antd';
+import { message, Modal } from 'antd';
 
 import SessionManager from '../../session/session-manager';
 

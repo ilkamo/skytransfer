@@ -21,13 +21,12 @@ export interface ICryptoMetadata {
 }
 
 export default class Xchacha20poly1305Decrypt implements FileDecoder {
+  parts: BlobPart[] = [];
   private encryptedFile: IEncryptedFile;
   private encryptionKey: string;
   private portalUrl: string;
   private chunkResolver: ChunkResolver;
   private stateIn: _sodium.StateAddress;
-
-  parts: BlobPart[] = [];
 
   constructor(encryptedFile: IEncryptedFile, portalUrl: string) {
     this.encryptedFile = encryptedFile;

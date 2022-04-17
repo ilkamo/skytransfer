@@ -1,25 +1,25 @@
 .friends svg {
-  width: 150px;
-  height: 150px;
+    width: 150px;
+    height: 150px;
 }
 
 .support svg {
-  width: 150px;
-  height: 150px;
+    width: 150px;
+    height: 150px;
 }
 
 .homescreen svg {
-  width: 256px;
-  height: 28px;
+    width: 256px;
+    height: 28px;
 }
 
 .skytransfer-logo svg {
-  width: 90px;
-  height: 90px;
-  margin: 10px auto;
+    width: 90px;
+    height: 90px;
+    margin: 10px auto;
 }
 
 .bucket svg {
-  width: 90px;
-  margin: 10px auto;
+    width: 90px;
+    margin: 10px auto;
 }

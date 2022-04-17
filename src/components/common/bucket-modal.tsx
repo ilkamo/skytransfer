@@ -1,5 +1,4 @@
-import { Form, Input, Spin } from 'antd';
-import { Modal } from 'antd';
+import { Form, Input, Modal, Spin } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MySky } from 'skynet-js';

@@ -1,84 +1,84 @@
 .drop-container {
-  border: 1px dashed #bdc3c7 !important;
-  border-radius: 2px !important;
-  background-color: white;
-  padding: 10px;
+    border: 1px dashed #bdc3c7 !important;
+    border-radius: 2px !important;
+    background-color: white;
+    padding: 10px;
 }
 
 .drop-container:hover {
-  border: 1px dashed #20bf6b !important;
+    border: 1px dashed #20bf6b !important;
 }
 
 .ant-menu-item:hover {
-  background-color: #20bf6b !important;
+    background-color: #20bf6b !important;
 }
 
 .drop-container .version {
-  font-size: 12px;
-  color: #b2bec3;
+    font-size: 12px;
+    color: #b2bec3;
 }
 
 .logo {
-  font-size: 30px;
-  color: #20bf6b;
-  font-weight: bold;
+    font-size: 30px;
+    color: #20bf6b;
+    font-weight: bold;
 }
 
 .file-error {
-  display: inline-block;
-  color: #9aa9bb;
+    display: inline-block;
+    color: #9aa9bb;
 }
 
 .error-message {
-  color: red;
-  margin: 20px auto;
+    color: red;
+    margin: 20px auto;
 }
 
 .default-margin {
-  margin: 20px auto;
+    margin: 20px auto;
 }
 
 .file-remove {
-  cursor: pointer;
-  color: red;
+    cursor: pointer;
+    color: red;
 }
 
 .file-input {
-  display: none;
+    display: none;
 }
 
 .file-tree {
-  font-size: 16px;
-  background: transparent;
-  padding: 10px;
+    font-size: 16px;
+    background: transparent;
+    padding: 10px;
 }
 
 .file-list {
-  border: 1px dashed #ccc;
-  border-radius: 2px !important;
-  background: #fafafa;
+    border: 1px dashed #ccc;
+    border-radius: 2px !important;
+    background: #fafafa;
 }
 
 .ant-tree-switcher {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .progress {
-  margin: 0;
-  padding: 0;
-  cursor: pointer;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .activity-bar {
-  font-size: 12px;
-  color: #2c3e50;
-  text-align: center;
+    font-size: 12px;
+    color: #2c3e50;
+    text-align: center;
 }
 
 .activity-bar .label {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .ant-upload-text {
-  font-size: 16px !important;
+    font-size: 16px !important;
 }

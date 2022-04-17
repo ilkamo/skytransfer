@@ -1,56 +1,56 @@
-
 /* overriding antd css */
 .ant-tree.ant-tree-directory .ant-tree-treenode:hover::before {
-  background-color: #20bf6b40 !important;
+    background-color: #20bf6b40 !important;
 }
 
 /* overriding antd css */
 .ant-tree-treenode .ant-tree-node-content-wrapper {
-  overflow-x: hidden;
+    overflow-x: hidden;
 }
 
 .directory-tree-line {
-  display: flex;
-  flex-direction: row;
-  justify-content:space-between;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .directory-tree-line__nodename {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  flex: auto;
-  font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    flex: auto;
+    font-size: 14px;
 }
 
 .directory-tree-line__buttons {
-  flex: none;
+    flex: none;
 }
 
 .directory-tree-line__btn {
-  margin-top: 3px;
-  margin-bottom: 3px;
+    margin-top: 3px;
+    margin-bottom: 3px;
 }
 
 .directory-tree-line__btn--download {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 @media (min-width: 1025px) {
-  .directory-tree-line__buttons {
-    visibility: hidden;
-  }
-  .directory-tree-line:hover .directory-tree-line__buttons {
-    visibility: visible;
-  }
+    .directory-tree-line__buttons {
+        visibility: hidden;
+    }
+
+    .directory-tree-line:hover .directory-tree-line__buttons {
+        visibility: visible;
+    }
 }
 
 @media (max-width: 1025px) {
-  .directory-tree-line__buttons {
-    visibility: visible;
-  }
+    .directory-tree-line__buttons {
+        visibility: visible;
+    }
 
-  .directory-tree-line__btn--download {
-    margin-left: 5px;
-  }
+    .directory-tree-line__btn--download {
+        margin-left: 5px;
+    }
 }

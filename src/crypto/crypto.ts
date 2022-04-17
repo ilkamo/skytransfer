@@ -1,15 +1,19 @@
 export interface FileEncoder {
-  encryptAndStream(): Promise<void>;
   encryptChunkSize: number;
 
+  encryptAndStream(): Promise<void>;
+
   isStreamReady(): boolean;
+
   getStream(streamChunkSize: number): Promise<ReadableStream>;
+
   getStreamSize(): number;
 }
 
 export interface FileDecoder {
-  decrypt(): Promise<File>;
   decryptChunkSize: number;
+
+  decrypt(): Promise<File>;
 }
 
 export const publicKeyFromPrivateKey = (key: string): string => {

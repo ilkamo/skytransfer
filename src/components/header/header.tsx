@@ -1,18 +1,18 @@
 import './header.css';
 
-import { Menu, Layout } from 'antd';
+import { Layout, Menu } from 'antd';
 
 import { getCurrentPortal, getPortals } from '../../portals';
 
 import {
   CopyOutlined,
+  HeartOutlined,
   RedoOutlined,
   UnorderedListOutlined,
-  HeartOutlined,
 } from '@ant-design/icons';
 
 import SessionManager from '../../session/session-manager';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ChangePortalIcon } from '../common/icons';
 

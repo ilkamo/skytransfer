@@ -1,4 +1,4 @@
-import { Badge, Divider, Progress, Tooltip } from 'antd';
+import { Badge, Progress, Tooltip } from 'antd';
 
 import { CloudDownloadOutlined, SecurityScanOutlined } from '@ant-design/icons';
 
