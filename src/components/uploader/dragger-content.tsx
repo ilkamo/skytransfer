@@ -1,4 +1,5 @@
 import { SkyTransferLogo } from '../common/icons';
+import { APP_VERSION } from '../../version';
 
 type DraggerContentProps = {
   onlyClickable: boolean;
@@ -21,7 +22,9 @@ export const DraggerContent = ({
       <p className="ant-upload-drag-icon">
         <SkyTransferLogo />
         <br />
-        <span className="ant-upload-drag-icon version">SkyTransfer v2.0.3</span>
+        <span className="ant-upload-drag-icon version">
+          SkyTransfer ${APP_VERSION}
+        </span>
       </p>
     </>
   );

@@ -15,6 +15,22 @@ jobs:
         with:
           node-version: "16"
 
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+
+      - uses: actions-ecosystem/action-bump-semver@v1
+        id: bump-semver
+        with:
+          current_version: ${{ steps.get-latest-tag.outputs.tag }}
+          level: minor
+
+      - uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: ${{ steps.bump-semver.outputs.new_version }}
+
+      - name: Bum version before build
+        run: ./scripts/version-bump.sh ${{ steps.bump-semver.outputs.new_version }}
+
       - name: Install dependencies
         run: yarn
 
