@@ -27,7 +27,7 @@ jobs:
         with:
           tag: ${{ steps.bump-semver.outputs.new_version }}
 
-      - name: Bum version before build
+      - name: Bump version before build
         run: ./scripts/version-bump.sh ${{ steps.bump-semver.outputs.new_version }}
 
       - name: Install dependencies
