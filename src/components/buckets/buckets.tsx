@@ -3,10 +3,19 @@ import './buckets.css';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { getMySky, getAllUserDecryptedBuckets } from '../../skynet/skynet';
+import { getAllUserDecryptedBuckets, getMySky } from '../../skynet/skynet';
 
-import { Button, Divider, List, message, Row, Col } from 'antd';
-import { Drawer, Typography, Modal } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Drawer,
+  List,
+  message,
+  Modal,
+  Row,
+  Typography,
+} from 'antd';
 
 import { genKeyPairAndSeed, MySky } from 'skynet-js';
 import { IBuckets, IReadWriteBucketInfo } from '../../models/files/bucket';
@@ -14,19 +23,19 @@ import { IBuckets, IReadWriteBucketInfo } from '../../models/files/bucket';
 import { User } from '../../features/user/user';
 
 import {
-  selectUser,
-  login,
-  deleteReadWriteBucket,
   deleteReadOnlyBucket,
+  deleteReadWriteBucket,
+  login,
+  selectUser,
 } from '../../features/user/user-slice';
 import { useDispatch, useSelector } from 'react-redux';
 import { IUserState, UserStatus } from '../../models/user';
 
 import {
-  LoginOutlined,
-  InboxOutlined,
-  ProfileOutlined,
   DeleteOutlined,
+  InboxOutlined,
+  LoginOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 import { BucketModal } from '../common/bucket-modal';
 
@@ -46,13 +55,11 @@ const generateNewBucketInfo = (): IReadWriteBucketInfo => {
   const bucketPrivateKey = genKeyPairAndSeed().privateKey;
   const bucketEncryptionKey = genKeyPairAndSeed().privateKey;
 
-  const tempBucketInfo: IReadWriteBucketInfo = {
+  return {
     bucketID: tempBucketID,
     privateKey: bucketPrivateKey,
     encryptionKey: bucketEncryptionKey,
   };
-
-  return tempBucketInfo;
 };
 
 const Buckets = () => {

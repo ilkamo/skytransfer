@@ -26,6 +26,23 @@ export default class SessionManager {
     };
   }
 
+  static get readOnlyLink() {
+    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
+
+    if (this.isReadOnlyFromLink()) {
+      return `https://${window.location.hostname}/${window.location.hash}`;
+    }
+    return `https://${window.location.hostname}/#/v2/${publicKeyFromPrivateKey(
+      bucketPrivateKey
+    )}/${bucketEncryptionKey}`;
+  }
+
+  static get readWriteLink() {
+    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
+
+    return `https://${window.location.hostname}/#/v2/${bucketPrivateKey}/${bucketEncryptionKey}`;
+  }
+
   static setSessionKeys(sessionKeys: ISessionManagerKeys) {
     localStorage.setItem(BUCKET_PRIVATE_KEY_NAME, sessionKeys.bucketPrivateKey);
     localStorage.setItem(
@@ -43,23 +60,6 @@ export default class SessionManager {
       window.location.hash.split('/').length === 4 &&
       window.location.hash.split('/')[2].length === 64
     );
-  }
-
-  static get readOnlyLink() {
-    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
-
-    if (this.isReadOnlyFromLink()) {
-      return `https://${window.location.hostname}/${window.location.hash}`;
-    }
-    return `https://${window.location.hostname}/#/v2/${publicKeyFromPrivateKey(
-      bucketPrivateKey
-    )}/${bucketEncryptionKey}`;
-  }
-
-  static get readWriteLink() {
-    const { bucketPrivateKey, bucketEncryptionKey } = this.sessionKeys;
-
-    return `https://${window.location.hostname}/#/v2/${bucketPrivateKey}/${bucketEncryptionKey}`;
   }
 
   static canResume() {

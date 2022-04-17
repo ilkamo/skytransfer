@@ -1,8 +1,9 @@
-import { Collapse, Card, Divider, Button } from 'antd';
+import { Button, Card, Collapse, Divider } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
 import { IBucket } from '../../models/files/bucket';
 import { BucketIcon } from './icons';
+
 const { Panel } = Collapse;
 const { Meta } = Card;
 

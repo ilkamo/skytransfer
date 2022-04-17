@@ -1,7 +1,8 @@
 import { SkyTransferLogo } from '../common/icons';
 import './about.css';
 
-import { Typography, Divider } from 'antd';
+import { Divider, Typography } from 'antd';
+
 const { Title } = Typography;
 
 const About = () => {

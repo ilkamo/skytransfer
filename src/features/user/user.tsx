@@ -1,10 +1,11 @@
 import { useSelector } from 'react-redux';
 import { UserStatus } from '../../models/user';
 
-import { Card, Avatar } from 'antd';
+import { Avatar, Card } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 
 import { selectUser } from './user-slice';
+
 const { Meta } = Card;
 
 export function User() {

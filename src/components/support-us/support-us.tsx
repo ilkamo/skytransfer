@@ -2,6 +2,7 @@ import { SmileIcon, SupportUsIcon } from '../common/icons';
 import './support-us.css';
 
 import { Divider, Typography } from 'antd';
+
 const { Title } = Typography;
 
 const SupportUs = () => {

@@ -5,18 +5,15 @@ import _sodium from 'libsodium-wrappers';
 import { v4 as uuid } from 'uuid';
 
 export default class Xchacha20poly1305Encrypt implements FileEncoder {
-  private file: File;
   readonly encryptionKey: string;
   readonly totalChunks: number = 0;
+  fileChunks: BlobPart[] = [];
+  private file: File;
   private chunkResolver: ChunkResolver;
-
   private stateOut: _sodium.StateAddress;
-
   private isStreamReadyToBeConsumed: boolean = false;
   private streamSize: number = 0;
-
   private chunkCounter = 0;
-  fileChunks: BlobPart[] = [];
 
   constructor(file: File, encryptionKey: string) {
     this.file = file;
@@ -147,6 +144,10 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
     });
   }
 
+  getStreamSize(): number {
+    return this.streamSize;
+  }
+
   private progress(): number {
     if (this.chunkCounter === 0) {
       return 0;
@@ -172,10 +173,6 @@ export default class Xchacha20poly1305Encrypt implements FileEncoder {
 
   private hasNextChunkDelimiter(): boolean {
     return this.chunkCounter <= this.totalChunks - 1;
-  }
-
-  getStreamSize(): number {
-    return this.streamSize;
   }
 
   private async encryptBlob(

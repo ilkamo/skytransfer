@@ -1,4 +1,4 @@
-import { IFileData } from "./file-data";
+import { IFileData } from './file-data';
 
 export interface IEncryptedFiles {
   [fileRelativePath: string]: IEncryptedFile;
