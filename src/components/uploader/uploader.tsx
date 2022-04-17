@@ -46,6 +46,7 @@ import {
   encryptAndStoreBucket,
   getDecryptedBucket,
   getMySky,
+  pinFile,
 } from '../../skynet/skynet';
 import { DraggerContent } from './dragger-content';
 import { ShareModal } from '../common/share-modal';
@@ -341,6 +342,9 @@ const Uploader = () => {
             encryptedSize: info.file.response.encryptedFileSize,
             relativePath: relativePath,
           };
+
+          // TODO: just for test, move me somewhere near the uploader and use await
+          pinFile(info.file.response.skylink);
 
           if (decryptedBucket.encryptedFileExists(relativePath)) {
             setDecryptedBucket((p) => {
