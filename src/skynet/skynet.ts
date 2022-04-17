@@ -350,5 +350,9 @@ export async function deleteUserReadOnlyHiddenBucket(
 export async function pinFile(
   skylink: string,
 ): Promise<void> {
-  await skynetClient.pinSkylink(skylink);
+  try {
+    await skynetClient.pinSkylink(skylink);
+  } catch (error) {
+    console.error('could not pinFile: ' + error.message);
+  }
 }
