@@ -23,7 +23,7 @@ export const DraggerContent = ({
         <SkyTransferLogo />
         <br />
         <span className="ant-upload-drag-icon version">
-          SkyTransfer ${APP_VERSION}
+          SkyTransfer {APP_VERSION}
         </span>
       </p>
     </>
